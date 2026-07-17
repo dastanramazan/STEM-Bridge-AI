@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STEM Bridge AI — CS Tutor & Writing Feedback for Every Student</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=JetBrains+Mono:wght@300;400;500&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg:      #05080f;
+      --surf:    #0d1420;
+      --surf2:   #131d2e;
+      --border:  #1c2d44;
+      --border2: #243650;
+      --a1:  #22d3ee;   /* cyan  — writing track */
+      --a2:  #a78bfa;   /* violet — coding track  */
+      --a3:  #34d399;   /* green  — success       */
+      --warn:#fbbf24;
+      --err: #f87171;
+      --txt: #e2e8f0;
+      --mut: #526070;
+      --faint:#0f1a27;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+
+    body{
+      background:var(--bg);
+      color:var(--txt);
+      font-family:'JetBrains Mono',monospace;
+      min-height:100vh;
+      overflow-x:hidden;
+    }
+
+    /* ── MESH BACKGROUND ─────────────────── */
+    body::before{
+      content:'';position:fixed;inset:0;
+      background-image:
+        radial-gradient(ellipse 70% 60% at 10% 10%, rgba(34,211,238,.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 70% at 90% 90%, rgba(167,139,250,.07) 0%, transparent 60%),
+        linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+      background-size:100% 100%, 100% 100%, 48px 48px, 48px 48px;
+      pointer-events:none;z-index:0;
+    }
+
+    /* ── HEADER ──────────────────────────── */
+    header{
+      position:relative;z-index:20;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:18px 40px;
+      border-bottom:1px solid var(--border);
+      background:rgba(5,8,15,.85);
+      backdrop-filter:blur(16px);
+    }
+    .logo{display:flex;align-items:center;gap:12px;}
+    .logo-icon{
+      width:38px;height:38px;border-radius:10px;
+      background:linear-gradient(135deg,var(--a1),var(--a2));
+      display:flex;align-items:center;justify-content:center;
+      font-size:18px;flex-shrink:0;
+    }
+    .logo-name{
+      font-family:'Outfit',sans-serif;font-weight:800;
+      font-size:1.15rem;letter-spacing:-.02em;
+    }
+    .logo-name .cyan{color:var(--a1);}
+    .logo-name .violet{color:var(--a2);}
+    .logo-sub{font-size:.6rem;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
+
+    .badges{display:flex;gap:8px;align-items:center;}
+    .badge{
+      font-size:.6rem;padding:3px 10px;border-radius:20px;
+      text-transform:uppercase;letter-spacing:.07em;
+    }
+    .badge.open{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.3);color:var(--a3);}
+    .badge.ver {background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.3);color:var(--a1);}
+
+    /* ── HERO ────────────────────────────── */
+    .hero{
+      position:relative;z-index:5;
+      text-align:center;padding:52px 20px 36px;
+      max-width:820px;margin:0 auto;
+    }
+    .hero-label{
+      display:inline-block;font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;
+      color:var(--a1);margin-bottom:14px;padding:4px 14px;
+      border:1px solid rgba(34,211,238,.25);border-radius:20px;
+    }
+    .hero h1{
+      font-family:'Fraunces',serif;font-size:clamp(1.9rem,5vw,3rem);
+      font-weight:300;line-height:1.2;margin-bottom:14px;color:#f0f6ff;
+    }
+    .hero h1 em{font-style:italic;font-weight:400;color:var(--a1);}
+    .hero h1 strong{font-style:italic;font-weight:700;color:var(--a2);}
+    .hero p{font-size:.78rem;line-height:1.9;color:var(--mut);max-width:580px;margin:0 auto;}
+
+    .stats{
+      display:flex;justify-content:center;gap:36px;
+      margin-top:28px;flex-wrap:wrap;
+    }
+    .stat-n{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;color:var(--a1);}
+    .stat-l{font-size:.6rem;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+
+    /* ── MODE SELECTOR ───────────────────── */
+    .mode-bar{
+      position:relative;z-index:10;
+      display:flex;justify-content:center;gap:12px;
+      padding:0 20px 28px;
+    }
+    .mode-btn{
+      display:flex;align-items:center;gap:10px;
+      padding:12px 28px;border-radius:12px;cursor:pointer;
+      border:1px solid var(--border2);background:var(--surf);
+      font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--mut);
+      transition:all .2s;
+    }
+    .mode-btn:hover{border-color:var(--border2);color:var(--txt);}
+    .mode-btn.active-writing{
+      border-color:var(--a1);background:rgba(34,211,238,.08);
+      color:var(--a1);
+    }
+    .mode-btn.active-coding{
+      border-color:var(--a2);background:rgba(167,139,250,.08);
+      color:var(--a2);
+    }
+    .mode-icon{font-size:1.1rem;}
+
+    /* ── MAIN LAYOUT ─────────────────────── */
+    .workspace{
+      position:relative;z-index:5;
+      max-width:1140px;margin:0 auto;
+      padding:0 20px 60px;
+      display:grid;grid-template-columns:1fr 1fr;gap:18px;
+    }
+    @media(max-width:768px){
+      .workspace{grid-template-columns:1fr;}
+      header{padding:14px 18px;}
+      .mode-btn{padding:10px 16px;font-size:.7rem;}
+    }
+
+    /* ── PANELS ──────────────────────────── */
+    .panel{
+      background:var(--surf);border:1px solid var(--border);
+      border-radius:16px;overflow:hidden;
+      animation:fadeUp .45s ease both;
+    }
+    .panel:nth-child(2){animation-delay:.08s;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+    .panel-head{
+      padding:15px 20px;border-bottom:1px solid var(--border);
+      background:var(--surf2);display:flex;align-items:center;gap:10px;
+    }
+    .ph-icon{
+      width:28px;height:28px;border-radius:7px;
+      display:flex;align-items:center;justify-content:center;font-size:13px;
+    }
+    .ph-icon.cy{background:rgba(34,211,238,.12);}
+    .ph-icon.vi{background:rgba(167,139,250,.12);}
+    .ph-title{font-family:'Outfit',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+    .ph-sub{font-size:.62rem;color:var(--mut);margin-top:1px;}
+
+    .panel-body{padding:18px;}
+
+    /* ── FORM ELEMENTS ───────────────────── */
+    .fl{
+      font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;
+      color:var(--mut);margin-bottom:6px;display:flex;align-items:center;gap:6px;
+    }
+    .fl .tag{
+      background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.2);
+      color:var(--a1);border-radius:4px;padding:1px 7px;font-size:.58rem;
+    }
+    .fl .tag.vi{
+      background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.2);color:var(--a2);
+    }
+
+    select,textarea{
+      width:100%;background:var(--faint);
+      border:1px solid var(--border);border-radius:10px;
+      color:var(--txt);font-family:'JetBrains Mono',monospace;
+      font-size:.76rem;padding:11px 14px;outline:none;
+      transition:border-color .2s;margin-bottom:14px;
+    }
+    select:focus,textarea:focus{border-color:var(--a1);}
+    select option{background:#1a2535;}
+
+    .coding-mode select:focus,
+    .coding-mode textarea:focus{border-color:var(--a2);}
+
+    textarea{resize:vertical;min-height:190px;line-height:1.7;}
+
+    .cc{font-size:.6rem;color:var(--mut);text-align:right;margin-top:-10px;margin-bottom:14px;}
+
+    /* Selectors row */
+    .selrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+    /* Language pills (coding mode) */
+    .lang-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+    .lang-pill{
+      padding:5px 12px;border-radius:20px;font-size:.65rem;cursor:pointer;
+      border:1px solid var(--border2);background:transparent;color:var(--mut);
+      font-family:'JetBrains Mono',monospace;transition:all .15s;
+    }
+    .lang-pill:hover{border-color:var(--a2);color:var(--a2);}
+    .lang-pill.active{background:rgba(167,139,250,.12);border-color:var(--a2);color:var(--a2);}
+
+    /* ── BUTTONS ─────────────────────────── */
+    .btn-main{
+      width:100%;padding:13px;border:none;border-radius:10px;
+      color:#fff;font-family:'Outfit',sans-serif;font-size:.82rem;font-weight:700;
+      letter-spacing:.04em;cursor:pointer;transition:all .2s;
+      display:flex;align-items:center;justify-content:center;gap:8px;
+    }
+    .btn-main.writing-btn{background:linear-gradient(135deg,var(--a1),#0ea5e9);}
+    .btn-main.coding-btn {background:linear-gradient(135deg,var(--a2),#818cf8);}
+    .btn-main:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.4);}
+    .btn-main:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+    .btn-ghost{
+      width:100%;margin-top:9px;padding:9px;
+      background:transparent;border:1px solid var(--border);border-radius:10px;
+      color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:.7rem;
+      cursor:pointer;transition:all .2s;
+    }
+    .btn-ghost:hover{border-color:var(--a1);color:var(--a1);}
+    .btn-ghost.vi:hover{border-color:var(--a2);color:var(--a2);}
+
+    /* ── OUTPUT ──────────────────────────── */
+    .out-body{padding:18px;min-height:400px;}
+
+    .empty-state{
+      display:flex;flex-direction:column;align-items:center;
+      justify-content:center;height:340px;color:var(--mut);
+      text-align:center;gap:12px;
+    }
+    .empty-icon{font-size:2.4rem;opacity:.25;}
+    .empty-state p{font-size:.72rem;line-height:1.8;max-width:240px;}
+
+    /* Loading */
+    .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;height:340px;gap:14px;}
+    .ring{
+      width:44px;height:44px;border-radius:50%;
+      border:2px solid var(--border2);
+      animation:spin .75s linear infinite;
+    }
+    .ring.cy{border-top-color:var(--a1);}
+    .ring.vi{border-top-color:var(--a2);}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    .loading-txt{font-size:.7rem;color:var(--mut);animation:pulse 1.4s ease-in-out infinite;}
+    @keyframes pulse{0%,100%{opacity:.4;}50%{opacity:1;}}
+
+    /* Score grid (writing mode) */
+    .score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px;}
+    @media(max-width:500px){.score-grid{grid-template-columns:repeat(2,1fr);}}
+    .sc-card{
+      background:var(--faint);border:1px solid var(--border);
+      border-radius:10px;padding:12px;text-align:center;transition:border-color .3s;
+    }
+    .sc-val{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;}
+    .sc-dim{font-size:.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+    .sc-bar-w{height:3px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden;}
+    .sc-bar{height:100%;border-radius:2px;transition:width 1s ease;}
+
+    /* Coding: metric pills */
+    .metric-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px;}
+    .metric{
+      padding:10px 16px;border-radius:10px;
+      border:1px solid var(--border);background:var(--faint);
+      text-align:center;flex:1;min-width:100px;
+    }
+    .metric-val{font-family:'Outfit',sans-serif;font-size:1.3rem;font-weight:800;}
+    .metric-lbl{font-size:.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+
+    /* Sections */
+    .sec-label{
+      font-size:.6rem;text-transform:uppercase;letter-spacing:.12em;
+      color:var(--a1);margin-bottom:8px;
+      display:flex;align-items:center;gap:6px;
+    }
+    .sec-label.vi{color:var(--a2);}
+    .sec-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    .sec-txt{font-size:.76rem;line-height:1.85;color:#c4d4e8;margin-bottom:16px;}
+
+    /* highlight lists */
+    .hl-list{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+    .hl-list li{
+      font-size:.72rem;line-height:1.65;padding:9px 12px;
+      border-radius:8px;display:flex;gap:8px;align-items:flex-start;
+    }
+    .li-str{background:rgba(52,211,153,.07);border:1px solid rgba(52,211,153,.2);color:#86efac;}
+    .li-imp{background:rgba(251,191,36,.07);border:1px solid rgba(251,191,36,.2);color:#fde68a;}
+    .li-sug{background:rgba(34,211,238,.07);border:1px solid rgba(34,211,238,.2);color:#a5f3fc;}
+    .li-sug.vi{background:rgba(167,139,250,.07);border-color:rgba(167,139,250,.2);color:#ddd6fe;}
+    .li-err{background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.2);color:#fca5a5;}
+
+    .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+    .d-str{background:var(--a3);}
+    .d-imp{background:var(--warn);}
+    .d-sug{background:var(--a1);}
+    .d-sug.vi{background:var(--a2);}
+    .d-err{background:var(--err);}
+
+    /* Code block */
+    .code-block{
+      background:#0a0f1c;border:1px solid var(--border);
+      border-radius:10px;padding:14px;margin-bottom:16px;
+      overflow-x:auto;
+    }
+    .code-block pre{
+      font-family:'JetBrains Mono',monospace;font-size:.72rem;
+      line-height:1.7;color:#94a3b8;white-space:pre-wrap;
+    }
+    .code-label{font-size:.6rem;color:var(--a2);margin-bottom:6px;letter-spacing:.07em;text-transform:uppercase;}
+
+    /* ── FOOTER MISSION BAR ───────────────── */
+    .mission{
+      position:relative;z-index:5;
+      border-top:1px solid var(--border);background:var(--surf2);
+      padding:18px 40px;
+      display:flex;align-items:center;justify-content:space-between;
+      gap:20px;flex-wrap:wrap;
+    }
+    .mission p{font-size:.68rem;color:var(--mut);max-width:520px;line-height:1.75;}
+    .mission p strong{color:var(--a1);}
+    .mission-right{font-size:.6rem;color:var(--mut);opacity:.55;}
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════ HEADER ══ -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">🌉</div>
+    <div>
+      <div class="logo-name">
+        STEM <span class="cyan">Bridge</span> <span class="violet">AI</span>
+      </div>
+      <div class="logo-sub">CS Tutor · Writing Feedback · For Every Student</div>
+    </div>
+  </div>
+  <div class="badges">
+    <span class="badge ver">v0.3.0</span>
+    <span class="badge open">Open Source</span>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════ HERO ══ -->
+<section class="hero">
+  <div class="hero-label">AI-Powered STEM Education — K-12 &amp; Undergraduate</div>
+  <h1>
+    Expert-level <em>writing feedback</em><br>
+    and <strong>coding tutoring</strong>,<br>
+    free for every student
+  </h1>
+  <p>
+    Two tools in one platform. Personalized STEM writing analysis with 5-dimension scoring.
+    Real-time coding help with grade-calibrated explanations.
+    Designed for rural and underserved students who lack access to specialists.
+  </p>
+  <div class="stats">
+    <div><div class="stat-n">54M+</div><div class="stat-l">Underserved U.S. Students</div></div>
+    <div><div class="stat-n">48</div><div class="stat-l">States with CS Teacher Shortages</div></div>
+    <div><div class="stat-n">5</div><div class="stat-l">Writing Dimensions Scored</div></div>
+    <div><div class="stat-n">K–12</div><div class="stat-l">Full Grade Range</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ MODE SELECTOR ══ -->
+<div class="mode-bar">
+  <button class="mode-btn active-writing" id="btn-writing" onclick="setMode('writing')">
+    <span class="mode-icon">🔬</span>
+    <div>
+      <div style="font-weight:600;color:inherit;">SciWrite AI</div>
+      <div style="font-size:.6rem;opacity:.7;">STEM Writing Feedback</div>
+    </div>
+  </button>
+  <button class="mode-btn" id="btn-coding" onclick="setMode('coding')">
+    <span class="mode-icon">💻</span>
+    <div>
+      <div style="font-weight:600;color:inherit;">CodeBridge AI</div>
+      <div style="font-size:.6rem;opacity:.7;">CS Coding Tutor</div>
+    </div>
+  </button>
+</div>
+
+<!-- ═══════════════════════════════ WORKSPACE ══ -->
+<div class="workspace" id="workspace">
+
+  <!-- ── INPUT PANEL ── -->
+  <div class="panel" id="input-panel">
+    <div class="panel-head">
+      <div class="ph-icon cy" id="ph-icon-in">🔬</div>
+      <div>
+        <div class="ph-title" id="ph-title-in">Student Submission</div>
+        <div class="ph-sub" id="ph-sub-in">Paste STEM writing for analysis</div>
+      </div>
+    </div>
+    <div class="panel-body">
+
+      <!-- ── WRITING MODE ── -->
+      <div id="writing-inputs">
+        <div class="fl">Assignment Type <span class="tag">Required</span></div>
+        <select id="assignType">
+          <option value="lab_report">Lab Report</option>
+          <option value="research_essay">Research Essay</option>
+          <option value="scientific_explanation">Scientific Explanation</option>
+          <option value="hypothesis">Hypothesis Statement</option>
+          <option value="data_analysis">Data Analysis Write-up</option>
+        </select>
+
+        <div class="fl">Grade Level <span class="tag">Required</span></div>
+        <select id="gradeW">
+          <option value="K-2">Elementary K–2</option>
+          <option value="3-5">Elementary 3–5</option>
+          <option value="6-8" selected>Middle School 6–8</option>
+          <option value="9-10">High School 9–10</option>
+          <option value="11-12">High School 11–12</option>
+          <option value="undergrad">Undergraduate</option>
+        </select>
+
+        <div class="fl">Student Writing <span class="tag">Required</span></div>
+        <textarea id="writingText"
+          placeholder="Paste student STEM writing here…&#10;&#10;Example: 'In our experiment, we tested whether temperature affects how fast sugar dissolves. We used three cups at 10°C, 25°C, and 60°C…'"
+          oninput="cc('writingText','wcc')"></textarea>
+        <div class="cc"><span id="wcc">0</span> characters</div>
+
+        <button class="btn-main writing-btn" id="analyzeBtn" onclick="analyzeWriting()">
+          ⚡ Analyze Writing
+        </button>
+        <button class="btn-ghost" onclick="loadWritingSample()">Load sample student text</button>
+      </div>
+
+      <!-- ── CODING MODE ── -->
+      <div id="coding-inputs" style="display:none;">
+        <div class="fl">Grade Level <span class="tag vi">Required</span></div>
+        <select id="gradeC">
+          <option value="K-2">Elementary K–2</option>
+          <option value="3-5">Elementary 3–5</option>
+          <option value="6-8">Middle School 6–8</option>
+          <option value="9-10" selected>High School 9–10</option>
+          <option value="11-12">High School 11–12</option>
+          <option value="undergrad">Undergraduate / AP CS</option>
+        </select>
+
+        <div class="fl">Programming Language <span class="tag vi">Select one</span></div>
+        <div class="lang-pills">
+          <button class="lang-pill active" onclick="setLang(this,'Python')">Python</button>
+          <button class="lang-pill" onclick="setLang(this,'JavaScript')">JavaScript</button>
+          <button class="lang-pill" onclick="setLang(this,'Java')">Java</button>
+          <button class="lang-pill" onclick="setLang(this,'Scratch')">Scratch</button>
+          <button class="lang-pill" onclick="setLang(this,'C++')">C++</button>
+          <button class="lang-pill" onclick="setLang(this,'SQL')">SQL</button>
+        </div>
+
+        <div class="fl">Mode <span class="tag vi">Select one</span></div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;">
+          <button class="lang-pill active" style="flex:1;" onclick="setFeedMode(this,'code_feedback')">Code Feedback</button>
+          <button class="lang-pill" style="flex:1;" onclick="setFeedMode(this,'concept_qa')">Concept Q&amp;A</button>
+          <button class="lang-pill" style="flex:1;" onclick="setFeedMode(this,'debug')">Debug Help</button>
+        </div>
+
+        <div class="fl">Student Code / Question <span class="tag vi">Required</span></div>
+        <textarea id="codingText"
+          placeholder="Paste student code or question here…&#10;&#10;Example: 'Why does my for loop run one extra time? for i in range(5): print(i)'"
+          oninput="cc('codingText','ccc')"></textarea>
+        <div class="cc"><span id="ccc">0</span> characters</div>
+
+        <button class="btn-main coding-btn" id="tuteBtn" onclick="analyzeCoding()">
+          ⚡ Get Coding Help
+        </button>
+        <button class="btn-ghost vi" onclick="loadCodingSample()">Load sample student code</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OUTPUT PANEL ── -->
+  <div class="panel" id="output-panel">
+    <div class="panel-head">
+      <div class="ph-icon cy" id="ph-icon-out">📊</div>
+      <div>
+        <div class="ph-title" id="ph-title-out">AI Feedback Report</div>
+        <div class="ph-sub" id="ph-sub-out">Personalized, standards-aligned analysis</div>
+      </div>
+    </div>
+    <div class="out-body" id="output-body">
+      <div class="empty-state">
+        <div class="empty-icon">🧪</div>
+        <p>Submit student work above to receive detailed, personalized STEM feedback.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════════════════ FOOTER ══ -->
+<div class="mission">
+  <p>
+    <strong>Mission:</strong> STEM Bridge AI addresses two critical gaps in U.S. education — the shortage of qualified CS teachers in 48 states and the absence of expert STEM writing instruction in rural and low-income schools. By providing instant, expert-level feedback powered by large language models, this platform gives every student access to the individualized guidance previously available only to the privileged few.
+  </p>
+  <div class="mission-right">Powered by Claude API · MIT License · Open Source Research</div>
+</div>
+
+<!-- ═══════════════════════════════ SCRIPT ══ -->
+<script>
+  let currentMode    = 'writing';
+  let currentLang    = 'Python';
+  let currentFeed    = 'code_feedback';
+
+  /* ── MODE SWITCH ──────────────────────── */
+  function setMode(m) {
+    currentMode = m;
+    const isW = m === 'writing';
+
+    document.getElementById('btn-writing').className = 'mode-btn' + (isW ? ' active-writing' : '');
+    document.getElementById('btn-coding' ).className = 'mode-btn' + (!isW ? ' active-coding'  : '');
+
+    document.getElementById('writing-inputs').style.display = isW  ? '' : 'none';
+    document.getElementById('coding-inputs' ).style.display = !isW ? '' : 'none';
+
+    const iconIn  = document.getElementById('ph-icon-in');
+    const iconOut = document.getElementById('ph-icon-out');
+
+    if (isW) {
+      iconIn.textContent  = '🔬'; iconIn.className  = 'ph-icon cy';
+      iconOut.textContent = '📊'; iconOut.className = 'ph-icon cy';
+      document.getElementById('ph-title-in').textContent  = 'Student Submission';
+      document.getElementById('ph-sub-in'  ).textContent  = 'Paste STEM writing for analysis';
+      document.getElementById('ph-title-out').textContent = 'AI Feedback Report';
+      document.getElementById('ph-sub-out'  ).textContent = 'Personalized, standards-aligned analysis';
+    } else {
+      iconIn.textContent  = '💻'; iconIn.className  = 'ph-icon vi';
+      iconOut.textContent = '🎓'; iconOut.className = 'ph-icon vi';
+      document.getElementById('ph-title-in').textContent  = 'Student Code / Question';
+      document.getElementById('ph-sub-in'  ).textContent  = 'Paste code or ask a CS concept question';
+      document.getElementById('ph-title-out').textContent = 'AI Tutor Response';
+      document.getElementById('ph-sub-out'  ).textContent = 'Grade-calibrated coding guidance';
+    }
+
+    document.getElementById('output-body').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">${isW ? '🧪' : '💡'}</div>
+        <p>Submit student work above to receive detailed, personalized ${isW ? 'STEM writing' : 'coding'} feedback.</p>
+      </div>`;
+  }
+
+  function setLang(el, lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-pills .lang-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function setFeedMode(el, mode) {
+    currentFeed = mode;
+    el.parentElement.querySelectorAll('.lang-pill').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  /* ── CHAR COUNTER ─────────────────────── */
+  function cc(tid, cid) {
+    document.getElementById(cid).textContent = document.getElementById(tid).value.length;
+  }
+
+  /* ── SAMPLES ──────────────────────────── */
+  function loadWritingSample() {
+    document.getElementById('writingText').value =
+`In our experiment, we wanted to find out if the temperature of water affects how fast sugar dissolves. We put 10 grams of sugar into three cups of water at different temperatures: cold (10°C), room temperature (25°C), and hot (60°C). We stirred each cup the same way and timed how long it took for the sugar to completely disappear.
+
+Our results showed that the hot water dissolved the sugar in 45 seconds, the room temperature water took 2 minutes and 10 seconds, and the cold water took 4 minutes and 30 seconds.
+
+I think this happens because heat makes the water molecules move faster, so they bump into the sugar more and break it apart quicker. This could be important for cooking and making drinks. If I did this again I would test more temperatures to see if there is a pattern.`;
+    cc('writingText','wcc');
+  }
+
+  function loadCodingSample() {
+    document.getElementById('codingText').value =
+`I wrote this loop but it prints one extra number I don't want. Can you explain why and fix it?
+
+for i in range(10):
+    print(i)
+
+I only want it to print 1 through 10 but it prints 0 through 9. Why does range start at 0?`;
+    cc('codingText','ccc');
+  }
+
+  /* ── SHOW LOADING ─────────────────────── */
+  function showLoading(label, colorClass) {
+    document.getElementById('output-body').innerHTML = `
+      <div class="loading">
+        <div class="ring ${colorClass}"></div>
+        <div class="loading-txt">${label}</div>
+      </div>`;
+  }
+
+  /* ── SCORE HELPERS ────────────────────── */
+  function scoreCls(n) {
+    return n>=85?'excellent':n>=70?'good':n>=50?'needswork':'poor';
+  }
+  function scoreColor(n) {
+    return n>=85?'#34d399':n>=70?'#22d3ee':n>=50?'#fbbf24':'#f87171';
+  }
+  function scoreTextCls(n) {
+    return n>=85?'#34d399':n>=70?'#22d3ee':n>=50?'#fbbf24':'#f87171';
+  }
+
+  /* ════════════════════════════════════════
+     WRITING MODE — ANALYZE
+  ════════════════════════════════════════ */
+  async function analyzeWriting() {
+    const text  = document.getElementById('writingText').value.trim();
+    const atype = document.getElementById('assignType').value;
+    const grade = document.getElementById('gradeW').value;
+    if (text.length < 40) { alert('Please enter at least 40 characters of student writing.'); return; }
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true; btn.textContent = 'Analyzing…';
+    showLoading('Analyzing scientific reasoning…', 'cy');
+
+    const sys = `You are an expert STEM writing coach helping rural and low-income U.S. students improve scientific writing. Be encouraging, specific, and actionable.
+
+Return ONLY valid JSON (no markdown, no preamble):
+{
+  "scores": [
+    {"dimension":"Scientific Accuracy","score":<0-100>},
+    {"dimension":"Evidence Use","score":<0-100>},
+    {"dimension":"Clarity","score":<0-100>},
+    {"dimension":"Structure","score":<0-100>},
+    {"dimension":"Reasoning","score":<0-100>}
+  ],
+  "overallSummary":"<2-3 sentence honest, encouraging assessment>",
+  "strengths":["<specific strength 1>","<specific strength 2>","<specific strength 3>"],
+  "improvements":["<specific gap 1>","<specific gap 2>","<specific gap 3>"],
+  "suggestions":["<concrete actionable suggestion 1>","<concrete actionable suggestion 2>","<concrete actionable suggestion 3>"]
+}`;
+
+    try {
+      const res = await callAPI(sys,
+        `Assignment: ${atype.replace(/_/g,' ')}\nGrade level: ${grade}\n\nStudent writing:\n${text}`);
+      const d = JSON.parse(res.replace(/```json|```/g,'').trim());
+      renderWritingFeedback(d);
+    } catch(e) {
+      showError(e.message);
+    }
+    btn.disabled = false; btn.innerHTML = '⚡ Analyze Writing';
+  }
+
+  function renderWritingFeedback(d) {
+    const scoreCards = d.scores.map(s => `
+      <div class="sc-card">
+        <div class="sc-val" style="color:${scoreColor(s.score)}">${s.score}</div>
+        <div class="sc-dim">${s.dimension}</div>
+        <div class="sc-bar-w"><div class="sc-bar" style="width:${s.score}%;background:${scoreColor(s.score)};"></div></div>
+      </div>`).join('');
+
+    const li = (arr, cls, dotCls) =>
+      arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${x}</span></li>`).join('');
+
+    document.getElementById('output-body').innerHTML = `
+      <div class="score-grid">${scoreCards}</div>
+
+      <div class="sec-label">Overall Assessment</div>
+      <div class="sec-txt">${d.overallSummary}</div>
+
+      <div class="sec-label">Strengths</div>
+      <ul class="hl-list">${li(d.strengths,'li-str','d-str')}</ul>
+
+      <div class="sec-label">Areas to Improve</div>
+      <ul class="hl-list">${li(d.improvements,'li-imp','d-imp')}</ul>
+
+      <div class="sec-label">Specific Suggestions</div>
+      <ul class="hl-list">${li(d.suggestions,'li-sug','d-sug')}</ul>
+    `;
+  }
+
+  /* ════════════════════════════════════════
+     CODING MODE — ANALYZE
+  ════════════════════════════════════════ */
+  async function analyzeCoding() {
+    const text  = document.getElementById('codingText').value.trim();
+    const grade = document.getElementById('gradeC').value;
+    if (text.length < 20) { alert('Please enter a question or code snippet.'); return; }
+
+    const btn = document.getElementById('tuteBtn');
+    btn.disabled = true; btn.textContent = 'Thinking…';
+    showLoading('Preparing grade-calibrated explanation…', 'vi');
+
+    const modeLabel = {
+      code_feedback: 'code feedback and improvement suggestions',
+      concept_qa:    'concept explanation in simple terms',
+      debug:         'debugging help and error explanation'
+    }[currentFeed];
+
+    const sys = `You are a patient, encouraging CS tutor for K-12 and undergraduate students in rural and low-income U.S. schools.
+The student is in grade level: ${grade}. Programming language: ${currentLang}. Task: provide ${modeLabel}.
+
+Calibrate your language complexity strictly to the grade level:
+- K-2/3-5: Use simple words, analogies to everyday things, very short sentences.
+- 6-8: Use clear language, introduce terms with brief definitions.
+- 9-10/11-12: Use standard CS terminology with explanations.
+- Undergrad: Use full technical terminology.
+
+Return ONLY valid JSON (no markdown, no preamble):
+{
+  "quality": <0-100 for code quality, or 0 if concept Q&A>,
+  "correctness": <0-100 for logical correctness, or 0 if concept Q&A>,
+  "gradeReadiness": <0-100 estimate of grade-level readiness>,
+  "explanation": "<2-3 sentence clear explanation of the issue or concept, grade-appropriate>",
+  "whatIsGood": ["<specific good thing 1>","<specific good thing 2>"],
+  "issues": ["<specific issue 1>","<specific issue 2>"],
+  "correctedCode": "<corrected/improved code snippet, or empty string if concept Q&A>",
+  "nextStep": ["<concrete learning next step 1>","<concrete learning next step 2>","<concrete learning next step 3>"]
+}`;
+
+    try {
+      const res = await callAPI(sys, text);
+      const d = JSON.parse(res.replace(/```json|```/g,'').trim());
+      renderCodingFeedback(d);
+    } catch(e) {
+      showError(e.message);
+    }
+    btn.disabled = false; btn.innerHTML = '⚡ Get Coding Help';
+  }
+
+  function renderCodingFeedback(d) {
+    const metrics = [
+      d.quality      > 0 ? `<div class="metric"><div class="metric-val" style="color:${scoreColor(d.quality)}">${d.quality}</div><div class="metric-lbl">Code Quality</div></div>` : '',
+      d.correctness  > 0 ? `<div class="metric"><div class="metric-val" style="color:${scoreColor(d.correctness)}">${d.correctness}</div><div class="metric-lbl">Correctness</div></div>` : '',
+      `<div class="metric"><div class="metric-val" style="color:${scoreColor(d.gradeReadiness)}">${d.gradeReadiness}</div><div class="metric-lbl">Grade Readiness</div></div>`
+    ].filter(Boolean).join('');
+
+    const li = (arr,cls,dotCls) =>
+      arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${x}</span></li>`).join('');
+
+    const codeBlock = d.correctedCode ? `
+      <div class="sec-label vi">Corrected / Improved Code</div>
+      <div class="code-block">
+        <div class="code-label">${currentLang}</div>
+        <pre>${escHtml(d.correctedCode)}</pre>
+      </div>` : '';
+
+    document.getElementById('output-body').innerHTML = `
+      <div class="metric-row">${metrics}</div>
+
+      <div class="sec-label vi">Explanation</div>
+      <div class="sec-txt">${d.explanation}</div>
+
+      ${d.whatIsGood?.length ? `<div class="sec-label vi">What's Working</div>
+      <ul class="hl-list">${li(d.whatIsGood,'li-str','d-str')}</ul>` : ''}
+
+      ${d.issues?.length ? `<div class="sec-label vi">Issues Found</div>
+      <ul class="hl-list">${li(d.issues,'li-err','d-err')}</ul>` : ''}
+
+      ${codeBlock}
+
+      <div class="sec-label vi">Next Steps</div>
+      <ul class="hl-list">${li(d.nextStep,'li-sug vi','d-sug vi')}</ul>
+    `;
+  }
+
+  /* ── SHARED API CALL ──────────────────── */
+  async function callAPI(system, userContent) {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system,
+        messages: [{ role: 'user', content: userContent }]
+      })
+    });
+    const data = await r.json();
+    if (!data.content?.[0]?.text) throw new Error(JSON.stringify(data));
+    return data.content[0].text;
+  }
+
+  function showError(msg) {
+    document.getElementById('output-body').innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <p style="color:#f87171;">Analysis failed. Check your API connection.<br><span style="font-size:.6rem;opacity:.7;">${msg}</span></p>
+      </div>`;
+  }
+
+  function escHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+</script>
+</body>
+</html>
