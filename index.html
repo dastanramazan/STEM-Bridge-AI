@@ -741,21 +741,24 @@ Return ONLY valid JSON (no markdown, no preamble):
   }
 
   function renderWritingFeedback(d) {
-    const scoreCards = d.scores.map(s => `
+    const scoreCards = d.scores.map(s => {
+      const score = safeScore(s.score);
+      return `
       <div class="sc-card">
-        <div class="sc-val" style="color:${scoreColor(s.score)}">${s.score}</div>
-        <div class="sc-dim">${s.dimension}</div>
-        <div class="sc-bar-w"><div class="sc-bar" style="width:${s.score}%;background:${scoreColor(s.score)};"></div></div>
-      </div>`).join('');
+        <div class="sc-val" style="color:${scoreColor(score)}">${score}</div>
+        <div class="sc-dim">${escHtml(s.dimension)}</div>
+        <div class="sc-bar-w"><div class="sc-bar" style="width:${score}%;background:${scoreColor(score)};"></div></div>
+      </div>`;
+    }).join('');
 
     const li = (arr, cls, dotCls) =>
-      arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${x}</span></li>`).join('');
+      arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${escHtml(x)}</span></li>`).join('');
 
     document.getElementById('output-body').innerHTML = `
       <div class="score-grid">${scoreCards}</div>
 
       <div class="sec-label">Overall Assessment</div>
-      <div class="sec-txt">${d.overallSummary}</div>
+      <div class="sec-txt">${escHtml(d.overallSummary)}</div>
 
       <div class="sec-label">Strengths</div>
       <ul class="hl-list">${li(d.strengths,'li-str','d-str')}</ul>
@@ -818,19 +821,23 @@ Return ONLY valid JSON (no markdown, no preamble):
   }
 
   function renderCodingFeedback(d) {
+    const quality = safeScore(d.quality);
+    const correctness = safeScore(d.correctness);
+    const gradeReadiness = safeScore(d.gradeReadiness);
+
     const metrics = [
-      d.quality      > 0 ? `<div class="metric"><div class="metric-val" style="color:${scoreColor(d.quality)}">${d.quality}</div><div class="metric-lbl">Code Quality</div></div>` : '',
-      d.correctness  > 0 ? `<div class="metric"><div class="metric-val" style="color:${scoreColor(d.correctness)}">${d.correctness}</div><div class="metric-lbl">Correctness</div></div>` : '',
-      `<div class="metric"><div class="metric-val" style="color:${scoreColor(d.gradeReadiness)}">${d.gradeReadiness}</div><div class="metric-lbl">Grade Readiness</div></div>`
+      quality        > 0 ? `<div class="metric"><div class="metric-val" style="color:${scoreColor(quality)}">${quality}</div><div class="metric-lbl">Code Quality</div></div>` : '',
+      correctness    > 0 ? `<div class="metric"><div class="metric-val" style="color:${scoreColor(correctness)}">${correctness}</div><div class="metric-lbl">Correctness</div></div>` : '',
+      `<div class="metric"><div class="metric-val" style="color:${scoreColor(gradeReadiness)}">${gradeReadiness}</div><div class="metric-lbl">Grade Readiness</div></div>`
     ].filter(Boolean).join('');
 
     const li = (arr,cls,dotCls) =>
-      arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${x}</span></li>`).join('');
+      arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${escHtml(x)}</span></li>`).join('');
 
     const codeBlock = d.correctedCode ? `
       <div class="sec-label vi">Corrected / Improved Code</div>
       <div class="code-block">
-        <div class="code-label">${currentLang}</div>
+        <div class="code-label">${escHtml(currentLang)}</div>
         <pre>${escHtml(d.correctedCode)}</pre>
       </div>` : '';
 
@@ -838,7 +845,7 @@ Return ONLY valid JSON (no markdown, no preamble):
       <div class="metric-row">${metrics}</div>
 
       <div class="sec-label vi">Explanation</div>
-      <div class="sec-txt">${d.explanation}</div>
+      <div class="sec-txt">${escHtml(d.explanation)}</div>
 
       ${d.whatIsGood?.length ? `<div class="sec-label vi">What's Working</div>
       <ul class="hl-list">${li(d.whatIsGood,'li-str','d-str')}</ul>` : ''}
@@ -882,12 +889,19 @@ Return ONLY valid JSON (no markdown, no preamble):
     document.getElementById('output-body').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">⚠️</div>
-        <p style="color:#f87171;">Analysis failed. Check your API connection.<br><span style="font-size:.6rem;opacity:.7;">${msg}</span></p>
+        <p style="color:#f87171;">Analysis failed. Check your API connection.<br><span style="font-size:.6rem;opacity:.7;">${escHtml(msg)}</span></p>
       </div>`;
   }
 
   function escHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function safeScore(n) {
+    n = Number(n);
+    return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 0;
   }
 
   initApiKey();
