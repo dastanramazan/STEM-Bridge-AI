@@ -689,13 +689,7 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
   }
 
   /* ── SCORE HELPERS ────────────────────── */
-  function scoreCls(n) {
-    return n>=85?'excellent':n>=70?'good':n>=50?'needswork':'poor';
-  }
   function scoreColor(n) {
-    return n>=85?'#34d399':n>=70?'#22d3ee':n>=50?'#fbbf24':'#f87171';
-  }
-  function scoreTextCls(n) {
     return n>=85?'#34d399':n>=70?'#22d3ee':n>=50?'#fbbf24':'#f87171';
   }
 
@@ -924,6 +918,23 @@ Return ONLY valid JSON (no markdown, no preamble):
   /* ── SHARED API CALL ──────────────────── */
   const API_TIMEOUT_MS = 30000;
 
+  const FRIENDLY_ERROR_PREFIXES = {
+    authentication_error: 'Your API key is invalid or missing.',
+    permission_error:     "Your API key doesn't have permission for this.",
+    not_found_error:      'The AI model could not be found.',
+    rate_limit_error:     "You've sent too many requests.",
+    overloaded_error:     'The AI service is busy right now.',
+    invalid_request_error:'There was a problem with the request.',
+    api_error:            'The AI service had an internal error.'
+  };
+
+  function friendlyApiError(data) {
+    const type = data?.error?.type;
+    const detail = data?.error?.message;
+    const prefix = FRIENDLY_ERROR_PREFIXES[type] || 'Something went wrong talking to the AI service.';
+    return detail ? `${prefix} ${detail}` : `${prefix} Please try again.`;
+  }
+
   async function callAPI(system, userContent) {
     const apiKey = getApiKey();
     if (!apiKey) throw new Error('Enter your Anthropic API key above before requesting feedback.');
@@ -931,9 +942,9 @@ Return ONLY valid JSON (no markdown, no preamble):
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-    let r;
+    let data;
     try {
-      r = await fetch('https://api.anthropic.com/v1/messages', {
+      const r = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         signal: controller.signal,
         headers: {
@@ -949,17 +960,17 @@ Return ONLY valid JSON (no markdown, no preamble):
           messages: [{ role: 'user', content: userContent }]
         })
       });
+      data = await r.json();
     } catch (e) {
       if (e.name === 'AbortError') {
         throw new Error(`Request timed out after ${API_TIMEOUT_MS / 1000} seconds. Please check your connection and try again.`);
       }
-      throw e;
+      throw new Error('Could not reach the AI service. Please check your internet connection and try again.');
     } finally {
       clearTimeout(timeoutId);
     }
 
-    const data = await r.json();
-    if (!data.content?.[0]?.text) throw new Error(JSON.stringify(data));
+    if (!data.content?.[0]?.text) throw new Error(friendlyApiError(data));
     return data.content[0].text;
   }
 
@@ -967,7 +978,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     document.getElementById('output-body').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">⚠️</div>
-        <p style="color:#f87171;">Analysis failed. Check your API connection.<br><span style="font-size:.6rem;opacity:.7;">${escHtml(msg)}</span></p>
+        <p style="color:#f87171;">${escHtml(msg)}</p>
       </div>`;
   }
 
