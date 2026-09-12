@@ -699,6 +699,54 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     return n>=85?'#34d399':n>=70?'#22d3ee':n>=50?'#fbbf24':'#f87171';
   }
 
+  /* ── RESPONSE PARSING & VALIDATION ────── */
+  function extractJson(raw) {
+    const stripped = raw.replace(/```json|```/g,'').trim();
+    try {
+      return JSON.parse(stripped);
+    } catch (e) {
+      const match = raw.match(/\{[\s\S]*\}/);
+      if (match) {
+        try { return JSON.parse(match[0]); } catch (e2) { /* fall through */ }
+      }
+      throw new Error('Could not understand the AI response — it was not valid JSON. Please try again.');
+    }
+  }
+
+  function validateWritingResponse(d) {
+    if (!d || typeof d !== 'object') throw new Error('AI response was not a valid object.');
+    if (!Array.isArray(d.scores) || d.scores.length === 0) {
+      throw new Error('AI response is missing the score breakdown.');
+    }
+    for (const s of d.scores) {
+      if (!s || typeof s.dimension !== 'string' || typeof s.score !== 'number') {
+        throw new Error('AI response contains an invalid score entry.');
+      }
+    }
+    if (typeof d.overallSummary !== 'string' || !d.overallSummary.trim()) {
+      throw new Error('AI response is missing the overall summary.');
+    }
+    if (!Array.isArray(d.strengths) || !Array.isArray(d.improvements) || !Array.isArray(d.suggestions)) {
+      throw new Error('AI response is missing strengths, improvements, or suggestions.');
+    }
+  }
+
+  function validateCodingResponse(d) {
+    if (!d || typeof d !== 'object') throw new Error('AI response was not a valid object.');
+    if (typeof d.explanation !== 'string' || !d.explanation.trim()) {
+      throw new Error('AI response is missing an explanation.');
+    }
+    if (!Array.isArray(d.nextStep) || d.nextStep.length === 0) {
+      throw new Error('AI response is missing next steps.');
+    }
+    if (d.whatIsGood !== undefined && !Array.isArray(d.whatIsGood)) {
+      throw new Error('AI response has an invalid "whatIsGood" field.');
+    }
+    if (d.issues !== undefined && !Array.isArray(d.issues)) {
+      throw new Error('AI response has an invalid "issues" field.');
+    }
+  }
+
   /* ════════════════════════════════════════
      WRITING MODE — ANALYZE
   ════════════════════════════════════════ */
@@ -732,7 +780,8 @@ Return ONLY valid JSON (no markdown, no preamble):
     try {
       const res = await callAPI(sys,
         `Assignment: ${atype.replace(/_/g,' ')}\nGrade level: ${grade}\n\nStudent writing:\n${text}`);
-      const d = JSON.parse(res.replace(/```json|```/g,'').trim());
+      const d = extractJson(res);
+      validateWritingResponse(d);
       renderWritingFeedback(d);
     } catch(e) {
       showError(e.message);
@@ -812,7 +861,8 @@ Return ONLY valid JSON (no markdown, no preamble):
 
     try {
       const res = await callAPI(sys, text);
-      const d = JSON.parse(res.replace(/```json|```/g,'').trim());
+      const d = extractJson(res);
+      validateCodingResponse(d);
       renderCodingFeedback(d);
     } catch(e) {
       showError(e.message);
