@@ -265,6 +265,14 @@
     .btn-ghost:hover{border-color:var(--a1);color:var(--a1);}
     .btn-ghost.vi:hover{border-color:var(--a2);color:var(--a2);}
 
+    .read-aloud-btn{
+      width:100%;margin-bottom:16px;padding:9px;
+      background:transparent;border:1px solid var(--border);border-radius:10px;
+      color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:.7rem;
+      cursor:pointer;transition:all .2s;
+    }
+    .read-aloud-btn:hover{border-color:var(--a1);color:var(--a1);}
+
     /* ── OUTPUT ──────────────────────────── */
     .out-body{padding:18px;min-height:400px;}
 
@@ -491,13 +499,14 @@
       <div id="coding-inputs" style="display:none;">
         <div class="fl">Grade Level <span class="tag vi">Required</span></div>
         <select id="gradeC">
-          <option value="K-2">Elementary K–2</option>
-          <option value="3-5">Elementary 3–5</option>
           <option value="6-8">Middle School 6–8</option>
           <option value="9-10" selected>High School 9–10</option>
           <option value="11-12">High School 11–12</option>
           <option value="undergrad">Undergraduate / AP CS</option>
         </select>
+        <div class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.6rem;opacity:.7;">
+          K-5 students learn coding with block-based tools like Scratch or CodeMonkey — try SciWrite AI's writing feedback for that age range instead.
+        </div>
 
         <div class="fl">Programming Language <span class="tag vi">Select one</span></div>
         <div class="lang-pills">
@@ -605,6 +614,7 @@
 
   /* ── MODE SWITCH ──────────────────────── */
   function setMode(m) {
+    stopReadAloud();
     currentMode = m;
     const isW = m === 'writing';
 
@@ -748,6 +758,40 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     }
   }
 
+  /* ── READ ALOUD (TEXT-TO-SPEECH) ───────── */
+  const supportsSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
+  let lastSpeechText = '';
+  let lastSpeechSlow = false;
+
+  function setSpeechContent(text, slow) {
+    lastSpeechText = text;
+    lastSpeechSlow = slow;
+  }
+
+  function readAloudButton() {
+    if (!supportsSpeech) return '';
+    return `<button class="read-aloud-btn" onclick="toggleReadAloud(this)">🔊 Read Feedback Aloud</button>`;
+  }
+
+  function toggleReadAloud(btn) {
+    if (!supportsSpeech) return;
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      btn.textContent = '🔊 Read Feedback Aloud';
+      return;
+    }
+    const utter = new SpeechSynthesisUtterance(lastSpeechText);
+    utter.rate = lastSpeechSlow ? 0.85 : 1;
+    utter.onend = () => { btn.textContent = '🔊 Read Feedback Aloud'; };
+    utter.onerror = () => { btn.textContent = '🔊 Read Feedback Aloud'; };
+    window.speechSynthesis.speak(utter);
+    btn.textContent = '⏹ Stop Reading';
+  }
+
+  function stopReadAloud() {
+    if (supportsSpeech) window.speechSynthesis.cancel();
+  }
+
   /* ════════════════════════════════════════
      WRITING MODE — ANALYZE
   ════════════════════════════════════════ */
@@ -757,6 +801,7 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     const grade = document.getElementById('gradeW').value;
     if (text.length < 40) { alert('Please enter at least 40 characters of student writing.'); return; }
 
+    stopReadAloud();
     const btn = document.getElementById('analyzeBtn');
     btn.disabled = true; btn.textContent = 'Analyzing…';
     showLoading('Analyzing scientific reasoning…', 'cy');
@@ -806,7 +851,18 @@ Return ONLY valid JSON (no markdown, no preamble):
     const li = (arr, cls, dotCls) =>
       arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${escHtml(x)}</span></li>`).join('');
 
+    const grade = document.getElementById('gradeW').value;
+    const speechParts = [
+      d.overallSummary,
+      'Strengths.', ...d.strengths,
+      'Areas to improve.', ...d.improvements,
+      'Suggestions.', ...d.suggestions
+    ];
+    setSpeechContent(speechParts.join('. '), grade === 'K-2' || grade === '3-5');
+
     document.getElementById('output-body').innerHTML = `
+      ${readAloudButton()}
+
       <div class="score-grid">${scoreCards}</div>
 
       <div class="sec-label">Overall Assessment</div>
@@ -831,6 +887,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     const grade = document.getElementById('gradeC').value;
     if (text.length < 20) { alert('Please enter a question or code snippet.'); return; }
 
+    stopReadAloud();
     const btn = document.getElementById('tuteBtn');
     btn.disabled = true; btn.textContent = 'Thinking…';
     showLoading('Preparing grade-calibrated explanation…', 'vi');
@@ -841,11 +898,10 @@ Return ONLY valid JSON (no markdown, no preamble):
       debug:         'debugging help and error explanation'
     }[currentFeed];
 
-    const sys = `You are a patient, encouraging CS tutor for K-12 and undergraduate students in rural and low-income U.S. schools.
+    const sys = `You are a patient, encouraging CS tutor for middle school, high school, and undergraduate students in rural and low-income U.S. schools.
 The student is in grade level: ${grade}. Programming language: ${currentLang}. Task: provide ${modeLabel}.
 
 Calibrate your language complexity strictly to the grade level:
-- K-2/3-5: Use simple words, analogies to everyday things, very short sentences.
 - 6-8: Use clear language, introduce terms with brief definitions.
 - 9-10/11-12: Use standard CS terminology with explanations.
 - Undergrad: Use full technical terminology.
@@ -896,7 +952,17 @@ Return ONLY valid JSON (no markdown, no preamble):
         <pre>${escHtml(d.correctedCode)}</pre>
       </div>` : '';
 
+    const speechParts = [
+      d.explanation,
+      ...(d.whatIsGood?.length ? ['What is working.', ...d.whatIsGood] : []),
+      ...(d.issues?.length ? ['Issues found.', ...d.issues] : []),
+      'Next steps.', ...d.nextStep
+    ];
+    setSpeechContent(speechParts.join('. '), false);
+
     document.getElementById('output-body').innerHTML = `
+      ${readAloudButton()}
+
       <div class="metric-row">${metrics}</div>
 
       <div class="sec-label vi">Explanation</div>

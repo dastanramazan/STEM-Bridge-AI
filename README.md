@@ -47,15 +47,17 @@ Delivers instant, personalized feedback on student scientific writing calibrated
 | **Standards alignment** | Next Generation Science Standards (NGSS) |
 
 ### 💻 CodeBridge AI — CS Coding Tutor
-Provides grade-calibrated coding assistance across the full K–12 spectrum with three interaction modes.
+Provides grade-calibrated coding assistance for text-based programming languages, with three interaction modes.
 
 | Feature | Detail |
 |---|---|
 | **Feedback modes** | Code Feedback, Concept Q&A, Debug Help |
 | **Languages** | Python, JavaScript, Java, Scratch, C++, SQL |
-| **Grade calibration** | Strict language complexity matching (K-2 → Undergraduate) |
+| **Grade calibration** | Strict language complexity matching (6-8 → Undergraduate) |
 | **Output** | Quality metrics, explanation, corrected code, learning next steps |
 | **Population focus** | Rural and low-income students without CS specialist access |
+
+K-5 students are better served by block-based tools (Scratch, CodeMonkey) and are directed to SciWrite AI instead, which covers the full K-12 range.
 
 ---
 
