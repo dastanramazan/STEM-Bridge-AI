@@ -911,25 +911,42 @@ Return ONLY valid JSON (no markdown, no preamble):
   }
 
   /* ── SHARED API CALL ──────────────────── */
+  const API_TIMEOUT_MS = 30000;
+
   async function callAPI(system, userContent) {
     const apiKey = getApiKey();
     if (!apiKey) throw new Error('Enter your Anthropic API key above before requesting feedback.');
 
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system,
-        messages: [{ role: 'user', content: userContent }]
-      })
-    });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+
+    let r;
+    try {
+      r = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system,
+          messages: [{ role: 'user', content: userContent }]
+        })
+      });
+    } catch (e) {
+      if (e.name === 'AbortError') {
+        throw new Error(`Request timed out after ${API_TIMEOUT_MS / 1000} seconds. Please check your connection and try again.`);
+      }
+      throw e;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+
     const data = await r.json();
     if (!data.content?.[0]?.text) throw new Error(JSON.stringify(data));
     return data.content[0].text;
