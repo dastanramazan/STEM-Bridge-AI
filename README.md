@@ -104,7 +104,7 @@ You will need an [Anthropic API key](https://console.anthropic.com) to power the
 ```bash
 # 1. Fork this repository
 # 2. Settings → Pages → Deploy from branch: main → / (root)
-# 3. Live at: https://your-username.github.io/stem-bridge-ai
+# 3. Live at: https://dastanramazan.github.io/STEM-Bridge-AI
 ```
 
 **Why single-file / zero-dependency?** Rural and Title I schools frequently operate restricted IT environments where npm, build tools, or CDN access may be blocked. This application opens directly as an HTML file in any browser with no installation required.
