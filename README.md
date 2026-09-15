@@ -99,7 +99,11 @@ cd STEM-Bridge-AI
 open index.html   # or: python3 -m http.server 8080
 ```
 
-You will need an [Anthropic API key](https://console.anthropic.com) to power the AI responses.
+You will need an API key to power the AI responses — choose either:
+- **[Anthropic API key](https://console.anthropic.com)** (Claude), or
+- **[Google AI Studio key](https://aistudio.google.com/apikey)** (Gemini) — free, no credit card required
+
+Pick your provider with the pills next to the key field in the app.
 
 ### Option C: Deploy to GitHub Pages
 
