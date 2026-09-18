@@ -378,7 +378,58 @@
     }
     .mission p{font-size:.68rem;color:var(--mut);max-width:520px;line-height:1.75;}
     .mission p strong{color:var(--a1);}
-    .mission-right{font-size:.6rem;color:var(--mut);opacity:.55;}
+    .mission-right{font-size:.6rem;color:var(--mut);opacity:.55;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+
+    /* ── DASHBOARD BUTTON & MODAL ─────────── */
+    .dashboard-btn{
+      background:transparent;border:1px solid var(--border2);border-radius:6px;
+      color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:.6rem;
+      padding:4px 10px;cursor:pointer;transition:all .2s;
+    }
+    .dashboard-btn:hover{border-color:var(--a1);color:var(--a1);}
+
+    .dash-overlay{
+      position:fixed;inset:0;z-index:100;
+      background:rgba(5,8,15,.85);backdrop-filter:blur(4px);
+      padding:20px;
+    }
+    .dash-overlay:not([hidden]){
+      display:flex;align-items:center;justify-content:center;
+    }
+    .dash-modal{
+      width:100%;max-width:640px;max-height:85vh;overflow-y:auto;
+      background:var(--surf);border:1px solid var(--border);border-radius:16px;
+    }
+    .dash-head{
+      padding:16px 20px;border-bottom:1px solid var(--border);
+      background:var(--surf2);display:flex;align-items:center;justify-content:space-between;
+      font-family:'Outfit',sans-serif;font-weight:700;font-size:.85rem;
+      position:sticky;top:0;
+    }
+    .dash-close{
+      background:transparent;border:none;color:var(--mut);font-size:1rem;
+      cursor:pointer;padding:0 4px;
+    }
+    .dash-close:hover{color:var(--txt);}
+    .dash-body{padding:20px;}
+    .dash-body input[type="password"]{
+      width:100%;background:var(--faint);border:1px solid var(--border);
+      border-radius:8px;color:var(--txt);font-family:'JetBrains Mono',monospace;
+      font-size:.76rem;padding:10px 12px;outline:none;margin-bottom:10px;
+    }
+    .dash-body input[type="password"]:focus{border-color:var(--a1);}
+    .dash-stats-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+    .dash-stat{
+      flex:1;min-width:110px;padding:12px;text-align:center;
+      background:var(--faint);border:1px solid var(--border);border-radius:10px;
+    }
+    .dash-stat-val{font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:800;color:var(--a1);}
+    .dash-stat-lbl{font-size:.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+    .dash-table{width:100%;border-collapse:collapse;font-size:.72rem;}
+    .dash-table th,.dash-table td{
+      text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);
+    }
+    .dash-table th{color:var(--mut);font-size:.6rem;text-transform:uppercase;letter-spacing:.06em;}
   </style>
 </head>
 <body>
@@ -399,6 +450,21 @@
     <span class="badge open">Open Source</span>
   </div>
 </header>
+
+<!-- ═══════════════════════════════ STUDENT NAME BAR ══ -->
+<div class="apikey-bar">
+  <div class="apikey-inner">
+    <span class="apikey-icon">🧑‍🎓</span>
+    <input type="text" id="studentNameInput" placeholder="Your name"
+      autocomplete="off" aria-label="Your name"
+      onkeydown="if(event.key==='Enter')saveStudentName()" />
+    <button class="apikey-btn" type="button" onclick="saveStudentName()">Save</button>
+    <span class="apikey-status" id="studentNameStatus"></span>
+  </div>
+  <div class="apikey-note">
+    Enter your name so your teacher can see that you've used the app. <a href="#" onclick="event.preventDefault(); resetStudentName();">Not you? Click here.</a>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════ API KEY BAR ══ -->
 <div class="apikey-bar">
@@ -571,7 +637,21 @@
   <p>
     <strong>Mission:</strong> STEM Bridge AI addresses two critical gaps in U.S. education — the shortage of qualified CS teachers in 48 states and the absence of expert STEM writing instruction in rural and low-income schools. By providing instant, expert-level feedback powered by large language models, this platform gives every student access to the individualized guidance previously available only to the privileged few.
   </p>
-  <div class="mission-right">Powered by Claude API · MIT License · Open Source Research</div>
+  <div class="mission-right">
+    Powered by Claude API · MIT License · Open Source Research
+    <button class="dashboard-btn" onclick="openDashboard()">📊 Teacher Dashboard</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ TEACHER DASHBOARD MODAL ══ -->
+<div class="dash-overlay" id="dashOverlay" hidden>
+  <div class="dash-modal">
+    <div class="dash-head">
+      <span>📊 Teacher Dashboard</span>
+      <button class="dash-close" onclick="closeDashboard()">✕</button>
+    </div>
+    <div class="dash-body" id="dashBody"></div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════ SCRIPT ══ -->
@@ -618,6 +698,127 @@
 
   function getApiKey() {
     return sessionStorage.getItem(API_KEY_STORAGE) || document.getElementById('apiKeyInput').value.trim();
+  }
+
+  /* ── STUDENT NAME ──────────────────────── */
+  const STUDENT_NAME_STORAGE = 'stemBridgeStudentName';
+
+  function initStudentName() {
+    const saved = localStorage.getItem(STUDENT_NAME_STORAGE);
+    if (saved) {
+      document.getElementById('studentNameInput').value = saved;
+      setStudentNameStatus(true);
+    }
+  }
+
+  function saveStudentName() {
+    const val = document.getElementById('studentNameInput').value.trim();
+    if (!val) {
+      localStorage.removeItem(STUDENT_NAME_STORAGE);
+      setStudentNameStatus(false);
+      return;
+    }
+    localStorage.setItem(STUDENT_NAME_STORAGE, val);
+    setStudentNameStatus(true);
+  }
+
+  function resetStudentName() {
+    localStorage.removeItem(STUDENT_NAME_STORAGE);
+    document.getElementById('studentNameInput').value = '';
+    document.getElementById('studentNameInput').focus();
+    setStudentNameStatus(false);
+  }
+
+  function setStudentNameStatus(saved) {
+    const el = document.getElementById('studentNameStatus');
+    el.textContent = saved ? '✓ Saved' : '';
+    el.style.color = saved ? 'var(--a3)' : 'var(--mut)';
+  }
+
+  function getStudentName() {
+    return localStorage.getItem(STUDENT_NAME_STORAGE) || document.getElementById('studentNameInput').value.trim();
+  }
+
+  /* ── USAGE LOGGING (optional — see TEACHER_SETUP.md) ─── */
+  const LOG_ENDPOINT = ''; // paste your Google Apps Script Web App URL here to enable tracking
+
+  function logUsage(payload) {
+    if (!LOG_ENDPOINT) return;
+    fetch(LOG_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
+      body: JSON.stringify(payload)
+    }).catch(() => { /* logging is best-effort; never interrupt the student's feedback */ });
+  }
+
+  /* ── TEACHER DASHBOARD ─────────────────── */
+  function openDashboard() {
+    document.getElementById('dashOverlay').hidden = false;
+    renderDashboardPinPrompt();
+  }
+
+  function closeDashboard() {
+    document.getElementById('dashOverlay').hidden = true;
+  }
+
+  function renderDashboardPinPrompt(errorMsg) {
+    if (!LOG_ENDPOINT) {
+      document.getElementById('dashBody').innerHTML =
+        `<p style="font-size:.76rem;line-height:1.7;color:var(--mut);">Usage tracking isn't set up yet. See <strong>TEACHER_SETUP.md</strong> in the project files for a 10-minute one-time setup.</p>`;
+      return;
+    }
+    document.getElementById('dashBody').innerHTML = `
+      <input type="password" id="dashPin" placeholder="Enter your PIN" onkeydown="if(event.key==='Enter')loadDashboard()" />
+      <button class="btn-main writing-btn" onclick="loadDashboard()" style="margin-bottom:8px;">View Stats</button>
+      ${errorMsg ? `<div style="color:#f87171;font-size:.7rem;">${escHtml(errorMsg)}</div>` : ''}
+    `;
+    document.getElementById('dashPin')?.focus();
+  }
+
+  async function loadDashboard() {
+    const pin = document.getElementById('dashPin').value.trim();
+    document.getElementById('dashBody').innerHTML = `<p style="font-size:.76rem;color:var(--mut);">Loading…</p>`;
+    try {
+      const r = await fetch(`${LOG_ENDPOINT}?pin=${encodeURIComponent(pin)}`);
+      const data = await r.json();
+      if (data.error) { renderDashboardPinPrompt('Incorrect PIN.'); return; }
+      renderDashboardStats(data.entries || []);
+    } catch (e) {
+      renderDashboardPinPrompt('Could not load stats. Check your connection and try again.');
+    }
+  }
+
+  function renderDashboardStats(entries) {
+    const students = {};
+    let writingCount = 0, codingCount = 0;
+    entries.forEach(e => {
+      const key = (e.name || 'Unknown').trim() || 'Unknown';
+      if (!students[key]) students[key] = { count: 0, scores: [] };
+      students[key].count++;
+      (e.scores || []).forEach(s => { if (s !== '' && s != null && !isNaN(s)) students[key].scores.push(Number(s)); });
+      if (e.tool === 'writing') writingCount++;
+      else if (e.tool === 'coding') codingCount++;
+    });
+
+    const studentNames = Object.keys(students).sort();
+    const rows = studentNames.map(name => {
+      const s = students[name];
+      const avg = s.scores.length ? Math.round(s.scores.reduce((a,b)=>a+b,0) / s.scores.length) : '—';
+      return `<tr><td>${escHtml(name)}</td><td>${s.count}</td><td>${avg}</td></tr>`;
+    }).join('');
+
+    document.getElementById('dashBody').innerHTML = `
+      <div class="dash-stats-row">
+        <div class="dash-stat"><div class="dash-stat-val">${entries.length}</div><div class="dash-stat-lbl">Total Uses</div></div>
+        <div class="dash-stat"><div class="dash-stat-val">${studentNames.length}</div><div class="dash-stat-lbl">Unique Students</div></div>
+        <div class="dash-stat"><div class="dash-stat-val">${writingCount}</div><div class="dash-stat-lbl">Writing</div></div>
+        <div class="dash-stat"><div class="dash-stat-val">${codingCount}</div><div class="dash-stat-lbl">Coding</div></div>
+      </div>
+      <table class="dash-table">
+        <thead><tr><th>Student</th><th>Uses</th><th>Avg Score</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="3">No usage recorded yet.</td></tr>'}</tbody>
+      </table>
+    `;
   }
 
   /* ── MODE SWITCH ──────────────────────── */
@@ -814,6 +1015,8 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     const atype = document.getElementById('assignType').value;
     const grade = document.getElementById('gradeW').value;
     if (text.length < 40) { alert('Please enter at least 40 characters of student writing.'); return; }
+    const studentName = getStudentName();
+    if (!studentName) { alert('Please enter your name in the box near the top of the page before requesting feedback.'); return; }
 
     stopReadAloud();
     const btn = document.getElementById('analyzeBtn');
@@ -845,6 +1048,7 @@ Return ONLY valid JSON (no markdown, no preamble):
       const d = extractJson(res);
       validateWritingResponse(d);
       renderWritingFeedback(d);
+      logUsage({ name: studentName, tool: 'writing', detail: atype.replace(/_/g,' '), grade, scores: d.scores.map(s => safeScore(s.score)) });
     } catch(e) {
       showError(e.message);
     }
@@ -900,6 +1104,8 @@ Return ONLY valid JSON (no markdown, no preamble):
     const text  = document.getElementById('codingText').value.trim();
     const grade = document.getElementById('gradeC').value;
     if (text.length < 20) { alert('Please enter a question or code snippet.'); return; }
+    const studentName = getStudentName();
+    if (!studentName) { alert('Please enter your name in the box near the top of the page before requesting feedback.'); return; }
 
     stopReadAloud();
     const btn = document.getElementById('tuteBtn');
@@ -941,6 +1147,10 @@ Return ONLY valid JSON (no markdown, no preamble):
       const d = extractJson(res);
       validateCodingResponse(d);
       renderCodingFeedback(d);
+      logUsage({
+        name: studentName, tool: 'coding', detail: `${currentLang} – ${currentFeed}`, grade,
+        scores: [safeScore(d.quality), safeScore(d.correctness), safeScore(d.gradeReadiness)].filter(s => s > 0)
+      });
     } catch(e) {
       showError(e.message);
     }
@@ -1079,6 +1289,7 @@ Return ONLY valid JSON (no markdown, no preamble):
   }
 
   initApiKey();
+  initStudentName();
 </script>
 </body>
 </html>

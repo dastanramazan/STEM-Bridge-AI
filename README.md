@@ -111,6 +111,14 @@ You will need an [Anthropic API key](https://console.anthropic.com) to power the
 
 **Why single-file / zero-dependency?** Rural and Title I schools frequently operate restricted IT environments where npm, build tools, or CDN access may be blocked. This application opens directly as an HTML file in any browser with no installation required.
 
+### Option D: Track Student Usage (Optional)
+
+Want to see which students are using the app and how they're doing? See
+[**TEACHER_SETUP.md**](TEACHER_SETUP.md) for a 10-minute, no-coding setup
+that connects a private Google Sheet and unlocks a PIN-protected
+**📊 Teacher Dashboard** inside the app — no student writing or code is ever
+logged, only names, timestamps, and scores.
+
 ---
 
 ## 🔬 Research Context & National Importance
@@ -146,11 +154,14 @@ This project is part of ongoing research into **AI-assisted STEM education equit
 
 ```
 STEM-Bridge-AI/
-├── index.html    # Unified application (single-file, zero-dependency)
-├── README.md     # This file
-├── LICENSE       # MIT License
-├── CHANGELOG.md  # Version history and development milestones
-└── research.md   # Research background, citations, national importance
+├── index.html              # Unified application (single-file, zero-dependency)
+├── README.md               # This file
+├── TEACHER_SETUP.md        # Optional usage-tracking dashboard setup guide
+├── google-apps-script/
+│   └── Code.gs             # Backend script for the usage-tracking dashboard
+├── LICENSE                 # MIT License
+├── CHANGELOG.md            # Version history and development milestones
+└── research.md             # Research background, citations, national importance
 ```
 
 ---
