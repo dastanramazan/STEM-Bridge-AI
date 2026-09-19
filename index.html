@@ -408,7 +408,7 @@
       display:flex;align-items:center;justify-content:center;
     }
     .dash-modal{
-      width:100%;max-width:640px;max-height:85vh;overflow-y:auto;
+      width:100%;max-width:780px;max-height:85vh;overflow-y:auto;
       background:var(--surf);border:1px solid var(--border);border-radius:16px;
     }
     .dash-head{
@@ -839,18 +839,37 @@
     let writingCount = 0, codingCount = 0;
     entries.forEach(e => {
       const key = (e.name || 'Unknown').trim() || 'Unknown';
-      if (!students[key]) students[key] = { count: 0, scores: [] };
+      if (!students[key]) students[key] = { count: 0, scores: [], entries: [] };
       students[key].count++;
+      students[key].entries.push(e);
       (e.scores || []).forEach(s => { if (s !== '' && s != null && !isNaN(s)) students[key].scores.push(Number(s)); });
       if (e.tool === 'writing') writingCount++;
       else if (e.tool === 'coding') codingCount++;
     });
 
     const studentNames = Object.keys(students).sort();
-    const rows = studentNames.map(name => {
+    const summaryRows = studentNames.map(name => {
       const s = students[name];
       const avg = s.scores.length ? Math.round(s.scores.reduce((a,b)=>a+b,0) / s.scores.length) : '—';
       return `<tr><td>${escHtml(name)}</td><td>${s.count}</td><td>${avg}</td></tr>`;
+    }).join('');
+
+    const formatDate = (ts) => {
+      const d = new Date(ts);
+      return isNaN(d.getTime()) ? escHtml(String(ts)) : d.toLocaleString();
+    };
+
+    const detailRows = studentNames.map(name => {
+      const sorted = [...students[name].entries].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+      return sorted.map(e => `
+        <tr>
+          <td>${escHtml(name)}</td>
+          <td>${formatDate(e.timestamp)}</td>
+          <td>${escHtml(e.tool || '')}</td>
+          <td>${escHtml(e.detail || '')}</td>
+          <td>${escHtml(e.grade || '')}</td>
+          <td>${(e.scores || []).map(s => escHtml(s)).join(', ') || '—'}</td>
+        </tr>`).join('');
     }).join('');
 
     document.getElementById('dashBody').innerHTML = `
@@ -860,10 +879,17 @@
         <div class="dash-stat"><div class="dash-stat-val">${writingCount}</div><div class="dash-stat-lbl">Writing</div></div>
         <div class="dash-stat"><div class="dash-stat-val">${codingCount}</div><div class="dash-stat-lbl">Coding</div></div>
       </div>
-      <table class="dash-table">
+      <table class="dash-table" style="margin-bottom:20px;">
         <thead><tr><th>Student</th><th>Uses</th><th>Avg Score</th></tr></thead>
-        <tbody>${rows || '<tr><td colspan="3">No usage recorded yet.</td></tr>'}</tbody>
+        <tbody>${summaryRows || '<tr><td colspan="3">No usage recorded yet.</td></tr>'}</tbody>
       </table>
+      <div class="sec-label">Individual Results</div>
+      <div style="overflow-x:auto;">
+        <table class="dash-table">
+          <thead><tr><th>Student</th><th>Date</th><th>Tool</th><th>Detail</th><th>Grade</th><th>Scores</th></tr></thead>
+          <tbody>${detailRows || '<tr><td colspan="6">No usage recorded yet.</td></tr>'}</tbody>
+        </table>
+      </div>
     `;
   }
 
