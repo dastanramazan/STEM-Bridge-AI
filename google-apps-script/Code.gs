@@ -80,5 +80,9 @@ function getLogSheet_() {
     sheet = ss.insertSheet(SHEET_NAME);
     sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5']);
   }
+  // Force the text columns to plain text. Without this, Sheets' automatic
+  // formatting silently reinterprets values like "6-8" or "9-10" as dates
+  // (e.g. "September 10"), corrupting the grade level on every write.
+  sheet.getRange('B:E').setNumberFormat('@');
   return sheet;
 }
