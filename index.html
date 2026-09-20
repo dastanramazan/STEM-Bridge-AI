@@ -292,6 +292,22 @@
     }
     .reveal-code-btn:hover{border-color:var(--a2);background:rgba(167,139,250,.08);}
 
+    .progress-panel{
+      background:rgba(52,211,153,.05);border:1px solid rgba(52,211,153,.25);
+      border-radius:10px;padding:14px 16px;margin-bottom:18px;
+    }
+    .progress-panel-title{
+      font-size:.62rem;text-transform:uppercase;letter-spacing:.1em;color:var(--a3);
+      margin-bottom:10px;font-weight:700;
+    }
+    .progress-list{list-style:none;display:flex;flex-direction:column;gap:7px;}
+    .progress-list li{
+      display:flex;justify-content:space-between;align-items:center;gap:10px;
+      font-size:.74rem;color:var(--txt);
+    }
+    .progress-delta{font-family:'Outfit',sans-serif;font-weight:700;}
+    .progress-summary{margin-top:10px;font-size:.72rem;color:var(--mut);line-height:1.6;}
+
     /* ── OUTPUT ──────────────────────────── */
     .out-body{padding:18px;min-height:400px;}
 
@@ -671,6 +687,24 @@
   let currentLang    = 'Python';
   let currentFeed    = 'code_feedback';
 
+  /* ── SAFE STORAGE (private browsing / blocked storage can throw
+     just by referencing localStorage/sessionStorage, not only on
+     method calls - never let that crash a feature). `kind` is a
+     string, not the storage object itself, so the identifier lookup
+     happens inside the try block where it can actually be caught. ── */
+  function safeGet(kind, key) {
+    try { return (kind === 'session' ? sessionStorage : localStorage).getItem(key); }
+    catch (e) { return null; }
+  }
+  function safeSet(kind, key, val) {
+    try { (kind === 'session' ? sessionStorage : localStorage).setItem(key, val); }
+    catch (e) { /* ignore */ }
+  }
+  function safeRemove(kind, key) {
+    try { (kind === 'session' ? sessionStorage : localStorage).removeItem(key); }
+    catch (e) { /* ignore */ }
+  }
+
   /* ── API KEY & PROVIDER ────────────────── */
   let currentProvider = 'anthropic';
 
@@ -707,7 +741,7 @@
     document.getElementById('apiKeyNote').innerHTML =
       `${cfg.note} <a href="${cfg.keyLink}" target="_blank" rel="noopener noreferrer">${cfg.keyLinkText}</a>`;
 
-    const saved = sessionStorage.getItem(providerKeyStorageName(provider));
+    const saved = safeGet('session', providerKeyStorageName(provider));
     input.value = saved || '';
     setApiKeyStatus(!!saved);
   }
@@ -720,11 +754,11 @@
     const val = document.getElementById('apiKeyInput').value.trim();
     const storageKey = providerKeyStorageName(currentProvider);
     if (!val) {
-      sessionStorage.removeItem(storageKey);
+      safeRemove('session', storageKey);
       setApiKeyStatus(false);
       return;
     }
-    sessionStorage.setItem(storageKey, val);
+    safeSet('session', storageKey, val);
     setApiKeyStatus(true);
   }
 
@@ -743,14 +777,14 @@
   }
 
   function getApiKey() {
-    return sessionStorage.getItem(providerKeyStorageName(currentProvider)) || document.getElementById('apiKeyInput').value.trim();
+    return safeGet('session', providerKeyStorageName(currentProvider)) || document.getElementById('apiKeyInput').value.trim();
   }
 
   /* ── STUDENT NAME ──────────────────────── */
   const STUDENT_NAME_STORAGE = 'stemBridgeStudentName';
 
   function initStudentName() {
-    const saved = localStorage.getItem(STUDENT_NAME_STORAGE);
+    const saved = safeGet('local', STUDENT_NAME_STORAGE);
     if (saved) {
       document.getElementById('studentNameInput').value = saved;
       setStudentNameStatus(true);
@@ -760,16 +794,16 @@
   function saveStudentName() {
     const val = document.getElementById('studentNameInput').value.trim();
     if (!val) {
-      localStorage.removeItem(STUDENT_NAME_STORAGE);
+      safeRemove('local', STUDENT_NAME_STORAGE);
       setStudentNameStatus(false);
       return;
     }
-    localStorage.setItem(STUDENT_NAME_STORAGE, val);
+    safeSet('local', STUDENT_NAME_STORAGE, val);
     setStudentNameStatus(true);
   }
 
   function resetStudentName() {
-    localStorage.removeItem(STUDENT_NAME_STORAGE);
+    safeRemove('local', STUDENT_NAME_STORAGE);
     document.getElementById('studentNameInput').value = '';
     document.getElementById('studentNameInput').focus();
     setStudentNameStatus(false);
@@ -782,7 +816,7 @@
   }
 
   function getStudentName() {
-    return localStorage.getItem(STUDENT_NAME_STORAGE) || document.getElementById('studentNameInput').value.trim();
+    return safeGet('local', STUDENT_NAME_STORAGE) || document.getElementById('studentNameInput').value.trim();
   }
 
   /* ── USAGE LOGGING (optional — see TEACHER_SETUP.md) ─── */
@@ -1079,6 +1113,57 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     btn.nextElementSibling.hidden = false;
   }
 
+  /* ── REVISION COMPARISON ───────────────── */
+  function prevAttemptKey(tool, matchDetail) {
+    const name = (getStudentName() || 'unknown').trim().toLowerCase();
+    return `stemBridgePrevAttempt::${tool}::${name}::${matchDetail}`;
+  }
+
+  function getPrevAttempt(tool, matchDetail) {
+    const raw = safeGet('local', prevAttemptKey(tool, matchDetail));
+    if (!raw) return null;
+    try { return JSON.parse(raw); } catch (e) { return null; }
+  }
+
+  function savePrevAttempt(tool, matchDetail, scores) {
+    safeSet('local', prevAttemptKey(tool, matchDetail), JSON.stringify({ scores }));
+  }
+
+  function buildComparisonRows(prevScores, currentScores) {
+    const rows = [];
+    currentScores.forEach(cur => {
+      const prev = prevScores.find(p => p.label === cur.label);
+      if (!prev) return;
+      rows.push({ label: cur.label, prevScore: prev.score, currScore: cur.score, delta: cur.score - prev.score });
+    });
+    return rows;
+  }
+
+  function renderProgressPanel(rows) {
+    if (!rows.length) return '';
+    const improved = rows.filter(r => r.delta > 0).length;
+    const declined = rows.filter(r => r.delta < 0).length;
+
+    const items = rows.map(r => {
+      const color = r.delta > 0 ? '#34d399' : r.delta < 0 ? '#f87171' : 'var(--mut)';
+      const arrow = r.delta > 0 ? '▲' : r.delta < 0 ? '▼' : '‒';
+      const sign = r.delta > 0 ? '+' : '';
+      return `<li><span>${escHtml(r.label)}</span><span>${r.prevScore} → ${r.currScore} <span class="progress-delta" style="color:${color}">${arrow} ${sign}${r.delta}</span></span></li>`;
+    }).join('');
+
+    let summary;
+    if (improved > declined) summary = `You improved in ${improved} of ${rows.length} area${rows.length === 1 ? '' : 's'} since your last attempt! 🎉`;
+    else if (declined > improved) summary = `${declined} of ${rows.length} area${rows.length === 1 ? '' : 's'} went down compared to your last attempt — that can happen with a harder attempt or a different focus.`;
+    else summary = `Your scores are about the same as your last attempt.`;
+
+    return `
+      <div class="progress-panel">
+        <div class="progress-panel-title">📈 Progress Since Last Attempt</div>
+        <ul class="progress-list">${items}</ul>
+        <div class="progress-summary">${escHtml(summary)}</div>
+      </div>`;
+  }
+
   /* ════════════════════════════════════════
      WRITING MODE — ANALYZE
   ════════════════════════════════════════ */
@@ -1142,6 +1227,7 @@ Return ONLY valid JSON (no markdown, no preamble):
       arr.map(x=>`<li class="${cls}"><div class="dot ${dotCls}"></div><span>${escHtml(x)}</span></li>`).join('');
 
     const grade = document.getElementById('gradeW').value;
+    const atype = document.getElementById('assignType').value;
     const speechParts = [
       d.overallSummary,
       'Strengths.', ...d.strengths,
@@ -1150,8 +1236,14 @@ Return ONLY valid JSON (no markdown, no preamble):
     ];
     setSpeechContent(speechParts.join('. '), grade === 'K-2' || grade === '3-5');
 
+    const currentScoreList = d.scores.map(s => ({ label: s.dimension, score: safeScore(s.score) }));
+    const prevAttempt = getPrevAttempt('writing', `${atype}::${grade}`);
+    const progressHtml = prevAttempt ? renderProgressPanel(buildComparisonRows(prevAttempt.scores, currentScoreList)) : '';
+    savePrevAttempt('writing', `${atype}::${grade}`, currentScoreList);
+
     document.getElementById('output-body').innerHTML = `
       ${readAloudButton()}
+      ${progressHtml}
 
       <div class="score-grid">${scoreCards}</div>
 
@@ -1261,8 +1353,20 @@ Return ONLY valid JSON (no markdown, no preamble):
     ];
     setSpeechContent(speechParts.join('. '), false);
 
+    const grade = document.getElementById('gradeC').value;
+    const matchDetail = `${currentLang}::${currentFeed}::${grade}`;
+    const currentScoreList = [
+      quality > 0 ? { label: 'Code Quality', score: quality } : null,
+      correctness > 0 ? { label: 'Correctness', score: correctness } : null,
+      { label: 'Grade Readiness', score: gradeReadiness }
+    ].filter(Boolean);
+    const prevAttempt = getPrevAttempt('coding', matchDetail);
+    const progressHtml = prevAttempt ? renderProgressPanel(buildComparisonRows(prevAttempt.scores, currentScoreList)) : '';
+    savePrevAttempt('coding', matchDetail, currentScoreList);
+
     document.getElementById('output-body').innerHTML = `
       ${readAloudButton()}
+      ${progressHtml}
 
       <div class="metric-row">${metrics}</div>
 
