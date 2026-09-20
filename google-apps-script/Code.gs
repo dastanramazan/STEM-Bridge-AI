@@ -56,10 +56,9 @@ function doGet(e) {
 
   const sheet = getLogSheet_();
   const rows = sheet.getDataRange().getValues();
-  rows.shift(); // drop header row
 
   const entries = rows
-    .filter(r => r[0]) // skip blank rows
+    .filter(r => r[0] && r[0] !== 'Timestamp') // skip blank rows and the header row, wherever it is
     .map(r => ({
       timestamp: r[0],
       name: r[1],
@@ -78,6 +77,12 @@ function getLogSheet_() {
   let sheet = ss.getSheetByName(SHEET_NAME);
   if (!sheet) {
     sheet = ss.insertSheet(SHEET_NAME);
+  }
+  // Re-add the header row if it's missing, e.g. after someone manually
+  // clears rows in the sheet. doGet() identifies the header by its
+  // literal "Timestamp" value rather than assuming it's always row 1,
+  // so this only guards readability, not correctness.
+  if (sheet.getLastRow() === 0) {
     sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5']);
   }
   // Force the text columns to plain text. Without this, Sheets' automatic
