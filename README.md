@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.3.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.4.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**
@@ -40,10 +40,11 @@ Delivers instant, personalized feedback on student scientific writing calibrated
 
 | Feature | Detail |
 |---|---|
-| **5-dimension scoring** | Scientific Accuracy, Evidence Use, Clarity, Structure, Reasoning |
+| **Scoring** | 5 dimensions (Scientific Accuracy, Evidence Use, Clarity, Structure, Reasoning) for grade 2 and up; a simplified 2-dimension rubric for Kindergarten–1st Grade dictated observations |
 | **Assignment types** | Lab Report, Research Essay, Hypothesis, Data Analysis, Scientific Explanation |
-| **Grade levels** | K–2, 3–5, 6–8, 9–10, 11–12, Undergraduate |
-| **Output** | Overall score, strengths, improvements, specific next steps |
+| **Grade levels** | K–1, 2, 3–5, 6–8, 9–10, 11–12, Undergraduate |
+| **Input options** | Type, or speak ("Speak Instead of Type") for Kindergarten–1st Grade |
+| **Output** | Overall score, strengths, improvements, specific next steps — with Read Aloud and progress-since-last-attempt comparison |
 | **Standards alignment** | Next Generation Science Standards (NGSS) |
 
 ### 💻 CodeBridge AI — CS Coding Tutor
@@ -54,34 +55,42 @@ Provides grade-calibrated coding assistance for text-based programming languages
 | **Feedback modes** | Code Feedback, Concept Q&A, Debug Help |
 | **Languages** | Python, JavaScript, Java, Scratch, C++, SQL |
 | **Grade calibration** | Strict language complexity matching (6-8 → Undergraduate) |
-| **Output** | Quality metrics, explanation, corrected code, learning next steps |
+| **Teaching style** | Guidance-first — explanations lead with hints; the corrected code stays hidden behind a "try it yourself first" reveal |
+| **Output** | Quality metrics, explanation, corrected code, learning next steps — with Read Aloud and progress-since-last-attempt comparison |
 | **Population focus** | Rural and low-income students without CS specialist access |
 
 K-5 students are better served by block-based tools (Scratch, CodeMonkey) and are directed to SciWrite AI instead, which covers the full K-12 range.
+
+### 🔑 Choice of AI Provider
+Either Anthropic (Claude) or Google Gemini — selectable in the app itself. Gemini's free tier needs no credit card, lowering the cost barrier to using the platform at all.
+
+### 📊 Optional Usage Tracking & Teacher Dashboard
+Students enter their name once per device; the app can log usage (name, timestamp, tool, scores — never the submitted writing or code) to a Google Sheet the teacher connects themselves, and unlock a PIN-protected in-app Dashboard. See [TEACHER_SETUP.md](TEACHER_SETUP.md).
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-Student Input (Browser)
+Student Input (Browser) — typed, or spoken via browser speech recognition (K-1)
        │
        ├── Mode: SciWrite AI (Writing Track)
        │         Grade Level + Assignment Type
-       │         → NGSS-aligned 5-dimension rubric prompt
+       │         → NGSS-aligned rubric prompt (5 dimensions, or 2 for K-1)
        │
        └── Mode: CodeBridge AI (Coding Track)
                  Grade Level + Language + Feedback Mode
-                 → Grade-calibrated tutoring prompt
+                 → Grade-calibrated, guidance-first tutoring prompt
                          │
                          ▼
-             Claude API (claude-sonnet-4-20250514)
+         Anthropic (Claude) or Google Gemini — user's choice
                          │
                          ▼
              Structured JSON Response
                          │
                          ▼
-             Rendered Feedback UI (no framework required)
+     Rendered Feedback UI (no framework required)
+     — Read Aloud, progress-since-last-attempt, optional usage logging
 ```
 
 ---
@@ -172,13 +181,17 @@ STEM-Bridge-AI/
 
 ## 🗺️ Roadmap
 
-### v0.2 — Classroom Features (planned, 2026)
-- Teacher dashboard: class-wide trend analysis
+### ✅ Shipped in v0.4.0
+- Teacher dashboard: class-wide and per-student usage stats
+- Progress tracking across multiple submissions (revision comparison)
+- Choice of AI provider, including a free option (Google Gemini)
+- Accessibility: Read Aloud output, voice input for Kindergarten–1st Grade
+
+### Classroom Features (planned)
 - Spanish-language interface for ESL student populations
 - PDF export of feedback reports for student portfolios
 
-### v0.3 — Adaptive Learning (planned, 2026)
-- Progress tracking across multiple submissions
+### Adaptive Learning (planned)
 - Persistent knowledge gap identification
 - Targeted reading resource recommendations
 
@@ -201,7 +214,7 @@ git push origin feature/your-feature-name
 # Open a Pull Request
 ```
 
-Priority areas: Spanish localization, teacher dashboard, offline mode, LMS integrations.
+Priority areas: Spanish localization, offline mode, LMS integrations.
 
 ---
 

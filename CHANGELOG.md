@@ -4,6 +4,37 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.4.0] — 2026-09 — Multi-Provider AI, Teacher Dashboard, and Accessibility
+
+### Added
+- **Choice of AI provider**: Anthropic (Claude) or Google Gemini, selectable via pills next to the API key field. Gemini's free tier requires no credit card, lowering the cost barrier to actually using the platform.
+- **API key input**: the app previously had no way to authenticate with the AI API at all. Keys are entered by the user and stored only in the browser's own session storage, per provider — never sent anywhere but the AI provider itself.
+- **Optional student usage tracking**: students enter their name once per device; every completed analysis is logged (name, timestamp, tool, assignment/language, grade, scores — never the submitted writing or code) to a Google Sheet the teacher connects themselves (see `TEACHER_SETUP.md` and `google-apps-script/Code.gs`).
+- **Teacher Dashboard**: a PIN-protected in-app view showing total usage, unique students, a writing/coding breakdown, per-student summaries, and every individual submission's own scores.
+- **Revision comparison**: after a student resubmits the same assignment (writing) or language/mode (coding), a "Progress Since Last Attempt" panel shows the score change for each dimension, plus an encouraging summary.
+- **Read Feedback Aloud**: text-to-speech for both SciWrite AI and CodeBridge AI output, with a slower speaking rate for the youngest grades.
+- **Voice input for Kindergarten–1st Grade**: a "Speak Instead of Type" button using the browser's built-in speech recognition, since this age group typically dictates rather than types or reads.
+- **Guidance-first CodeBridge AI**: corrected code is now hidden behind a "try it yourself first" reveal button, and the AI is prompted to lead with hints and questions rather than handing over the fix immediately.
+- `CLAUDE.md` — persistent project context for future Claude Code sessions working on this repo.
+- `TEACHER_SETUP.md` — a non-technical walkthrough for connecting the optional usage-tracking Google Sheet.
+
+### Changed
+- **CodeBridge AI's grade range now starts at 6-8** (previously included K-2 and 3-5) — block-based tools like Scratch better serve younger coders, and the app now says so and points them to SciWrite AI instead. SciWrite AI continues to cover the full K-12 range.
+- **SciWrite AI's "K-2" grade band split into "Kindergarten–1st Grade" and "2nd Grade"**, since a non-writing kindergartner and a 2nd grader writing full sentences need very different tools. Kindergarten–1st Grade now uses a simplified 2-dimension rubric instead of the standard 5, reflecting that this age typically dictates a short spoken observation rather than writing an essay.
+
+### Fixed
+- **The app had no authentication on its API calls at all and did not function for anyone.** Added the API key mechanism described above.
+- AI-generated text was rendered into the page without escaping in most places, a real XSS risk. All AI-derived text is now escaped before display.
+- Malformed or incomplete AI responses crashed the renderer with an opaque error. Responses are now validated against the expected shape before rendering, with specific, readable error messages on failure.
+- API calls had no timeout and could hang indefinitely on a stalled connection. Added a 30-second timeout.
+- Student-submitted text went directly into the AI prompt with no separation from instructions, a prompt-injection risk. Student input is now wrapped in tagged blocks with explicit instructions to treat it as data, not commands.
+- Raw API error JSON was shown directly to students on failure. Errors are now mapped to plain-language messages for both providers.
+- Google Sheets silently reinterpreted grade values like "6-8" and "9-10" as dates, corrupting the logged grade level. The logging script now forces those columns to plain text.
+- The usage-tracking script assumed the header row was always row 1; if a teacher manually deleted it, the script would discard real data thinking it was the header. It now identifies the header by content, not position, and self-heals if the header is missing.
+- Removed dead code (`scoreCls`, `scoreTextCls` — defined but never called).
+
+---
+
 ## [0.3.0] — 2026-07 — Public Deployment & Repository Cleanup
 
 ### Added
