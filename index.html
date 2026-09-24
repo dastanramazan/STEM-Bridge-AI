@@ -69,7 +69,7 @@
     .logo-name .violet{color:var(--a2);}
     .logo-sub{font-size:.6rem;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
 
-    .badges{display:flex;gap:8px;align-items:center;}
+    .badges{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
     .badge{
       font-size:.6rem;padding:3px 10px;border-radius:20px;
       text-transform:uppercase;letter-spacing:.07em;
@@ -184,7 +184,8 @@
     }
     @media(max-width:768px){
       .workspace{grid-template-columns:1fr;}
-      header{padding:14px 18px;}
+      header{padding:14px 18px;flex-wrap:wrap;row-gap:10px;}
+      .badges{justify-content:flex-start;width:100%;}
       .mode-btn{padding:10px 16px;font-size:.7rem;}
     }
 
@@ -426,11 +427,12 @@
 
     /* ── DASHBOARD BUTTON & MODAL ─────────── */
     .dashboard-btn{
-      background:transparent;border:1px solid var(--border2);border-radius:6px;
-      color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:.6rem;
-      padding:4px 10px;cursor:pointer;transition:all .2s;
+      background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.3);
+      color:var(--a1);font-family:'JetBrains Mono',monospace;font-size:.62rem;
+      padding:5px 12px;border-radius:20px;cursor:pointer;transition:all .2s;
+      white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;
     }
-    .dashboard-btn:hover{border-color:var(--a1);color:var(--a1);}
+    .dashboard-btn:hover{background:rgba(34,211,238,.15);border-color:var(--a1);}
 
     .dash-overlay{
       position:fixed;inset:0;z-index:100;
@@ -492,6 +494,7 @@
   <div class="badges">
     <span class="badge ver">v0.4.0</span>
     <span class="badge open">Open Source</span>
+    <button class="dashboard-btn" onclick="openDashboard()">📊 Teacher Dashboard</button>
   </div>
 </header>
 
@@ -690,7 +693,6 @@
   </p>
   <div class="mission-right">
     Powered by Claude API · MIT License · Open Source Research
-    <button class="dashboard-btn" onclick="openDashboard()">📊 Teacher Dashboard</button>
   </div>
 </div>
 
@@ -1142,6 +1144,9 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     const isK1 = document.getElementById('gradeW').value === 'K-1';
     document.getElementById('voiceInputWrap').hidden = !(isK1 && supportsSpeechInput);
     document.getElementById('k1FallbackNote').hidden = !(isK1 && !supportsSpeechInput);
+    document.getElementById('writingText').placeholder = isK1
+      ? `Type or speak what happened…\n\nExample: "It got hot." or "The ice melted."`
+      : `Paste student STEM writing here…\n\nExample: 'In our experiment, we tested whether temperature affects how fast sugar dissolves. We used three cups at 10°C, 25°C, and 60°C…'`;
   }
 
   function toggleVoiceInput(btn, targetTextareaId) {
