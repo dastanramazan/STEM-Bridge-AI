@@ -125,6 +125,22 @@
       .apikey-bar{padding:12px 18px;}
     }
 
+    .setup-summary{
+      align-items:center;justify-content:center;gap:14px;
+      padding:10px 20px;border-bottom:1px solid var(--border);
+      background:rgba(52,211,153,.05);font-size:.72rem;color:var(--a3);
+      flex-wrap:wrap;text-align:center;
+    }
+    /* display set here, not above, so [hidden] (equal specificity,
+       UA default) isn't overridden by this authored rule. */
+    .setup-summary:not([hidden]){display:flex;}
+    .setup-edit-btn{
+      background:transparent;border:1px solid var(--border2);border-radius:6px;
+      color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:.65rem;
+      padding:3px 10px;cursor:pointer;transition:all .2s;
+    }
+    .setup-edit-btn:hover{border-color:var(--a1);color:var(--a1);}
+
     /* ── HERO ────────────────────────────── */
     .hero{
       position:relative;z-index:5;
@@ -150,6 +166,25 @@
     }
     .stat-n{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;color:var(--a1);}
     .stat-l{font-size:.6rem;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+
+    /* ── HERO (condensed, repeat visits) ─── */
+    .hero-condensed{
+      position:relative;z-index:5;
+      padding:16px 20px;text-align:center;
+      border-bottom:1px solid var(--border);
+    }
+    .hero-condensed-inner{
+      display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    }
+    .hero-condensed-title{
+      font-family:'Outfit',sans-serif;font-weight:700;font-size:.9rem;color:var(--txt);
+    }
+    .hero-expand-btn{
+      background:transparent;border:1px solid var(--border2);border-radius:20px;
+      color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:.65rem;
+      padding:4px 12px;cursor:pointer;transition:all .2s;
+    }
+    .hero-expand-btn:hover{border-color:var(--a1);color:var(--a1);}
 
     /* ── MODE SELECTOR ───────────────────── */
     .mode-bar{
@@ -498,41 +533,49 @@
   </div>
 </header>
 
-<!-- ═══════════════════════════════ STUDENT NAME BAR ══ -->
-<div class="apikey-bar">
-  <div class="apikey-inner">
-    <span class="apikey-icon">🧑‍🎓</span>
-    <input type="text" id="studentNameInput" placeholder="Your name"
-      autocomplete="off" aria-label="Your name"
-      onkeydown="if(event.key==='Enter')saveStudentName()" />
-    <button class="apikey-btn" type="button" onclick="saveStudentName()">Save</button>
-    <span class="apikey-status" id="studentNameStatus"></span>
-  </div>
-  <div class="apikey-note">
-    Enter your name so your teacher can see that you've used the app. <a href="#" onclick="event.preventDefault(); resetStudentName();">Not you? Click here.</a>
-  </div>
+<!-- ═══════════════════════════════ SETUP SUMMARY (collapsed) ══ -->
+<div class="setup-summary" id="setupSummary" hidden>
+  <span id="setupSummaryText"></span>
+  <button class="setup-edit-btn" type="button" onclick="expandSetup()">Edit</button>
 </div>
 
-<!-- ═══════════════════════════════ API KEY BAR ══ -->
-<div class="apikey-bar">
-  <div class="apikey-provider-row">
-    <span class="apikey-icon">🔑</span>
-    <button class="provider-pill active" id="provider-anthropic" type="button" onclick="setProvider('anthropic')">Claude</button>
-    <button class="provider-pill" id="provider-gemini" type="button" onclick="setProvider('gemini')">Gemini (Free)</button>
+<div id="setupForm">
+  <!-- ═══════════════════════════════ STUDENT NAME BAR ══ -->
+  <div class="apikey-bar">
+    <div class="apikey-inner">
+      <span class="apikey-icon">🧑‍🎓</span>
+      <input type="text" id="studentNameInput" placeholder="Your name"
+        autocomplete="off" aria-label="Your name"
+        onkeydown="if(event.key==='Enter')saveStudentName()" />
+      <button class="apikey-btn" type="button" onclick="saveStudentName()">Save</button>
+      <span class="apikey-status" id="studentNameStatus"></span>
+    </div>
+    <div class="apikey-note">
+      Enter your name so your teacher can see that you've used the app. <a href="#" onclick="event.preventDefault(); resetStudentName();">Not you? Click here.</a>
+    </div>
   </div>
-  <div class="apikey-inner">
-    <input type="password" id="apiKeyInput" placeholder="Paste your Anthropic API key (sk-ant-...)"
-      autocomplete="off" aria-label="AI provider API key"
-      onkeydown="if(event.key==='Enter')saveApiKey()" />
-    <button class="apikey-toggle" id="apiKeyToggleBtn" type="button" onclick="toggleKeyVisibility()">Show</button>
-    <button class="apikey-btn" type="button" onclick="saveApiKey()">Save</button>
-    <span class="apikey-status" id="apiKeyStatus"></span>
+
+  <!-- ═══════════════════════════════ API KEY BAR ══ -->
+  <div class="apikey-bar">
+    <div class="apikey-provider-row">
+      <span class="apikey-icon">🔑</span>
+      <button class="provider-pill active" id="provider-anthropic" type="button" onclick="setProvider('anthropic')">Claude</button>
+      <button class="provider-pill" id="provider-gemini" type="button" onclick="setProvider('gemini')">Gemini (Free)</button>
+    </div>
+    <div class="apikey-inner">
+      <input type="password" id="apiKeyInput" placeholder="Paste your Anthropic API key (sk-ant-...)"
+        autocomplete="off" aria-label="AI provider API key"
+        onkeydown="if(event.key==='Enter')saveApiKey()" />
+      <button class="apikey-toggle" id="apiKeyToggleBtn" type="button" onclick="toggleKeyVisibility()">Show</button>
+      <button class="apikey-btn" type="button" onclick="saveApiKey()">Save</button>
+      <span class="apikey-status" id="apiKeyStatus"></span>
+    </div>
+    <div class="apikey-note" id="apiKeyNote"></div>
   </div>
-  <div class="apikey-note" id="apiKeyNote"></div>
 </div>
 
 <!-- ═══════════════════════════════ HERO ══ -->
-<section class="hero">
+<section class="hero" id="heroFull">
   <div class="hero-label">AI-Powered STEM Education — K-12 &amp; Undergraduate</div>
   <h1>
     Expert-level <em>writing feedback</em><br>
@@ -548,6 +591,14 @@
     <div><div class="stat-n">48</div><div class="stat-l">States with CS Teacher Shortages</div></div>
     <div><div class="stat-n">5</div><div class="stat-l">Writing Dimensions Scored</div></div>
     <div><div class="stat-n">K–12</div><div class="stat-l">Full Grade Range</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════ HERO (condensed, repeat visits) ══ -->
+<section class="hero-condensed" id="heroCondensed" hidden>
+  <div class="hero-condensed-inner">
+    <span class="hero-condensed-title">🌉 STEM Bridge AI</span>
+    <button class="hero-expand-btn" type="button" onclick="expandHero()">About this tool ▾</button>
   </div>
 </section>
 
@@ -770,6 +821,7 @@
     const saved = safeGet('session', providerKeyStorageName(provider));
     input.value = saved || '';
     setApiKeyStatus(!!saved);
+    updateSetupUI();
   }
 
   function initApiKey() {
@@ -782,10 +834,13 @@
     if (!val) {
       safeRemove('session', storageKey);
       setApiKeyStatus(false);
+      updateSetupUI();
       return;
     }
     safeSet('session', storageKey, val);
     setApiKeyStatus(true);
+    setupManuallyExpanded = false;
+    updateSetupUI();
   }
 
   function setApiKeyStatus(saved) {
@@ -822,10 +877,13 @@
     if (!val) {
       safeRemove('local', STUDENT_NAME_STORAGE);
       setStudentNameStatus(false);
+      updateSetupUI();
       return;
     }
     safeSet('local', STUDENT_NAME_STORAGE, val);
     setStudentNameStatus(true);
+    setupManuallyExpanded = false;
+    updateSetupUI();
   }
 
   function resetStudentName() {
@@ -833,6 +891,8 @@
     document.getElementById('studentNameInput').value = '';
     document.getElementById('studentNameInput').focus();
     setStudentNameStatus(false);
+    setupManuallyExpanded = false;
+    updateSetupUI();
   }
 
   function setStudentNameStatus(saved) {
@@ -843,6 +903,45 @@
 
   function getStudentName() {
     return safeGet('local', STUDENT_NAME_STORAGE) || document.getElementById('studentNameInput').value.trim();
+  }
+
+  /* ── SETUP COLLAPSE (once name + key are saved) ────────── */
+  let setupManuallyExpanded = false;
+
+  function isSetupComplete() {
+    return !!safeGet('local', STUDENT_NAME_STORAGE) && !!safeGet('session', providerKeyStorageName(currentProvider));
+  }
+
+  function updateSetupUI() {
+    const collapsed = isSetupComplete() && !setupManuallyExpanded;
+    document.getElementById('setupForm').hidden = collapsed;
+    document.getElementById('setupSummary').hidden = !collapsed;
+    if (collapsed) {
+      document.getElementById('setupSummaryText').textContent =
+        `✓ ${getStudentName()} · ${PROVIDERS[currentProvider].shortName} key saved`;
+    }
+  }
+
+  function expandSetup() {
+    setupManuallyExpanded = true;
+    updateSetupUI();
+  }
+
+  /* ── HERO (condensed after first visit) ────────────────── */
+  const HERO_SEEN_STORAGE = 'stemBridgeHeroSeen';
+
+  function initHero() {
+    if (safeGet('local', HERO_SEEN_STORAGE)) {
+      document.getElementById('heroFull').hidden = true;
+      document.getElementById('heroCondensed').hidden = false;
+    } else {
+      safeSet('local', HERO_SEEN_STORAGE, '1');
+    }
+  }
+
+  function expandHero() {
+    document.getElementById('heroFull').hidden = false;
+    document.getElementById('heroCondensed').hidden = true;
   }
 
   /* ── USAGE LOGGING (optional — see TEACHER_SETUP.md) ─── */
@@ -1598,6 +1697,8 @@ Return ONLY valid JSON (no markdown, no preamble):
   initApiKey();
   initStudentName();
   onGradeWChange();
+  updateSetupUI();
+  initHero();
 </script>
 </body>
 </html>
