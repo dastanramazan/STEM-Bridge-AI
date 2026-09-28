@@ -1,15 +1,27 @@
-# Teacher Setup: Usage Tracking & Dashboard
+# Teacher Setup: Free Default AI Access, Usage Tracking & Dashboard
 
-STEM Bridge AI can optionally keep track of which students are using it and
-how they're doing — without ever storing their actual writing or code.
-This is off by default. Turning it on takes about 10 minutes, one time,
-and needs no coding.
+The same one script does two jobs, both optional but recommended for a
+class trial:
+
+1. **Lets the app work with no setup for students** — a default AI
+   connection (Google Gemini's free tier) so nobody needs their own API
+   key. Your key is only ever stored inside this script, never sent to
+   student browsers.
+2. **Usage tracking** — keeps track of which students are using the app
+   and how they're doing, without ever storing their actual writing or code.
+
+Both are off until you complete this setup. It takes about 10 minutes,
+one time, and needs no coding.
 
 ## What this does
 
+- Students see the app work immediately — no API key required, no signup.
+  A small "School or organization? Provide your own API key instead"
+  checkbox lets anyone who prefers to use their own key do so.
 - Each student types their name once (remembered on their device after that).
 - Every time a student completes an analysis, the app records: their name,
   the date/time, which tool they used, and their scores — nothing else.
+  The actual writing or code is never sent here.
 - You get a private Google Sheet with every entry as a row.
 - A **📊 Teacher Dashboard** button appears in the app, protected by a PIN
   you choose, showing total usage, unique students, and per-student stats.
@@ -31,7 +43,16 @@ and needs no coding.
    ```
    Change `'change-me-1234'` to a PIN only you know. This is the PIN you'll
    type into the Teacher Dashboard later — pick something students won't guess.
-5. Click the **Save** icon (or press Ctrl+S / Cmd+S).
+5. Just below it, find this line:
+   ```
+   const GEMINI_API_KEY = 'paste-your-gemini-api-key-here';
+   ```
+   Get a free key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+   (no credit card needed — sign in with any Google account, click
+   "Create API Key") and paste it in between the quotes. This key stays
+   inside the script — it's never sent to student browsers, and students
+   never need one of their own to use the app.
+6. Click the **Save** icon (or press Ctrl+S / Cmd+S).
 
 ## Step 3: Deploy it as a Web App
 
@@ -65,7 +86,8 @@ and needs no coding.
 
 ## Step 5: Try it out
 
-1. Open the live app, enter a name, and run one analysis (writing or coding).
+1. Open the live app, enter a name, and run one analysis (writing or coding)
+   — no API key needed, since it now uses your default Gemini connection.
 2. Check your Google Sheet — a new row should appear in a tab called "Log".
 3. In the app, click **📊 Teacher Dashboard**, enter the PIN you set in
    Step 2, and confirm you see your test entry.
@@ -74,13 +96,24 @@ and needs no coding.
 
 - **No submitted writing or code is ever sent or stored** — only names,
   timestamps, tool used, and scores.
-- The Web App URL itself is not secret (like a Google Form link — anyone
-  with it could technically submit a log entry), but the **Dashboard's PIN
-  check happens inside the script itself**, not in the page's visible code,
-  so a student can't bypass it by viewing the page source.
-- If `LOG_ENDPOINT` is left blank, tracking is fully disabled and the
-  Dashboard just tells you it isn't set up yet — the rest of the app works
-  exactly as before.
+- **Your Gemini key never reaches a student's browser.** It lives only
+  inside the Apps Script; the app talks to your script, and your script
+  talks to Gemini. This is meaningfully safer than putting a key directly
+  in the app's code, where anyone could view the page source and copy it.
+- The Web App URL itself is still not secret (like a Google Form link —
+  anyone with it could technically submit requests through it, using your
+  free Gemini quota), but they can't extract your actual key from it to
+  use anywhere else, and you can always add stricter checks in the script
+  or just regenerate your key if you ever see unexpected usage. The
+  **Dashboard's PIN check happens inside the script itself**, not in the
+  page's visible code, so a student can't bypass it by viewing the page
+  source.
+- If `LOG_ENDPOINT` is left blank, both the default AI connection and
+  usage tracking are disabled — students would need to provide their own
+  API key via "Use Your Own API Key" to use the app at all.
+- Unchecking "School or organization? Provide your own API key instead"
+  (or never checking it) always uses your default Gemini connection —
+  checking it switches to whatever provider/key the visitor enters.
 - You can reset a student's remembered name from their device using the
   "Not you? Click here." link next to the name field (useful for shared
   devices).

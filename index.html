@@ -141,6 +141,16 @@
     }
     .setup-edit-btn:hover{border-color:var(--a1);color:var(--a1);}
 
+    .advanced-row{max-width:820px;margin:0 auto;padding:2px 40px 12px;}
+    .advanced-checkbox{
+      display:flex;align-items:center;gap:8px;cursor:pointer;
+      font-size:.68rem;color:var(--mut);
+    }
+    .advanced-checkbox input{cursor:pointer;}
+    @media(max-width:768px){
+      .advanced-row{padding:2px 18px 12px;}
+    }
+
     /* ── HERO ────────────────────────────── */
     .hero{
       position:relative;z-index:5;
@@ -555,22 +565,32 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════════ API KEY BAR ══ -->
-  <div class="apikey-bar">
-    <div class="apikey-provider-row">
-      <span class="apikey-icon">🔑</span>
-      <button class="provider-pill active" id="provider-anthropic" type="button" onclick="setProvider('anthropic')">Claude</button>
-      <button class="provider-pill" id="provider-gemini" type="button" onclick="setProvider('gemini')">Gemini (Free)</button>
+  <!-- ═══════════════════════════════ ADVANCED TOGGLE ══ -->
+  <div class="advanced-row">
+    <label class="advanced-checkbox">
+      <input type="checkbox" id="useOwnKeyToggle" onchange="toggleUseOwnKey()">
+      School or organization? Provide your own API key instead
+    </label>
+  </div>
+
+  <!-- ═══════════════════════════════ API KEY BAR (advanced) ══ -->
+  <div id="customKeySection" hidden>
+    <div class="apikey-bar">
+      <div class="apikey-provider-row">
+        <span class="apikey-icon">🔑</span>
+        <button class="provider-pill active" id="provider-anthropic" type="button" onclick="setProvider('anthropic')">Claude</button>
+        <button class="provider-pill" id="provider-gemini" type="button" onclick="setProvider('gemini')">Gemini (Free)</button>
+      </div>
+      <div class="apikey-inner">
+        <input type="password" id="apiKeyInput" placeholder="Paste your Anthropic API key (sk-ant-...)"
+          autocomplete="off" aria-label="AI provider API key"
+          onkeydown="if(event.key==='Enter')saveApiKey()" />
+        <button class="apikey-toggle" id="apiKeyToggleBtn" type="button" onclick="toggleKeyVisibility()">Show</button>
+        <button class="apikey-btn" type="button" onclick="saveApiKey()">Save</button>
+        <span class="apikey-status" id="apiKeyStatus"></span>
+      </div>
+      <div class="apikey-note" id="apiKeyNote"></div>
     </div>
-    <div class="apikey-inner">
-      <input type="password" id="apiKeyInput" placeholder="Paste your Anthropic API key (sk-ant-...)"
-        autocomplete="off" aria-label="AI provider API key"
-        onkeydown="if(event.key==='Enter')saveApiKey()" />
-      <button class="apikey-toggle" id="apiKeyToggleBtn" type="button" onclick="toggleKeyVisibility()">Show</button>
-      <button class="apikey-btn" type="button" onclick="saveApiKey()">Save</button>
-      <span class="apikey-status" id="apiKeyStatus"></span>
-    </div>
-    <div class="apikey-note" id="apiKeyNote"></div>
   </div>
 </div>
 
@@ -905,11 +925,29 @@
     return safeGet('local', STUDENT_NAME_STORAGE) || document.getElementById('studentNameInput').value.trim();
   }
 
-  /* ── SETUP COLLAPSE (once name + key are saved) ────────── */
+  /* ── SETUP COLLAPSE (once name, and a key if needed, are saved) ── */
   let setupManuallyExpanded = false;
+  const USE_OWN_KEY_STORAGE = 'stemBridgeUseOwnKey';
+  let useOwnKey = false;
+
+  function initUseOwnKey() {
+    useOwnKey = safeGet('local', USE_OWN_KEY_STORAGE) === '1';
+    document.getElementById('useOwnKeyToggle').checked = useOwnKey;
+    document.getElementById('customKeySection').hidden = !useOwnKey;
+  }
+
+  function toggleUseOwnKey() {
+    useOwnKey = document.getElementById('useOwnKeyToggle').checked;
+    safeSet('local', USE_OWN_KEY_STORAGE, useOwnKey ? '1' : '');
+    document.getElementById('customKeySection').hidden = !useOwnKey;
+    setupManuallyExpanded = false;
+    updateSetupUI();
+  }
 
   function isSetupComplete() {
-    return !!safeGet('local', STUDENT_NAME_STORAGE) && !!safeGet('session', providerKeyStorageName(currentProvider));
+    const hasName = !!safeGet('local', STUDENT_NAME_STORAGE);
+    if (!useOwnKey) return hasName; // default flow needs no key from the visitor
+    return hasName && !!safeGet('session', providerKeyStorageName(currentProvider));
   }
 
   function updateSetupUI() {
@@ -917,8 +955,9 @@
     document.getElementById('setupForm').hidden = collapsed;
     document.getElementById('setupSummary').hidden = !collapsed;
     if (collapsed) {
-      document.getElementById('setupSummaryText').textContent =
-        `✓ ${getStudentName()} · ${PROVIDERS[currentProvider].shortName} key saved`;
+      document.getElementById('setupSummaryText').textContent = useOwnKey
+        ? `✓ ${getStudentName()} · ${PROVIDERS[currentProvider].shortName} key saved`
+        : `✓ ${getStudentName()} · Using free Gemini access`;
     }
   }
 
@@ -952,7 +991,7 @@
     fetch(LOG_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
-      body: JSON.stringify(payload)
+      body: JSON.stringify({ action: 'log', ...payload })
     }).catch(() => { /* logging is best-effort; never interrupt the student's feedback */ });
   }
 
@@ -1666,7 +1705,26 @@ Return ONLY valid JSON (no markdown, no preamble):
     return text;
   }
 
+  async function callGeminiViaProxy(system, userContent) {
+    if (!LOG_ENDPOINT) {
+      throw new Error('No default AI connection is configured. Check "Use Your Own API Key" below to provide one.');
+    }
+    const data = await fetchJsonWithTimeout(LOG_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
+      body: JSON.stringify({ action: 'generate', system, userContent })
+    });
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) {
+      throw new Error(friendlyGeminiError(data));
+    }
+    return text;
+  }
+
   async function callAPI(system, userContent) {
+    if (!useOwnKey) {
+      return callGeminiViaProxy(system, userContent);
+    }
     const apiKey = getApiKey();
     if (!apiKey) throw new Error(`Enter your ${PROVIDERS[currentProvider].shortName} API key above before requesting feedback.`);
 
@@ -1696,6 +1754,7 @@ Return ONLY valid JSON (no markdown, no preamble):
 
   initApiKey();
   initStudentName();
+  initUseOwnKey();
   onGradeWChange();
   updateSetupUI();
   initHero();
