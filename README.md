@@ -61,8 +61,8 @@ Provides grade-calibrated coding assistance for text-based programming languages
 
 K-5 students are better served by block-based tools (Scratch, CodeMonkey) and are directed to SciWrite AI instead, which covers the full K-12 range.
 
-### 🔑 Choice of AI Provider
-Either Anthropic (Claude) or Google Gemini — selectable in the app itself. Gemini's free tier needs no credit card, lowering the cost barrier to using the platform at all.
+### 🔑 Works With No Setup, or Bring Your Own Key
+By default the app runs on a free Google Gemini connection configured by whoever deploys it — students need no API key, no signup, nothing. A "School or organization? Provide your own API key instead" option lets anyone switch to their own Anthropic (Claude) or Gemini key when they'd rather not use the shared default.
 
 ### 📊 Optional Usage Tracking & Teacher Dashboard
 Students enter their name once per device; the app can log usage (name, timestamp, tool, scores — never the submitted writing or code) to a Google Sheet the teacher connects themselves, and unlock a PIN-protected in-app Dashboard. See [TEACHER_SETUP.md](TEACHER_SETUP.md).
@@ -83,7 +83,8 @@ Student Input (Browser) — typed, or spoken via browser speech recognition (K-1
                  → Grade-calibrated, guidance-first tutoring prompt
                          │
                          ▼
-         Anthropic (Claude) or Google Gemini — user's choice
+    Default Gemini connection (via a proxy that hides the key), or a
+    visitor's own Anthropic/Gemini key
                          │
                          ▼
              Structured JSON Response
@@ -108,11 +109,9 @@ cd STEM-Bridge-AI
 open index.html   # or: python3 -m http.server 8080
 ```
 
-You will need an API key to power the AI responses — choose either:
+If the deployer has set up a default AI connection (see [TEACHER_SETUP.md](TEACHER_SETUP.md)), the app works immediately with no key needed. Otherwise, check "School or organization? Provide your own API key instead" and use either:
 - **[Anthropic API key](https://console.anthropic.com)** (Claude), or
 - **[Google AI Studio key](https://aistudio.google.com/apikey)** (Gemini) — free, no credit card required
-
-Pick your provider with the pills next to the key field in the app.
 
 ### Option C: Deploy to GitHub Pages
 
@@ -124,13 +123,15 @@ Pick your provider with the pills next to the key field in the app.
 
 **Why single-file / zero-dependency?** Rural and Title I schools frequently operate restricted IT environments where npm, build tools, or CDN access may be blocked. This application opens directly as an HTML file in any browser with no installation required.
 
-### Option D: Track Student Usage (Optional)
+### Option D: Give Students a Default AI Connection & Track Usage (Optional)
 
-Want to see which students are using the app and how they're doing? See
-[**TEACHER_SETUP.md**](TEACHER_SETUP.md) for a 10-minute, no-coding setup
-that connects a private Google Sheet and unlocks a PIN-protected
-**📊 Teacher Dashboard** inside the app — no student writing or code is ever
-logged, only names, timestamps, and scores.
+Want students to use the app with zero setup — no API key, no signup — and
+see who's using it and how they're doing? See [**TEACHER_SETUP.md**](TEACHER_SETUP.md)
+for a 10-minute, no-coding setup that connects a private Google Sheet,
+configures a default Gemini connection your Apps Script keeps hidden from
+visitors, and unlocks a PIN-protected **📊 Teacher Dashboard** inside the
+app — no student writing or code is ever logged, only names, timestamps,
+and scores.
 
 ---
 
@@ -169,9 +170,9 @@ This project is part of ongoing research into **AI-assisted STEM education equit
 STEM-Bridge-AI/
 ├── index.html              # Unified application (single-file, zero-dependency)
 ├── README.md               # This file
-├── TEACHER_SETUP.md        # Optional usage-tracking dashboard setup guide
+├── TEACHER_SETUP.md        # Optional: default AI connection + usage-tracking dashboard setup
 ├── google-apps-script/
-│   └── Code.gs             # Backend script for the usage-tracking dashboard
+│   └── Code.gs             # Gemini proxy (hides the default API key) + usage-tracking backend
 ├── LICENSE                 # MIT License
 ├── CHANGELOG.md            # Version history and development milestones
 └── research.md             # Research background, citations, national importance

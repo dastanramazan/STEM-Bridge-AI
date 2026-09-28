@@ -1,13 +1,21 @@
 /**
- * STEM Bridge AI — Usage Logger
+ * STEM Bridge AI — Usage Logger & Gemini Proxy
  *
- * Receives a small usage record every time a student completes an
- * analysis in STEM Bridge AI, and appends it as a row in this
- * spreadsheet. Also serves a PIN-protected read endpoint that the
- * app's "Teacher Dashboard" uses to show usage statistics.
- *
- * No student writing or code is ever sent here — only a name,
- * timestamp, which tool was used, and scores.
+ * Two jobs:
+ * 1. Receives a small usage record every time a student completes an
+ *    analysis in STEM Bridge AI, and appends it as a row in this
+ *    spreadsheet. Also serves a PIN-protected read endpoint that the
+ *    app's "Teacher Dashboard" uses to show usage statistics.
+ *    No student writing or code is ever sent here for logging — only
+ *    a name, timestamp, which tool was used, and scores.
+ * 2. Proxies "generate" requests to the Gemini API using the API key
+ *    stored below, so the app can offer a working default experience
+ *    without every visitor needing their own key. The key never
+ *    leaves this script - the browser only ever talks to this Web
+ *    App, never to Gemini directly, for the default (no-own-key) flow.
+ *    A visitor who chooses "Advanced: Use Your Own API Key" in the app
+ *    bypasses this proxy entirely and calls Gemini/Anthropic directly
+ *    with their own key, same as before.
  *
  * SETUP — see TEACHER_SETUP.md in the project for the full walkthrough.
  * Quick version:
@@ -15,19 +23,55 @@
  *   2. Extensions > Apps Script.
  *   3. Delete the starter code and paste this whole file in.
  *   4. Change PIN below to something only you know.
- *   5. Deploy > New deployment > type: Web app.
+ *   5. Change GEMINI_API_KEY below to your own free key from
+ *      aistudio.google.com/apikey, so the app works by default without
+ *      visitors needing their own key.
+ *   6. Deploy > New deployment > type: Web app.
  *        - Execute as: Me
  *        - Who has access: Anyone
- *   6. Click Deploy, then authorize the permissions it asks for.
- *   7. Copy the "Web app URL" and paste it into LOG_ENDPOINT in index.html.
+ *   7. Click Deploy, then authorize the permissions it asks for.
+ *   8. Copy the "Web app URL" and paste it into LOG_ENDPOINT in index.html.
  */
 
 const PIN = 'change-me-1234'; // <-- set your own PIN before deploying
+const GEMINI_API_KEY = 'paste-your-gemini-api-key-here'; // <-- from aistudio.google.com/apikey
+const GEMINI_MODEL = 'gemini-flash-latest';
 const SHEET_NAME = 'Log';
 
 function doPost(e) {
-  const sheet = getLogSheet_();
   const data = JSON.parse(e.postData.contents);
+
+  if (data.action === 'generate') {
+    return handleGenerate_(data);
+  }
+
+  return handleLog_(data);
+}
+
+function handleGenerate_(data) {
+  const payload = {
+    contents: [{ role: 'user', parts: [{ text: data.userContent || '' }] }],
+    systemInstruction: { parts: [{ text: data.system || '' }] },
+    generationConfig: { maxOutputTokens: 1000 }
+  };
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const response = UrlFetchApp.fetch(url, {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { 'x-goog-api-key': GEMINI_API_KEY },
+    payload: JSON.stringify(payload),
+    muteHttpExceptions: true // return Gemini's real error body instead of throwing
+  });
+
+  // Pass Gemini's response straight through - same shape the client
+  // already knows how to parse (candidates[...] on success, error{...}
+  // on failure), so no client-side parsing changes needed.
+  return ContentService.createTextOutput(response.getContentText())
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function handleLog_(data) {
+  const sheet = getLogSheet_();
   const scores = Array.isArray(data.scores) ? data.scores : [];
 
   sheet.appendRow([
