@@ -23,7 +23,13 @@ code alone.
     passing its response straight through unmodified — so
     `friendlyGeminiError()` and the `candidates[...]` parsing work
     unchanged whether the call went direct or via the proxy. The
-    visitor's browser never sees this key.
+    visitor's browser never sees this key. `handleGenerate_` retries on
+    429/500/503 (main model twice, then `GEMINI_FALLBACK_MODEL` twice,
+    with growing pauses) and stops starting new attempts after
+    `MAX_RETRY_WINDOW_MS`; it must stay comfortably under the client's
+    `API_TIMEOUT_MS` (45s). Its `maxOutputTokens` is deliberately high
+    (4096) because Gemini's hidden thinking tokens count against that
+    limit — a low value can truncate the JSON the app needs.
   - `useOwnKey` true: the original direct-call behavior — `callAnthropic()`
     or `callGemini()` based on `currentProvider`, using a key the
     visitor entered themselves, stored in `sessionStorage` per provider.

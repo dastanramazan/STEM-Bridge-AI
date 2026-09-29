@@ -4,6 +4,26 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.5.0] — 2026-09 — Zero-Setup Default AI Access
+
+### Added
+- **Default AI connection with no API key needed.** Students just enter their name; requests go to the teacher's own Google Apps Script, which holds a Gemini key privately and calls Gemini on their behalf. The key never reaches a visitor's browser, unlike a key placed directly in the page's code, which anyone could copy via View Source.
+- **"School or organization? Provide your own API key instead"** option for anyone who prefers their own Anthropic (Claude) or Gemini key. That path calls the provider directly with the visitor's own key, exactly as in 0.4.0.
+- **Automatic retry and fallback for the default connection.** If Gemini reports it is overloaded or rate-limited, the script retries the main model, then switches to a lighter fallback model, instead of immediately showing the student an error.
+
+### Changed
+- Setup bars collapse into a one-line summary once the student's name is saved (and a key, if they chose their own), with an "Edit" button to reopen them.
+- The full marketing hero appears only on a browser's first visit; later visits show a condensed header with an "About this tool" button.
+- The Teacher Dashboard button moved from the footer to the header so teachers can find it.
+- The kindergarten–1st grade text box now shows age-appropriate placeholder text instead of the generic lab-report example.
+- The request timeout for the app was raised from 30 to 45 seconds to leave room for retries.
+- The default connection's response limit was raised so Gemini's hidden reasoning tokens can't crowd out the actual answer.
+
+### Fixed
+- The version badge, README and CHANGELOG were not updated after 0.4.0's later changes; they now match what is deployed.
+
+---
+
 ## [0.4.0] — 2026-09 — Multi-Provider AI, Teacher Dashboard, and Accessibility
 
 ### Added
