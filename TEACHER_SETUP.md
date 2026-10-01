@@ -114,6 +114,13 @@ one time, and needs no coding.
   an error. During a busy spell a response can take a few seconds longer.
   If the backup model is busy too, the student sees a plain "AI service
   is busy, try again" message.
+- **Daily limits protect your free quota.** By default each student can
+  run 10 analyses per day and the whole class 100 per day on the default
+  connection (change `DAILY_LIMIT_PER_STUDENT` and `DAILY_LIMIT_TOTAL` at
+  the top of the script). Only successful analyses count, and counters
+  reset every midnight in the script's time zone. Students are identified
+  by the name they typed, so the class-wide limit is the hard backstop.
+  Anyone using their own API key is not limited.
 - If `LOG_ENDPOINT` is left blank, both the default AI connection and
   usage tracking are disabled — students would need to provide their own
   API key via "Use Your Own API Key" to use the app at all.

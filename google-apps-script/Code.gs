@@ -41,6 +41,11 @@ const GEMINI_MODEL = 'gemini-flash-latest';
 const GEMINI_FALLBACK_MODEL = 'gemini-flash-lite-latest';
 const RETRYABLE_STATUS_CODES = [429, 500, 503]; // rate-limited, internal error, overloaded
 const MAX_RETRY_WINDOW_MS = 20000; // don't START a new attempt after this; the app itself gives up at 45s
+// Daily limits on the default (shared-key) connection, counted per calendar
+// day in the script's time zone. Only analyses that actually succeed use up
+// the allowance. Students who bring their own API key never touch this.
+const DAILY_LIMIT_PER_STUDENT = 10;
+const DAILY_LIMIT_TOTAL = 100;
 const SHEET_NAME = 'Log';
 
 function doPost(e) {
@@ -54,6 +59,11 @@ function doPost(e) {
 }
 
 function handleGenerate_(data) {
+  const limitError = reserveAnalysis_(data.name);
+  if (limitError) {
+    return jsonOutput_({ error: { code: 429, status: 'DAILY_LIMIT', message: limitError } });
+  }
+
   const body = JSON.stringify({
     contents: [{ role: 'user', parts: [{ text: data.userContent || '' }] }],
     systemInstruction: { parts: [{ text: data.system || '' }] },
@@ -86,8 +96,70 @@ function handleGenerate_(data) {
   const text = response
     ? response.getContentText()
     : JSON.stringify({ error: { code: 503, status: 'UNAVAILABLE', message: 'Could not reach the AI service.' } });
+  if (!response || response.getResponseCode() !== 200) {
+    releaseAnalysis_(data.name); // a failed attempt shouldn't use up the student's allowance
+  }
   return ContentService.createTextOutput(text)
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function jsonOutput_(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Checks the daily limits and, if there is room, counts this analysis
+// straight away. Returns an error message when a limit is hit, else null.
+function reserveAnalysis_(name) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const keys = limitKeys_(name);
+    pruneOldCounters_(props, keys.day);
+    const total = Number(props.getProperty(keys.total) || 0);
+    const mine = Number(props.getProperty(keys.student) || 0);
+    if (mine >= DAILY_LIMIT_PER_STUDENT) {
+      return `You've used all ${DAILY_LIMIT_PER_STUDENT} analyses for today. Come back tomorrow!`;
+    }
+    if (total >= DAILY_LIMIT_TOTAL) {
+      return 'The class has reached today\'s limit for the free AI connection. Please try again tomorrow.';
+    }
+    props.setProperty(keys.student, String(mine + 1));
+    props.setProperty(keys.total, String(total + 1));
+    return null;
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function releaseAnalysis_(name) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try {
+    const props = PropertiesService.getScriptProperties();
+    const keys = limitKeys_(name);
+    [keys.student, keys.total].forEach(k => {
+      const n = Number(props.getProperty(k) || 0);
+      if (n > 0) props.setProperty(k, String(n - 1));
+    });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function limitKeys_(name) {
+  const day = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  const who = String(name || '(unknown)').trim().toLowerCase().slice(0, 60) || '(unknown)';
+  return { day: day, total: `count|${day}|*total*`, student: `count|${day}|${who}` };
+}
+
+// Drops counters from earlier days so the script's property store stays small.
+function pruneOldCounters_(props, today) {
+  const all = props.getProperties();
+  Object.keys(all).forEach(k => {
+    if (k.indexOf('count|') === 0 && k.indexOf(`count|${today}|`) !== 0) props.deleteProperty(k);
+  });
 }
 
 function fetchGemini_(model, body) {

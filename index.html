@@ -1713,10 +1713,11 @@ Return ONLY valid JSON (no markdown, no preamble):
     const data = await fetchJsonWithTimeout(LOG_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
-      body: JSON.stringify({ action: 'generate', system, userContent })
+      body: JSON.stringify({ action: 'generate', name: getStudentName(), system, userContent })
     });
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
+      if (data?.error?.status === 'DAILY_LIMIT') throw new Error(data.error.message);
       throw new Error(friendlyGeminiError(data));
     }
     return text;
