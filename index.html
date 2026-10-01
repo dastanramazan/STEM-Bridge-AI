@@ -20,7 +20,7 @@
       --warn:#fbbf24;
       --err: #f87171;
       --txt: #e2e8f0;
-      --mut: #94a3b8;
+      --mut: #e2e8f0;
       --faint:#0f1a27;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -289,7 +289,7 @@
     .coding-mode select:focus,
     .coding-mode textarea:focus{border-color:var(--a2);}
 
-    input::placeholder,textarea::placeholder{color:#8696ab;opacity:1;}
+    input::placeholder,textarea::placeholder{color:#cbd5e1;opacity:1;}
     textarea{resize:vertical;min-height:190px;line-height:1.7;}
 
     .cc{font-size:.66rem;color:var(--mut);text-align:right;margin-top:-10px;margin-bottom:14px;}
@@ -469,7 +469,7 @@
     }
     .mission p{font-size:.68rem;color:var(--mut);max-width:520px;line-height:1.75;}
     .mission p strong{color:var(--a1);}
-    .mission-right{font-size:.66rem;color:var(--mut);opacity:.9;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .mission-right{font-size:.66rem;color:var(--mut);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 
     /* ── DASHBOARD BUTTON & MODAL ─────────── */
     .dashboard-btn{
@@ -629,14 +629,14 @@
     <span class="mode-icon">🔬</span>
     <div>
       <div style="font-weight:600;color:inherit;">SciWrite AI</div>
-      <div style="font-size:.66rem;opacity:.9;">STEM Writing Feedback</div>
+      <div style="font-size:.66rem;">STEM Writing Feedback</div>
     </div>
   </button>
   <button class="mode-btn" id="btn-coding" onclick="setMode('coding')">
     <span class="mode-icon">💻</span>
     <div>
       <div style="font-weight:600;color:inherit;">CodeBridge AI</div>
-      <div style="font-size:.66rem;opacity:.9;">CS Coding Tutor</div>
+      <div style="font-size:.66rem;">CS Coding Tutor</div>
     </div>
   </button>
 </div>
@@ -681,7 +681,7 @@
         <div id="voiceInputWrap" hidden>
           <button type="button" class="voice-input-btn" id="voiceInputBtn" onclick="toggleVoiceInput(this,'writingText')">🎤 Speak Instead of Type</button>
         </div>
-        <div id="k1FallbackNote" class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.66rem;opacity:.9;" hidden>
+        <div id="k1FallbackNote" class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.66rem;" hidden>
           Voice input isn't available in this browser. For this age, it works best if a teacher or parent types what the child says out loud.
         </div>
         <textarea id="writingText"
@@ -704,7 +704,7 @@
           <option value="11-12">High School 11–12</option>
           <option value="undergrad">Undergraduate / AP CS</option>
         </select>
-        <div class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.66rem;opacity:.9;">
+        <div class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.66rem;">
           K-5 students learn coding with block-based tools like Scratch or CodeMonkey — try SciWrite AI's writing feedback for that age range instead.
         </div>
 
