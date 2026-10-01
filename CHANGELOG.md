@@ -12,6 +12,7 @@ All notable changes are documented here. This file serves as the official develo
 - **Automatic retry and fallback for the default connection.** If Gemini reports it is overloaded or rate-limited, the script retries the main model, then switches to a lighter fallback model, instead of immediately showing the student an error.
 
 ### Changed
+- Daily limits on the default connection: 10 analyses per student and 100 for the whole class per day (editable in the Apps Script). Failed attempts don't count.
 - Setup bars collapse into a one-line summary once the student's name is saved (and a key, if they chose their own), with an "Edit" button to reopen them.
 - The full marketing hero appears only on a browser's first visit; later visits show a condensed header with an "About this tool" button.
 - The Teacher Dashboard button moved from the footer to the header so teachers can find it.
