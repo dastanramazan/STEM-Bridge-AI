@@ -20,7 +20,7 @@
       --warn:#fbbf24;
       --err: #f87171;
       --txt: #e2e8f0;
-      --mut: #526070;
+      --mut: #94a3b8;
       --faint:#0f1a27;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -67,7 +67,7 @@
     }
     .logo-name .cyan{color:var(--a1);}
     .logo-name .violet{color:var(--a2);}
-    .logo-sub{font-size:.6rem;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
+    .logo-sub{font-size:.66rem;color:var(--mut);letter-spacing:.08em;text-transform:uppercase;margin-top:1px;}
 
     .badges{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
     .badge{
@@ -175,7 +175,7 @@
       margin-top:28px;flex-wrap:wrap;
     }
     .stat-n{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;color:var(--a1);}
-    .stat-l{font-size:.6rem;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+    .stat-l{font-size:.66rem;color:var(--mut);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
 
     /* ── HERO (condensed, repeat visits) ─── */
     .hero-condensed{
@@ -289,9 +289,10 @@
     .coding-mode select:focus,
     .coding-mode textarea:focus{border-color:var(--a2);}
 
+    input::placeholder,textarea::placeholder{color:#8696ab;opacity:1;}
     textarea{resize:vertical;min-height:190px;line-height:1.7;}
 
-    .cc{font-size:.6rem;color:var(--mut);text-align:right;margin-top:-10px;margin-bottom:14px;}
+    .cc{font-size:.66rem;color:var(--mut);text-align:right;margin-top:-10px;margin-bottom:14px;}
 
     /* Selectors row */
     .selrow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
@@ -403,7 +404,7 @@
       border-radius:10px;padding:12px;text-align:center;transition:border-color .3s;
     }
     .sc-val{font-family:'Outfit',sans-serif;font-size:1.5rem;font-weight:800;}
-    .sc-dim{font-size:.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+    .sc-dim{font-size:.66rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
     .sc-bar-w{height:3px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden;}
     .sc-bar{height:100%;border-radius:2px;transition:width 1s ease;}
 
@@ -415,7 +416,7 @@
       text-align:center;flex:1;min-width:100px;
     }
     .metric-val{font-family:'Outfit',sans-serif;font-size:1.3rem;font-weight:800;}
-    .metric-lbl{font-size:.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+    .metric-lbl{font-size:.66rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
 
     /* Sections */
     .sec-label{
@@ -468,7 +469,7 @@
     }
     .mission p{font-size:.68rem;color:var(--mut);max-width:520px;line-height:1.75;}
     .mission p strong{color:var(--a1);}
-    .mission-right{font-size:.6rem;color:var(--mut);opacity:.55;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+    .mission-right{font-size:.66rem;color:var(--mut);opacity:.9;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
 
     /* ── DASHBOARD BUTTON & MODAL ─────────── */
     .dashboard-btn{
@@ -515,7 +516,7 @@
       background:var(--faint);border:1px solid var(--border);border-radius:10px;
     }
     .dash-stat-val{font-family:'Outfit',sans-serif;font-size:1.4rem;font-weight:800;color:var(--a1);}
-    .dash-stat-lbl{font-size:.58rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
+    .dash-stat-lbl{font-size:.66rem;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;}
     .dash-table{width:100%;border-collapse:collapse;font-size:.72rem;}
     .dash-table th,.dash-table td{
       text-align:left;padding:8px 10px;border-bottom:1px solid var(--border);
@@ -628,14 +629,14 @@
     <span class="mode-icon">🔬</span>
     <div>
       <div style="font-weight:600;color:inherit;">SciWrite AI</div>
-      <div style="font-size:.6rem;opacity:.7;">STEM Writing Feedback</div>
+      <div style="font-size:.66rem;opacity:.9;">STEM Writing Feedback</div>
     </div>
   </button>
   <button class="mode-btn" id="btn-coding" onclick="setMode('coding')">
     <span class="mode-icon">💻</span>
     <div>
       <div style="font-weight:600;color:inherit;">CodeBridge AI</div>
-      <div style="font-size:.6rem;opacity:.7;">CS Coding Tutor</div>
+      <div style="font-size:.66rem;opacity:.9;">CS Coding Tutor</div>
     </div>
   </button>
 </div>
@@ -680,7 +681,7 @@
         <div id="voiceInputWrap" hidden>
           <button type="button" class="voice-input-btn" id="voiceInputBtn" onclick="toggleVoiceInput(this,'writingText')">🎤 Speak Instead of Type</button>
         </div>
-        <div id="k1FallbackNote" class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.6rem;opacity:.7;" hidden>
+        <div id="k1FallbackNote" class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.66rem;opacity:.9;" hidden>
           Voice input isn't available in this browser. For this age, it works best if a teacher or parent types what the child says out loud.
         </div>
         <textarea id="writingText"
@@ -703,7 +704,7 @@
           <option value="11-12">High School 11–12</option>
           <option value="undergrad">Undergraduate / AP CS</option>
         </select>
-        <div class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.6rem;opacity:.7;">
+        <div class="fl" style="margin-top:-8px;margin-bottom:14px;font-size:.66rem;opacity:.9;">
           K-5 students learn coding with block-based tools like Scratch or CodeMonkey — try SciWrite AI's writing feedback for that age range instead.
         </div>
 

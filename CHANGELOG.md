@@ -18,6 +18,7 @@ All notable changes are documented here. This file serves as the official develo
 - The kindergarten–1st grade text box now shows age-appropriate placeholder text instead of the generic lab-report example.
 - The request timeout for the app was raised from 30 to 45 seconds to leave room for retries.
 - The default connection's response limit was raised so Gemini's hidden reasoning tokens can't crowd out the actual answer.
+- Gray helper text, labels and input placeholders are now lighter and slightly larger so they stay readable on the dark background.
 
 ### Fixed
 - The version badge, README and CHANGELOG were not updated after 0.4.0's later changes; they now match what is deployed.
