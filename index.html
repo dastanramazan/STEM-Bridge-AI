@@ -537,7 +537,7 @@
     </div>
   </div>
   <div class="badges">
-    <span class="badge ver">v0.4.0</span>
+    <span class="badge ver">v0.5.0</span>
     <span class="badge open">Open Source</span>
     <button class="dashboard-btn" onclick="openDashboard()">📊 Teacher Dashboard</button>
   </div>
@@ -1608,7 +1608,7 @@ Return ONLY valid JSON (no markdown, no preamble):
   }
 
   /* ── SHARED API CALL ──────────────────── */
-  const API_TIMEOUT_MS = 30000;
+  const API_TIMEOUT_MS = 45000; // leaves room for the proxy's retry/fallback on top of a normal response time
   const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
   const GEMINI_MODEL = 'gemini-flash-latest';
 

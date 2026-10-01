@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.4.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.5.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**

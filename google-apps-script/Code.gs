@@ -36,6 +36,11 @@
 const PIN = 'change-me-1234'; // <-- set your own PIN before deploying
 const GEMINI_API_KEY = 'paste-your-gemini-api-key-here'; // <-- from aistudio.google.com/apikey
 const GEMINI_MODEL = 'gemini-flash-latest';
+// Used only if GEMINI_MODEL stays overloaded after a retry. A lighter model
+// usually has spare capacity when the main one is busy.
+const GEMINI_FALLBACK_MODEL = 'gemini-flash-lite-latest';
+const RETRYABLE_STATUS_CODES = [429, 500, 503]; // rate-limited, internal error, overloaded
+const MAX_RETRY_WINDOW_MS = 20000; // don't START a new attempt after this; the app itself gives up at 45s
 const SHEET_NAME = 'Log';
 
 function doPost(e) {
@@ -49,25 +54,54 @@ function doPost(e) {
 }
 
 function handleGenerate_(data) {
-  const payload = {
+  const body = JSON.stringify({
     contents: [{ role: 'user', parts: [{ text: data.userContent || '' }] }],
     systemInstruction: { parts: [{ text: data.system || '' }] },
-    generationConfig: { maxOutputTokens: 1000 }
-  };
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
-  const response = UrlFetchApp.fetch(url, {
-    method: 'post',
-    contentType: 'application/json',
-    headers: { 'x-goog-api-key': GEMINI_API_KEY },
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true // return Gemini's real error body instead of throwing
+    // Gemini's hidden "thinking" tokens count against this limit too, so it
+    // has to leave room for them on top of the JSON the app asks for.
+    generationConfig: { maxOutputTokens: 4096 }
   });
+
+  // Brief overloads often clear within a second or two, so try the main
+  // model twice before switching to the fallback model (also twice).
+  const attempts = [GEMINI_MODEL, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GEMINI_FALLBACK_MODEL];
+  const startedAt = Date.now();
+  let response = null;
+
+  for (let i = 0; i < attempts.length; i++) {
+    if (i > 0) {
+      if (Date.now() - startedAt > MAX_RETRY_WINDOW_MS) break;
+      Utilities.sleep(1000 * i);
+    }
+    response = fetchGemini_(attempts[i], body);
+    const status = response ? response.getResponseCode() : 503;
+    if (!RETRYABLE_STATUS_CODES.includes(status)) break;
+  }
 
   // Pass Gemini's response straight through - same shape the client
   // already knows how to parse (candidates[...] on success, error{...}
-  // on failure), so no client-side parsing changes needed.
-  return ContentService.createTextOutput(response.getContentText())
+  // on failure), so no client-side parsing changes needed. If we never got
+  // any response at all (network-level failure), fake the same error shape
+  // so the app shows its friendly "busy" message instead of a generic one.
+  const text = response
+    ? response.getContentText()
+    : JSON.stringify({ error: { code: 503, status: 'UNAVAILABLE', message: 'Could not reach the AI service.' } });
+  return ContentService.createTextOutput(text)
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+function fetchGemini_(model, body) {
+  try {
+    return UrlFetchApp.fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+      method: 'post',
+      contentType: 'application/json',
+      headers: { 'x-goog-api-key': GEMINI_API_KEY },
+      payload: body,
+      muteHttpExceptions: true // return Gemini's real error body instead of throwing
+    });
+  } catch (err) {
+    return null; // network-level failure; treated as retryable by the caller
+  }
 }
 
 function handleLog_(data) {

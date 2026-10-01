@@ -108,6 +108,12 @@ one time, and needs no coding.
   **Dashboard's PIN check happens inside the script itself**, not in the
   page's visible code, so a student can't bypass it by viewing the page
   source.
+- **Busy signals are handled for you.** Google's free Gemini tier is
+  sometimes overloaded. When that happens, your script quietly retries,
+  then switches to a lighter backup model, before ever showing a student
+  an error. During a busy spell a response can take a few seconds longer.
+  If the backup model is busy too, the student sees a plain "AI service
+  is busy, try again" message.
 - If `LOG_ENDPOINT` is left blank, both the default AI connection and
   usage tracking are disabled — students would need to provide their own
   API key via "Use Your Own API Key" to use the app at all.
