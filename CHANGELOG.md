@@ -4,6 +4,24 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.6.0] — 2026-10 — Photo Check
+
+### Added
+- **Photo Check**, a third tool for handwritten work. Take a photo of a page (or choose one from the gallery), up to 4 pages per check, and the AI first writes out what it read, then scores it with the same STEM writing rubric as SciWrite AI. The "What the AI read" transcription is shown so a teacher can compare it with the paper.
+- **Two ways to use it.** *Teacher grading*: enter the student's name, get an AI draft, adjust any score, then press Save to log it. *My own work*: a student photographs their own page instead of typing it, and the scores are logged automatically, like typed work.
+- When the handwriting can't be read reliably, the app says so and asks for a clearer photo; unreliable scores are not logged automatically.
+- Quick-pick buttons for recently graded students' names (names only, kept on that device).
+- The Teacher Dashboard counts Photo uses separately.
+- Photo requests carry the work's student name, so the daily limits (10 per student, 100 per class) apply to the student whose work it is.
+
+### Privacy
+- Photos are shrunk on the device (which also removes metadata such as location), sent to the AI to read, and then forgotten. They are never stored, logged, or written to the Sheet. Only names and scores are logged, as before.
+
+### Changed
+- The Apps Script proxy accepts up to 4 photos per request and checks them before counting an analysis.
+
+---
+
 ## [0.5.0] — 2026-09 — Zero-Setup Default AI Access
 
 ### Added

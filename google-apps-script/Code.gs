@@ -46,6 +46,11 @@ const MAX_RETRY_WINDOW_MS = 20000; // don't START a new attempt after this; the 
 // the allowance. Students who bring their own API key never touch this.
 const DAILY_LIMIT_PER_STUDENT = 10;
 const DAILY_LIMIT_TOTAL = 100;
+// Photo Check: how many page photos one request may carry, and how big each
+// (base64 text) may be. The app already shrinks photos well below this.
+const MAX_IMAGES = 4;
+const MAX_IMAGE_BASE64_CHARS = 2000000;
+const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const SHEET_NAME = 'Log';
 
 function doPost(e) {
@@ -59,13 +64,22 @@ function doPost(e) {
 }
 
 function handleGenerate_(data) {
+  // Check the photos before counting this analysis, so a bad request never
+  // uses up a student's daily allowance. Photos are only passed along to
+  // Gemini - they are never stored or logged anywhere.
+  const imageParts = buildImageParts_(data.images);
+  if (typeof imageParts === 'string') {
+    return jsonOutput_({ error: { code: 400, status: 'INVALID_ARGUMENT', message: imageParts } });
+  }
+
   const limitError = reserveAnalysis_(data.name);
   if (limitError) {
     return jsonOutput_({ error: { code: 429, status: 'DAILY_LIMIT', message: limitError } });
   }
 
   const body = JSON.stringify({
-    contents: [{ role: 'user', parts: [{ text: data.userContent || '' }] }],
+    // Photos go before the text, which is where Gemini expects them.
+    contents: [{ role: 'user', parts: imageParts.concat([{ text: data.userContent || '' }]) }],
     systemInstruction: { parts: [{ text: data.system || '' }] },
     // Gemini's hidden "thinking" tokens count against this limit too, so it
     // has to leave room for them on top of the JSON the app asks for.
@@ -101,6 +115,26 @@ function handleGenerate_(data) {
   }
   return ContentService.createTextOutput(text)
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Returns an array of Gemini image parts (empty when there are no photos),
+// or a string describing what is wrong with them.
+function buildImageParts_(images) {
+  if (images === undefined || images === null) return [];
+  if (!Array.isArray(images)) return 'The photos were not sent in the expected format.';
+  if (images.length > MAX_IMAGES) return `Please send at most ${MAX_IMAGES} photos at a time.`;
+  const parts = [];
+  for (let i = 0; i < images.length; i++) {
+    const img = images[i];
+    if (!img || typeof img.data !== 'string' || ALLOWED_IMAGE_TYPES.indexOf(img.mime) === -1) {
+      return 'One of the photos was not a supported image (use JPEG, PNG or WebP).';
+    }
+    if (img.data.length > MAX_IMAGE_BASE64_CHARS) {
+      return 'One of the photos is too large. Please retake it or use a smaller photo.';
+    }
+    parts.push({ inlineData: { mimeType: img.mime, data: img.data } });
+  }
+  return parts;
 }
 
 function jsonOutput_(obj) {
