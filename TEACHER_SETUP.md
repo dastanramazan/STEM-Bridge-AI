@@ -125,6 +125,15 @@ one time, and needs no coding.
   budget alert. Ask people to photograph only the page, with no faces, and
   to cover the student's name when possible, and check your school's
   student-privacy policy first.
+- **Teacher mode and answer keys.** Photo Check's Teacher mode asks for
+  the same PIN as your Dashboard. Answer keys you save are stored only in
+  that browser on your device, never in the Sheet or on a server. The PIN
+  screen keeps students from wandering into Teacher mode on a shared
+  device; it isn't strong security, so don't leave a device with saved
+  keys logged in. After 10 wrong PIN guesses the PIN stops working for 15
+  minutes (for you too) to prevent guessing. Only a test's percent score
+  is logged, with its name and points in the Detail column — never the
+  answers.
 - **Photo Check needs the updated script.** After updating the app, paste
   the latest `Code.gs` into Apps Script (keeping your PIN and key) and
   deploy a **New version**, otherwise photos are ignored by the old script.

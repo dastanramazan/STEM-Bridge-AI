@@ -4,6 +4,23 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.7.0] — 2026-10 — Test Grading with Answer Keys
+
+### Added
+- **Grade paper tests against an answer key.** In Photo Check's Teacher mode, choose "Test with answer key", pick a saved key, photograph a student's paper (up to 4 pages), and the AI marks each question against the key. It works for tests written on the printed paper and for separate answer sheets.
+- **Answer keys** can be typed, or read from a photo (the AI turns it into text that the teacher checks and edits before saving). Keys support points per question, sample answers with what to look for, and "(check myself)" for questions the teacher marks personally. They are saved only in the browser on the teacher's own device.
+- **Question-by-question results.** Each question shows what the student wrote, the key's answer, a mark and editable points; the total and percent update as the teacher changes points. Questions the AI wasn't sure about (handwriting, crossed-out answers) or that were left for the teacher are highlighted until the teacher reviews them.
+- Saving a test logs only the percent score, with the test name and points in the Detail column. The Dashboard counts Test uses separately.
+- **Teacher mode is now locked behind the PIN** (the same PIN as the Teacher Dashboard), so students on a shared device can't open saved answer keys. It re-locks when the browser tab closes, or with "Lock teacher mode".
+
+### Security
+- Too many wrong PIN guesses (10) now locks the PIN for 15 minutes for everyone, including the Dashboard, so it can't be brute-forced. The Dashboard says so when this happens.
+
+### Changed
+- Photo requests may return up to 8192 tokens, to fit a mark for every question of a long test.
+
+---
+
 ## [0.6.0] — 2026-10 — Photo Check
 
 ### Added
