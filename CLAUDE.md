@@ -126,6 +126,22 @@ code alone.
   Teacher role is a UI toggle, not authentication. Real handwriting
   accuracy can't be tested from this sandbox (no key, `script.google.com`
   blocked) — the user must test on the live site.
+- **Teacher mode, answer keys, test grading.** Teacher role in Photo
+  Check is gated by the Dashboard PIN: the page calls
+  `LOG_ENDPOINT?action=check&pin=…` (GET) and stores
+  `stemBridgeTeacherUnlocked` in `sessionStorage` on success. That flag
+  is a screen in the page, not real security (anyone can set it in
+  devtools). Real protection: answer keys only exist in the teacher's own
+  `localStorage` (`stemBridgeAnswerKeys`), never in the Sheet or on a
+  server. `Code.gs` `checkPin_` counts wrong guesses in `CacheService`
+  (10 → locked 15 min for everyone, even the right PIN; accepted trade-off
+  vs brute force). Test grading sends the key text wrapped as data
+  (`<answer_key>`) plus the paper photos; the model returns per-question
+  marks, validated/clamped client-side (`validateTestResponse`). Unknown
+  `result` values fall back to `manual`. Log only `tool:'test'`,
+  `detail:'<key name> – <earned>/<possible>'`, `scores:[percent]` — never
+  per-question answers, and never mix points into the score columns (the
+  Dashboard averages them). Photo requests allow 8192 output tokens.
 - **No student writing/code content is ever logged** — only names,
   timestamps, tool used, and scores. Keep it that way; don't add
   raw-submission logging without an explicit, separate ask.

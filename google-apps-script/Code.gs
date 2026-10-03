@@ -51,6 +51,13 @@ const DAILY_LIMIT_TOTAL = 100;
 const MAX_IMAGES = 4;
 const MAX_IMAGE_BASE64_CHARS = 2000000;
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+// Photo requests can return long answers (a transcription, or a mark for every
+// question of a test), and Gemini's hidden thinking tokens count against this too.
+const MAX_OUTPUT_TOKENS_WITH_PHOTOS = 8192;
+// Wrong-PIN guard: after this many wrong guesses the PIN is refused for a while,
+// even if the right one is typed, so it can't be brute-forced.
+const MAX_PIN_FAILURES = 10;
+const PIN_LOCK_SECONDS = 900;
 const SHEET_NAME = 'Log';
 
 function doPost(e) {
@@ -83,7 +90,7 @@ function handleGenerate_(data) {
     systemInstruction: { parts: [{ text: data.system || '' }] },
     // Gemini's hidden "thinking" tokens count against this limit too, so it
     // has to leave room for them on top of the JSON the app asks for.
-    generationConfig: { maxOutputTokens: 4096 }
+    generationConfig: { maxOutputTokens: imageParts.length ? MAX_OUTPUT_TOKENS_WITH_PHOTOS : 4096 }
   });
 
   // Brief overloads often clear within a second or two, so try the main
@@ -232,10 +239,16 @@ function handleLog_(data) {
 }
 
 function doGet(e) {
-  const pin = e.parameter.pin;
-  if (!pin || pin !== PIN) {
-    return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid PIN' }))
-      .setMimeType(ContentService.MimeType.JSON);
+  const pinResult = checkPin_(e.parameter.pin);
+  if (pinResult === 'locked') {
+    return jsonOutput_({ error: 'Too many wrong PIN attempts. Please wait 15 minutes and try again.', locked: true });
+  }
+  if (pinResult !== 'ok') {
+    return jsonOutput_({ error: 'Invalid PIN' });
+  }
+  // The app's Teacher mode only needs to know the PIN is right.
+  if (e.parameter.action === 'check') {
+    return jsonOutput_({ ok: true });
   }
 
   const sheet = getLogSheet_();
@@ -254,6 +267,22 @@ function doGet(e) {
 
   return ContentService.createTextOutput(JSON.stringify({ entries }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// Returns 'ok', 'bad' or 'locked'. Failed guesses are counted for everyone
+// together (a Web App can't see who is asking), so the right PIN is also
+// refused while the lock is on.
+function checkPin_(pin) {
+  const cache = CacheService.getScriptCache();
+  const failures = Number(cache.get('pin_failures') || 0);
+  if (failures >= MAX_PIN_FAILURES) return 'locked';
+  if (!pin) return 'bad'; // nothing was typed; don't count it as a guess
+  if (pin === PIN) {
+    if (failures) cache.remove('pin_failures');
+    return 'ok';
+  }
+  cache.put('pin_failures', String(failures + 1), PIN_LOCK_SECONDS);
+  return 'bad';
 }
 
 function getLogSheet_() {
