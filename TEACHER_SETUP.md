@@ -114,6 +114,20 @@ one time, and needs no coding.
   an error. During a busy spell a response can take a few seconds longer.
   If the backup model is busy too, the student sees a plain "AI service
   is busy, try again" message.
+- **Photo Check and student privacy.** Photo Check sends a photo of a
+  student's page to Google's Gemini to be read. The app never stores or
+  logs the photo (only the name and scores go to your Sheet), but the
+  photo does pass through Google. As far as we know, Google's free Gemini
+  tier may use submitted content to improve its products and the paid tier
+  does not — check Google's current Gemini API terms yourself. **Before
+  photographing real student work, switch your Gemini key to a paid
+  billing plan** (aistudio.google.com/apikey → set up billing) and set a
+  budget alert. Ask people to photograph only the page, with no faces, and
+  to cover the student's name when possible, and check your school's
+  student-privacy policy first.
+- **Photo Check needs the updated script.** After updating the app, paste
+  the latest `Code.gs` into Apps Script (keeping your PIN and key) and
+  deploy a **New version**, otherwise photos are ignored by the old script.
 - **Daily limits protect your free quota.** By default each student can
   run 10 analyses per day and the whole class 100 per day on the default
   connection (change `DAILY_LIMIT_PER_STUDENT` and `DAILY_LIMIT_TOTAL` at

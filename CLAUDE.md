@@ -114,6 +114,18 @@ code alone.
   live-Apps-Script verification has to be done by the user; Google
   Drive API access (when available) can independently verify Sheet
   contents without needing the live site at all.
+- **Photo Check (third mode).** Photos are shrunk in the browser
+  (canvas re-encode, max side 1400px, which also strips EXIF), held only
+  in page memory, and sent as `images:[{mime,data}]` with the `generate`
+  request; `Code.gs` validates (max 4, jpeg/png/webp, size cap) *before*
+  reserving a daily-limit slot and forwards them as Gemini `inlineData`
+  parts ahead of the text. Never persist, log, or put photos in
+  `localStorage`/the Sheet. Photo mode supports the default proxy and an
+  own *Gemini* key only (Anthropic own-key shows a clear message). The
+  daily limit is keyed on the student whose work it is (`limitName`).
+  Teacher role is a UI toggle, not authentication. Real handwriting
+  accuracy can't be tested from this sandbox (no key, `script.google.com`
+  blocked) — the user must test on the live site.
 - **No student writing/code content is ever logged** — only names,
   timestamps, tool used, and scores. Keep it that way; don't add
   raw-submission logging without an explicit, separate ask.

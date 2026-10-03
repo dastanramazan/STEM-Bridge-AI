@@ -2,7 +2,7 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.5.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.6.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**
@@ -33,7 +33,7 @@ No signup. No cost. Works on any device with a browser.
 
 ## ✨ Platform Overview
 
-STEM Bridge AI contains two integrated tools:
+STEM Bridge AI contains three integrated tools:
 
 ### 🔬 SciWrite AI — STEM Writing Feedback
 Delivers instant, personalized feedback on student scientific writing calibrated to grade level and assignment type.
@@ -60,6 +60,18 @@ Provides grade-calibrated coding assistance for text-based programming languages
 | **Population focus** | Rural and low-income students without CS specialist access |
 
 K-5 students are better served by block-based tools (Scratch, CodeMonkey) and are directed to SciWrite AI instead, which covers the full K-12 range.
+
+### 📷 Photo Check — Handwritten Work
+Photograph a student's handwritten page on a phone and the AI reads it, shows what it read, and scores it with the SciWrite rubric.
+
+| Feature | Detail |
+|---|---|
+| **Who uses it** | A teacher grading (AI draft scores they can adjust before saving), or a student checking their own work instead of typing it |
+| **Input** | Phone camera or gallery, up to 4 pages per check |
+| **Output** | Transcription of what the AI read, scores, strengths, improvements, suggestions |
+| **Safeguards** | Warns when handwriting is too hard to read; photos are never stored or logged |
+
+Use a paid Gemini key before photographing real student work — see [TEACHER_SETUP.md](TEACHER_SETUP.md).
 
 ### 🔑 Works With No Setup, or Bring Your Own Key
 By default the app runs on a free Google Gemini connection configured by whoever deploys it — students need no API key, no signup, nothing. A "School or organization? Provide your own API key instead" option lets anyone switch to their own Anthropic (Claude) or Gemini key when they'd rather not use the shared default.
