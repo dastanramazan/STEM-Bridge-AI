@@ -148,8 +148,10 @@ code alone.
   student counts, or learning outcomes unless the owner provides
   documentation. The project has not had a classroom pilot yet, and the
   docs say so. When the owner supplies a source for a number, add it
-  with its citation. (`index.html`'s hero still shows "54M+ Underserved
-  U.S. Students" with no source; revisit when one is supplied.)
+  with its citation. The "48 states" figure is worded as teacher
+  shortages (the cited Dept. of Education Teacher Shortage Area
+  designations); only say "CS teacher" if the owner confirms the source
+  (Exhibit 9B) covers computer science specifically.
 - **No student writing/code content is ever logged** — only names,
   timestamps, tool used, and scores. Keep it that way; don't add
   raw-submission logging without an explicit, separate ask.

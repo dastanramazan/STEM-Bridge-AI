@@ -15,7 +15,7 @@
 
 The United States faces two simultaneous, documented crises in STEM education:
 
-1. **CS Teacher Shortage:** 48 states reported critical shortages of qualified teachers in 2023–2024 (U.S. Dept. of Education Teacher Shortage Area designations). Over **667,000 new computing jobs** are projected by 2030 (BLS, 2023), and students without CS instruction are poorly positioned to compete for them.
+1. **Teacher Shortage:** 48 states reported critical shortages of qualified teachers in 2023–2024 (U.S. Dept. of Education Teacher Shortage Area designations). Over **667,000 new computing jobs** are projected by 2030 (BLS, 2023), and students without CS instruction are poorly positioned to compete for them.
 
 2. **STEM Writing Gap:** Scientific writing is a foundational skill for STEM careers, and students in schools without science specialists have few chances to practice it and receive expert feedback.
 
