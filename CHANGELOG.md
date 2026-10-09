@@ -4,6 +4,18 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [Unreleased] — Documentation
+
+### Changed
+- README and research notes now state the project's status plainly (built and deployed, no classroom pilot or outcome data yet), and the roadmap is rewritten as clearly labeled goals.
+- Removed two statistics that had no citation on file (a "43% fewer science specialists" figure and "54M+" students, including the "54M+" box in the page header, now "3 tools in one platform"), and removed a specific effect size that could not be matched to its source.
+- Federal-policy references now cite the April 2025 executive order on AI education and NSF Dear Colleague Letter 25-036 instead of the 2023 executive order.
+
+### Added
+- `PRIVACY.md`: what data the app handles, where it goes, and what is never stored.
+
+---
+
 ## [0.7.0] — 2026-10 — Test Grading with Answer Keys
 
 ### Added

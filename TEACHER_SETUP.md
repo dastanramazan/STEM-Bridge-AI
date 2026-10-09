@@ -94,8 +94,9 @@ one time, and needs no coding.
 
 ## Good to know
 
-- **No submitted writing or code is ever sent or stored** — only names,
-  timestamps, tool used, and scores.
+- **No submitted writing or code is ever stored** — only names,
+  timestamps, tool used, and scores are logged. (Details of what goes
+  where are in [PRIVACY.md](PRIVACY.md).)
 - **Your Gemini key never reaches a student's browser.** It lives only
   inside the Apps Script; the app talks to your script, and your script
   talks to Gemini. This is meaningfully safer than putting a key directly

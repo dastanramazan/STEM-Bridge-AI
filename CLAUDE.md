@@ -142,6 +142,16 @@ code alone.
   `detail:'<key name> – <earned>/<possible>'`, `scores:[percent]` — never
   per-question answers, and never mix points into the score columns (the
   Dashboard averages them). Photo requests allow 8192 output tokens.
+- **Keep documentation claims verifiable.** README, research.md and
+  similar public docs must not contain statistics without a citation the
+  owner has supplied, and must not state any classroom-usage numbers,
+  student counts, or learning outcomes unless the owner provides
+  documentation. The project has not had a classroom pilot yet, and the
+  docs say so. When the owner supplies a source for a number, add it
+  with its citation. The "48 states" figure is worded as teacher
+  shortages (the cited Dept. of Education Teacher Shortage Area
+  designations); only say "CS teacher" if the owner confirms the source
+  (Exhibit 9B) covers computer science specifically.
 - **No student writing/code content is ever logged** — only names,
   timestamps, tool used, and scores. Keep it that way; don't add
   raw-submission logging without an explicit, separate ask.

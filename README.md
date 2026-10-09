@@ -7,17 +7,19 @@
 
 > **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**
 
+**Status (v0.7.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+
 ---
 
 ## 🎯 The Problem
 
 The United States faces two simultaneous, documented crises in STEM education:
 
-1. **CS Teacher Shortage:** 48 states report critical shortages of qualified CS educators (U.S. Dept. of Education, 2023–2024). Over **667,000 new computing jobs** are projected by 2030 — the majority inaccessible to students without CS instruction.
+1. **Teacher Shortage:** 48 states reported critical shortages of qualified teachers in 2023–2024 (U.S. Dept. of Education Teacher Shortage Area designations). Over **667,000 new computing jobs** are projected by 2030 (BLS, 2023), and students without CS instruction are poorly positioned to compete for them.
 
-2. **STEM Writing Gap:** Rural schools employ **43% fewer science specialists** per student than urban districts (NCES, 2022). Scientific writing — a foundational skill for STEM careers — goes untaught at scale in low-income communities.
+2. **STEM Writing Gap:** Scientific writing is a foundational skill for STEM careers, and students in schools without science specialists have few chances to practice it and receive expert feedback.
 
-**Both crises disproportionately affect the same students:** the 54M+ enrolled in rural and Title I schools, who are less likely to have access to specialized tutors, coding bootcamps, or AP CS courses.
+**Both gaps fall hardest on the same students:** those in rural and Title I schools, who are less likely to have access to specialized tutors, coding bootcamps, or AP CS courses.
 
 STEM Bridge AI addresses both gaps in a single, free, open-source platform.
 
@@ -27,7 +29,9 @@ STEM Bridge AI addresses both gaps in a single, free, open-source platform.
 
 **[→ Try STEM Bridge AI](https://dastanramazan.github.io/STEM-Bridge-AI/)**
 
-No signup. No cost. Works on any device with a browser.
+No signup and no account. Free to use, on any device with a browser.
+
+Good to know: the shared free AI connection has daily limits (10 analyses per student and 100 per class per day), and Google's free Gemini tier is sometimes busy, so a request can occasionally need a retry. Teachers who photograph student work should use a paid Gemini key — see [TEACHER_SETUP.md](TEACHER_SETUP.md) and [PRIVACY.md](PRIVACY.md).
 
 ---
 
@@ -155,26 +159,27 @@ This project is part of ongoing research into **AI-assisted STEM education equit
 
 ### Federal Policy Alignment
 
-| Policy / Program | How STEM Bridge AI Aligns |
+| Policy / Program | How STEM Bridge AI relates |
 |---|---|
-| White House EO on AI (Oct. 2023) | "Supporting development of a diverse and skilled AI workforce" |
-| U.S. Dept. of Education AI Report (2023) | "AI tools centered on equity and underserved communities" |
-| NSF STEM Education Priority | Expands STEM access for underrepresented populations |
-| Code.org Equity Initiative | Free CS instruction for students without specialist access |
+| Executive Order *Advancing Artificial Intelligence Education for American Youth* (Apr. 23, 2025) | Sets a federal policy of "the appropriate integration of AI into education" and AI training for educators; this project is a free AI tool for classrooms plus the educator training goal below |
+| NSF Dear Colleague Letter 25-036 (Aug. 25, 2025) | Supports K-12 AI teams for the Presidential AI Challenge and asks funded teams to plan for engaging regions or localities particularly in need of AI education resources, the population this project targets |
+| U.S. Dept. of Education, *Artificial Intelligence and the Future of Teaching and Learning* (2023) | Emphasizes keeping teachers in the loop and attending to equity in educational AI, which is why the Teacher Dashboard and teacher review of AI marks exist |
+| Code.org, *State of Computer Science Education* (2024) | Documents that schools serving mostly low-income students are less likely to offer CS courses, the gap CodeBridge AI addresses |
 
-### The Evidence Base for AI-Personalized Feedback
+### The Evidence Base
 
-- Immediate, personalized feedback is among the highest-impact pedagogical interventions (Hattie & Timperley, 2007, effect size d=0.73)
-- Rural districts have 43% fewer science specialists per student than urban districts (NCES, 2022)
-- 48 states report CS teacher shortages for 3+ consecutive years (U.S. Dept. of Education, 2023)
-- Hispanic students are 26% of K-12 enrollment but earn fewer than 8% of computing degrees (NSF, 2023)
+- Feedback is among the most powerful influences on learning and achievement, but its effect can be positive or negative depending on how it is given (Hattie & Timperley, 2007) — which is why CodeBridge AI leads with hints and questions rather than finished answers.
+- 48 states reported critical teacher shortages in 2023–2024 (U.S. Dept. of Education Teacher Shortage Area designations).
+- Hispanic students are 26% of K-12 enrollment but earn fewer than 8% of computing degrees (NSF, 2023).
 
-### Planned Research Outputs
+### Planned Evaluation (not yet started)
+
+No evaluation has been run yet. The plan is to work with a university computing-education researcher once classroom pilots exist.
 
 - [ ] Pre/post study: student writing improvement using SciWrite AI feedback vs. control
 - [ ] Coding comprehension gains: CodeBridge AI vs. no-feedback condition
 - [ ] Qualitative: teacher-reported integration experiences in Title I settings
-- [ ] Target venue: ISTE, CSTA National Conference, or journal submission
+- [ ] Target venue: a peer-reviewed computing-education journal or conference such as CSTA
 
 ---
 
@@ -185,6 +190,7 @@ STEM-Bridge-AI/
 ├── index.html              # Unified application (single-file, zero-dependency)
 ├── README.md               # This file
 ├── TEACHER_SETUP.md        # Optional: default AI connection + usage-tracking dashboard setup
+├── PRIVACY.md              # What student data the app handles, where it goes, and what is never stored
 ├── google-apps-script/
 │   └── Code.gs             # Gemini proxy (hides the default API key) + usage-tracking backend
 ├── LICENSE                 # MIT License
@@ -196,25 +202,23 @@ STEM-Bridge-AI/
 
 ## 🗺️ Roadmap
 
-### ✅ Shipped in v0.4.0
-- Teacher dashboard: class-wide and per-student usage stats
-- Progress tracking across multiple submissions (revision comparison)
-- Choice of AI provider, including a free option (Google Gemini)
-- Accessibility: Read Aloud output, voice input for Kindergarten–1st Grade
+### ✅ Shipped (details in [CHANGELOG.md](CHANGELOG.md))
+- **v0.4.0:** Teacher Dashboard, progress-since-last-attempt comparison, a free Google Gemini option, Read Aloud, and voice input for Kindergarten–1st Grade
+- **v0.5.0:** a default AI connection that needs no API key from students (the teacher's own Apps Script holds the key privately), with automatic retry and a fallback model when Gemini is busy
+- **v0.6.0:** Photo Check — photograph handwritten work to have it read and scored
+- **v0.7.0:** grading of paper tests against a teacher's answer key, PIN-protected Teacher mode, and daily usage limits
 
-### Classroom Features (planned)
+### 🎯 Goals (not yet achieved)
+These are goals, not results.
+
+- **2026–2027, field testing:** gather structured feedback from teachers outside the author's own campus, publish an educator quick-start guide, and release improvements driven by that feedback. Targets: at least 10 educators and at least 3 schools outside the author's campus.
+- **2027–2028, district pilots:** pilot with at least two Title I districts, publish a teacher training module for CS teachers without engineering backgrounds, and publish district-facing privacy documentation before any pilot begins (a first version is [PRIVACY.md](PRIVACY.md)).
+- **2028–2029, independent evaluation:** partner with a university researcher to evaluate learning outcomes, seek peer review, and apply for grant funding to sustain the platform.
+
+### 💡 Ideas (unscheduled)
 - Spanish-language interface for ESL student populations
 - PDF export of feedback reports for student portfolios
-
-### Adaptive Learning (planned)
-- Persistent knowledge gap identification
-- Targeted reading resource recommendations
-
-### v1.0 — District Deployment (planned, 2027)
-- LMS integration: Google Classroom, Canvas
-- Offline / low-bandwidth mode for rural schools
-- Peer-reviewed research publication on learning outcomes
-- Teacher professional development module
+- Offline / low-bandwidth mode and LMS integrations (Google Classroom, Canvas)
 
 ---
 
@@ -252,9 +256,11 @@ Developed as part of independent AI-in-education research focused on STEM equity
 ## 📚 References
 
 1. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112.
-2. National Center for Education Statistics. (2022). *Characteristics of Rural Schools in the United States*. U.S. Dept. of Education.
-3. U.S. Department of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
-4. NSF. (2023). *Women, Minorities, and Persons with Disabilities in Science and Engineering*.
-5. Code.org. (2024). *State of Computer Science Education Annual Report*.
-6. Executive Order on Safe, Secure, and Trustworthy AI. (Oct. 30, 2023). White House.
-7. Next Generation Science Standards (NGSS). (2013). *Next Generation Science Standards: For States, By States*.
+2. U.S. Department of Education. *Teacher Shortage Areas* (2023–2024 designations).
+3. NSF. (2023). *Women, Minorities, and Persons with Disabilities in Science and Engineering*.
+4. Code.org. (2024). *State of Computer Science Education Annual Report*.
+5. U.S. Bureau of Labor Statistics. (2023). *Occupational Outlook Handbook: Computer and Information Technology Occupations*.
+6. U.S. Department of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
+7. Executive Order, *Advancing Artificial Intelligence Education for American Youth*. (Apr. 23, 2025). The White House.
+8. NSF Dear Colleague Letter 25-036, *Supplemental Funding Requests to Support K-12 AI Teams for the Presidential AI Challenge*. (Aug. 25, 2025).
+9. Next Generation Science Standards (NGSS). (2013). *Next Generation Science Standards: For States, By States*.
