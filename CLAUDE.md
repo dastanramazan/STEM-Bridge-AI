@@ -150,8 +150,8 @@ code alone.
   docs say so. When the owner supplies a source for a number, add it
   with its citation. The "48 states" figure is worded as teacher
   shortages (the cited Dept. of Education Teacher Shortage Area
-  designations); only say "CS teacher" if the owner confirms the source
-  (Exhibit 9B) covers computer science specifically.
+  designations); only say "CS teacher" if the owner confirms the cited
+  source covers computer science specifically.
 - **No student writing/code content is ever logged** — only names,
   timestamps, tool used, and scores. Keep it that way; don't add
   raw-submission logging without an explicit, separate ask.
