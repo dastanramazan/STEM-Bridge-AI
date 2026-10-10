@@ -16,8 +16,8 @@ one time, and needs no coding.
 ## What this does
 
 - Students see the app work immediately — no API key required, no signup.
-  A small "School or organization? Provide your own API key instead"
-  checkbox lets anyone who prefers to use their own key do so.
+  Under ⚙️ Settings, "Use our own AI key instead of the free shared one"
+  lets anyone who prefers to use their own key do so.
 - Each student types their name once (remembered on their device after that).
 - Every time a student completes an analysis, the app records: their name,
   the date/time, which tool they used, and their scores — nothing else.
@@ -147,9 +147,9 @@ one time, and needs no coding.
   Anyone using their own API key is not limited.
 - If `LOG_ENDPOINT` is left blank, both the default AI connection and
   usage tracking are disabled — students would need to provide their own
-  API key via "Use Your Own API Key" to use the app at all.
-- Unchecking "School or organization? Provide your own API key instead"
-  (or never checking it) always uses your default Gemini connection —
+  API key in ⚙️ Settings to use the app at all.
+- Leaving "Use our own AI key instead of the free shared one" (in ⚙️ Settings)
+  unchecked always uses your default Gemini connection —
   checking it switches to whatever provider/key the visitor enters.
 - You can reset a student's remembered name from their device using the
   "Not you? Click here." link next to the name field (useful for shared

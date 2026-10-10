@@ -11,7 +11,7 @@ how student data is handled, `PRIVACY.md`.
 - **Default AI access goes through the teacher's own Apps Script proxy**
   (`LOG_ENDPOINT`, script at `google-apps-script/Code.gs`), which holds the
   Gemini key and calls Gemini itself, passing the response through
-  unchanged. With "Provide your own API key" the browser calls
+  unchanged. With "Use our own AI key" in Settings the browser calls
   Anthropic or Gemini directly with the visitor's own key, kept only in
   `sessionStorage`.
 - **Never put a real secret in `index.html`** or any committed file. The

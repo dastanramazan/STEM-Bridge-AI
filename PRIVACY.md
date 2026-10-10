@@ -31,7 +31,7 @@ the browser. They contain no student information.
   Google Apps Script, which forwards it to Google's Gemini API using a key
   that only the teacher's script holds. The script does not save what it
   forwards.
-- **"Provide your own API key."** The browser sends the request directly to
+- **"Use our own AI key" (Settings).** The browser sends the request directly to
   Anthropic (Claude) or Google (Gemini) with the key the visitor entered.
 - Whatever is sent is then governed by that provider's terms. As far as we
   know, Google's **free** Gemini tier may use submitted content to improve its
@@ -41,8 +41,7 @@ the browser. They contain no student information.
 
 ## Other services the page contacts
 
-- **GitHub Pages** hosts the page, so GitHub sees ordinary visit logs (such as IP addresses).
-- **Google Fonts** supplies the page's fonts, so Google sees that request too.
+- **GitHub Pages** hosts the page, so GitHub sees ordinary visit logs (such as IP addresses). The page uses only your device's own fonts, so no fonts are downloaded from anywhere else.
 - There are no analytics, advertising, or tracking scripts.
 
 ## Who can see the usage Sheet

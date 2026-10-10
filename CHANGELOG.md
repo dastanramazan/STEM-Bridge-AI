@@ -4,6 +4,21 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.8.0] — 2026-10 — A Friendlier, Student-First Design
+
+### Changed
+- **New look:** bright and friendly, with a light theme by default and an optional dark theme (Settings). Body text is larger and clearer, buttons are bigger, and nothing visible is smaller than about 14px.
+- **System fonts only.** The page no longer downloads fonts from Google, so it loads faster, works on locked-down school networks, and makes one fewer outside request.
+- **Student-first home screen:** the long introduction is gone. Students say their name, see a greeting, pick one of three big tool cards (Science Writing, Coding Helper, Photo Check) and start. The introduction and statistics moved to an **About** window for visitors and teachers.
+- **Settings window** holds the light/dark choice and the "use our own AI key" option, which no longer clutters the top of the page.
+- **Friendly feedback:** a cheerful headline, one clear "next step", and stars with words (Awesome, Strong, Growing, Getting started, Keep going) for each skill. The exact scores are one click away ("Show scores"). The same style is used for typed writing, coding help, and a student's own photographed work. Teachers still get numeric, editable scores and the full test marking view.
+- On phones and tablets the page scrolls to the feedback by itself.
+- New logo: a hexagon with an arch bridge, water, and a spark. It is also the browser-tab icon.
+- Friendlier wording throughout (for example "Check my writing", "Help me with my code", "Things to look at").
+- Windows (Settings, About, Dashboard) close with the Escape key or by clicking outside them.
+
+---
+
 ## [Unreleased] — Documentation
 
 ### Changed

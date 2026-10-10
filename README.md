@@ -2,12 +2,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.7.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.8.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**
 
-**Status (v0.7.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+**Status (v0.8.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
 ---
 
@@ -80,7 +80,7 @@ Photograph a student's handwritten page on a phone and the AI reads it, shows wh
 Use a paid Gemini key before photographing real student work — see [TEACHER_SETUP.md](TEACHER_SETUP.md).
 
 ### 🔑 Works With No Setup, or Bring Your Own Key
-By default the app runs on a free Google Gemini connection configured by whoever deploys it — students need no API key, no signup, nothing. A "School or organization? Provide your own API key instead" option lets anyone switch to their own Anthropic (Claude) or Gemini key when they'd rather not use the shared default.
+By default the app runs on a free Google Gemini connection configured by whoever deploys it — students need no API key, no signup, nothing. A "Use our own AI key" option in Settings (⚙️) lets anyone switch to their own Anthropic (Claude) or Gemini key when they'd rather not use the shared default.
 
 ### 📊 Optional Usage Tracking & Teacher Dashboard
 Students enter their name once per device; the app can log usage (name, timestamp, tool, scores — never the submitted writing or code) to a Google Sheet the teacher connects themselves, and unlock a PIN-protected in-app Dashboard. See [TEACHER_SETUP.md](TEACHER_SETUP.md).
@@ -127,7 +127,7 @@ cd STEM-Bridge-AI
 open index.html   # or: python3 -m http.server 8080
 ```
 
-If the deployer has set up a default AI connection (see [TEACHER_SETUP.md](TEACHER_SETUP.md)), the app works immediately with no key needed. Otherwise, check "School or organization? Provide your own API key instead" and use either:
+If the deployer has set up a default AI connection (see [TEACHER_SETUP.md](TEACHER_SETUP.md)), the app works immediately with no key needed. Otherwise, open Settings (⚙️), turn on "Use our own AI key instead of the free shared one", and use either:
 - **[Anthropic API key](https://console.anthropic.com)** (Claude), or
 - **[Google AI Studio key](https://aistudio.google.com/apikey)** (Gemini) — free, no credit card required
 
@@ -206,6 +206,7 @@ STEM-Bridge-AI/
 - **v0.4.0:** Teacher Dashboard, progress-since-last-attempt comparison, a free Google Gemini option, Read Aloud, and voice input for Kindergarten–1st Grade
 - **v0.5.0:** a default AI connection that needs no API key from students (the teacher's own Apps Script holds the key privately), with automatic retry and a fallback model when Gemini is busy
 - **v0.6.0:** Photo Check — photograph handwritten work to have it read and scored
+- **v0.8.0:** a friendlier, student-first design: a light theme by default (dark optional), a simple greeting and three big tool cards, stars-and-words feedback with scores on request, system fonts only, and Settings and About windows
 - **v0.7.0:** grading of paper tests against a teacher's answer key, PIN-protected Teacher mode, and daily usage limits
 
 ### 🎯 Goals (not yet achieved)
