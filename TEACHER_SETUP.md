@@ -135,6 +135,16 @@ one time, and needs no coding.
   minutes (for you too) to prevent guessing. Only a test's percent score
   is logged, with its name and points in the Detail column — never the
   answers.
+- **Live camera and document cameras.** Photo Check's "Live camera"
+  button shows a live view from any camera the computer can see. A USB
+  document camera (the kind on a flexible arm that looks down at the desk)
+  shows up as an ordinary webcam, so just plug it in, open Live camera, and
+  allow the camera when the browser asks. If several cameras are connected
+  there is a menu to pick one. The student presses **Capture** (or the
+  space bar) for each page; the camera switches off when they press
+  "Check the Work", leave the tool, or switch tabs. On school-managed
+  Chromebooks an administrator can block cameras; if the browser says the
+  camera is blocked, ask your tech helper to allow it for this site.
 - **Photo Check needs the updated script.** After updating the app, paste
   the latest `Code.gs` into Apps Script (keeping your PIN and key) and
   deploy a **New version**, otherwise photos are ignored by the old script.

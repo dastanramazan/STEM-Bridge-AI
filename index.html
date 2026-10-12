@@ -292,6 +292,18 @@
     .photo-hint{font-size:.9rem;color:var(--mut);line-height:1.55;}
     .photo-save{border:2px solid var(--a3);background:var(--a3-bg);border-radius:14px;padding:14px 16px;margin:4px 0 18px;}
     .photo-save p{line-height:1.55;margin-bottom:10px;}
+    .cam-panel{border:2px solid var(--photo);border-radius:14px;padding:12px;margin:0 0 14px;background:var(--faint);}
+    .cam-top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+    .cam-top select{flex:1 1 200px;width:auto;}
+    .cam-top .toggle{margin:0 0 0 auto;}
+    .cam-stage{position:relative;border-radius:12px;overflow:hidden;background:#0f1730;aspect-ratio:16/9;}
+    .cam-stage video{width:100%;height:100%;object-fit:contain;display:block;}
+    .cam-stage.flash::after{content:'';position:absolute;inset:0;background:#fff;opacity:.85;animation:camflash .3s ease-out forwards;}
+    @keyframes camflash{to{opacity:0;}}
+    .cam-msg{margin:10px 0 0;font-weight:600;color:var(--mut);min-height:1.5em;}
+    .cam-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;}
+    .cam-actions .btn-main{flex:1 1 240px;width:auto;}
+    .cam-key{font-weight:500;opacity:.9;font-size:.9rem;}
     .pin-box{border:2px solid var(--photo);background:var(--photo-bg);border-radius:12px;padding:12px 14px;margin:0 0 14px;}
     .pin-row{display:flex;gap:8px;margin-bottom:8px;}
     .pin-row input{margin-bottom:0;}
@@ -597,6 +609,19 @@
         <div class="photo-actions">
           <button type="button" class="photo-add-btn" id="photoCameraBtn" onclick="document.getElementById('photoCamera').click()">📷 Take Photo</button>
           <button type="button" class="photo-add-btn" id="photoGalleryBtn" onclick="document.getElementById('photoGallery').click()">🖼️ Choose Photo</button>
+          <button type="button" class="photo-add-btn" id="photoCamBtn" onclick="openCamera()">📹 Live camera</button>
+        </div>
+        <div class="cam-panel" id="camPanel" hidden>
+          <div class="cam-top">
+            <select id="camSelect" aria-label="Choose a camera" onchange="onCamSelect()" hidden></select>
+            <label class="toggle"><input type="checkbox" id="camEnhance" checked> Make the writing clearer</label>
+          </div>
+          <div class="cam-stage" id="camStage"><video id="camVideo" autoplay playsinline muted></video></div>
+          <div class="cam-msg" id="camMsg" role="status" aria-live="polite"></div>
+          <div class="cam-actions">
+            <button type="button" class="btn-main photo-btn" id="camCaptureBtn" onclick="captureFromCamera()">📸 Capture page <span class="cam-key">(or press Space)</span></button>
+            <button type="button" class="photo-add-btn small" onclick="stopCamera()">Close camera</button>
+          </div>
         </div>
         <input type="file" id="photoCamera" accept="image/*" capture="environment" hidden onchange="addPhotos(this)" />
         <input type="file" id="photoGallery" accept="image/*" multiple hidden onchange="addPhotos(this)" />
@@ -678,7 +703,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.8.0</span>
+  <span>Free and open source · MIT License · v0.9.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -753,7 +778,7 @@
         <div><div class="stat-n">K–12</div><div class="stat-l">Full grade range</div></div>
       </div>
       <p><b>Why we built it:</b> many students in rural and low-income schools have little access to expert STEM feedback, and 48 states reported teacher shortages in 2023–2024. This tool aims to give every student quick, personalized guidance.</p>
-      <p>Version 0.8.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.9.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1122,6 +1147,7 @@
 
   function setMode(m) {
     stopReadAloud();
+    stopCamera();
     currentMode = m;
 
     Object.keys(MODE_VIEW).forEach(key => {
@@ -1780,15 +1806,9 @@ Return ONLY valid JSON (no markdown, no preamble):
 
   // Redrawing onto a canvas keeps the right orientation, shrinks the file so
   // it uploads quickly, and drops metadata such as the location the photo was taken.
-  async function shrinkPhoto(file) {
-    let source;
-    try {
-      source = await createImageBitmap(file, { imageOrientation: 'from-image' });
-    } catch (e) {
-      source = await loadImageElement(file);
-    }
-    const w0 = source.width || source.naturalWidth;
-    const h0 = source.height || source.naturalHeight;
+  // Draws a picture or video frame onto a canvas at a sensible size and returns it as a JPEG page.
+  // `enhance` boosts the contrast for camera captures.
+  function encodePhotoSource(source, w0, h0, enhance) {
     if (!w0 || !h0) throw new Error('unreadable image');
     const scale = Math.min(1, PHOTO_MAX_SIDE / Math.max(w0, h0));
     const canvas = document.createElement('canvas');
@@ -1798,9 +1818,26 @@ Return ONLY valid JSON (no markdown, no preamble):
     ctx.fillStyle = '#fff'; // flatten transparency so it doesn't turn black in a JPEG
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(source, 0, 0, canvas.width, canvas.height);
-    if (typeof source.close === 'function') source.close();
+    if (enhance) {
+      try {
+        const img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        if (autoLevels(img)) ctx.putImageData(img, 0, 0);
+      } catch (e) { /* if the browser won't allow it, keep the plain picture */ }
+    }
     const dataUrl = canvas.toDataURL('image/jpeg', PHOTO_JPEG_QUALITY);
     return { data: dataUrl.split(',')[1], mime: 'image/jpeg' };
+  }
+
+  async function shrinkPhoto(file) {
+    let source;
+    try {
+      source = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    } catch (e) {
+      source = await loadImageElement(file);
+    }
+    const page = encodePhotoSource(source, source.width || source.naturalWidth, source.height || source.naturalHeight, false);
+    if (typeof source.close === 'function') source.close();
+    return page;
   }
 
   function setPhotoMsg(text) {
@@ -1871,6 +1908,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     const full = photoPages.length >= PHOTO_MAX_PAGES;
     document.getElementById('photoCameraBtn').disabled = full || photoBusy;
     document.getElementById('photoGalleryBtn').disabled = full || photoBusy;
+    document.getElementById('photoCamBtn').disabled = full || photoBusy;
     document.getElementById('photoAnalyzeBtn').disabled = photoPages.length === 0 || photoBusy;
   }
 
@@ -1909,6 +1947,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     const isK1 = grade === 'K-1';
 
     stopReadAloud();
+    stopCamera(); // the page has been captured; switch the camera (and its light) off
     const btn = document.getElementById('photoAnalyzeBtn');
     photoBusy = true; renderPhotoThumbs();
     btn.textContent = 'Checking…';
@@ -2061,6 +2100,160 @@ Return ONLY valid JSON (no markdown, no preamble):
   }
 
   /* ════════════════════════════════════════
+     LIVE CAMERA — a USB document camera, a laptop webcam, or a phone camera.
+     The video is only shown on screen. Nothing is recorded or saved: pressing
+     "Capture" keeps one frame in memory, exactly like a photo, and the camera
+     is switched off when the student is done.
+  ════════════════════════════════════════ */
+  const CAM_DEVICE_STORAGE = 'stemBridgeCamDevice';
+  let camStream = null;
+
+  // Stretches the contrast so paper looks white and ink looks dark, which helps the
+  // AI read pencil and pen. Returns false (and changes nothing) for a flat scene.
+  function autoLevels(img) {
+    const d = img.data;
+    const total = d.length / 4;
+    const hist = new Uint32Array(256);
+    for (let i = 0; i < d.length; i += 4) hist[(d[i] * 299 + d[i + 1] * 587 + d[i + 2] * 114) / 1000 | 0]++;
+    let lo = 0, acc = 0;
+    while (lo < 255 && (acc += hist[lo]) < total * 0.01) lo++;   // darkest 1%: ink
+    let hi = 255; acc = 0;
+    while (hi > 0 && (acc += hist[hi]) < total * 0.05) hi--;      // brightest 5%: paper
+    if (hi - lo < 25) return false;
+    const lut = new Uint8ClampedArray(256);
+    for (let v = 0; v < 256; v++) lut[v] = (v - lo) * 255 / (hi - lo);
+    for (let i = 0; i < d.length; i += 4) { d[i] = lut[d[i]]; d[i + 1] = lut[d[i + 1]]; d[i + 2] = lut[d[i + 2]]; }
+    return true;
+  }
+
+  function setCamMsg(text) {
+    document.getElementById('camMsg').textContent = text || '';
+  }
+
+  function camErrorText(e) {
+    const name = e && e.name;
+    if (name === 'NotAllowedError' || name === 'SecurityError') {
+      return 'The camera is blocked. Click the camera icon in the address bar and choose Allow. Some school computers block cameras: ask your teacher or tech helper.';
+    }
+    if (name === 'NotFoundError' || name === 'OverconstrainedError') {
+      return 'No camera found. Plug in your document camera, then try again.';
+    }
+    if (name === 'NotReadableError' || name === 'AbortError') {
+      return 'The camera is being used by another app or tab. Close it, then try again.';
+    }
+    return "Couldn't start the camera. Please try again, or use Choose Photo instead.";
+  }
+
+  async function openCamera() {
+    const panel = document.getElementById('camPanel');
+    if (!panel.hidden) { stopCamera(); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setPhotoMsg("This browser can't use a live camera here. Use Take Photo or Choose Photo instead.");
+      return;
+    }
+    if (photoPages.length >= PHOTO_MAX_PAGES) { setPhotoMsg(`Only ${PHOTO_MAX_PAGES} pages fit in one check.`); return; }
+    panel.hidden = false;
+    setPhotoMsg('');
+    await startCamera(safeGet('local', CAM_DEVICE_STORAGE) || '');
+  }
+
+  async function startCamera(deviceId) {
+    if (camStream) camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+    setCamMsg('Starting the camera…');
+    const size = { width: { ideal: 1920 }, height: { ideal: 1080 } };
+    let stream = null;
+    try {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: deviceId ? { deviceId: { exact: deviceId }, ...size } : { facingMode: { ideal: 'environment' }, ...size },
+          audio: false
+        });
+      } catch (e) {
+        if (!deviceId || e.name === 'NotAllowedError') throw e;
+        // The camera used last time isn't here any more: fall back to the default one.
+        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, ...size }, audio: false });
+      }
+    } catch (e) {
+      document.getElementById('camPanel').hidden = true;
+      setCamMsg('');
+      setPhotoMsg(camErrorText(e));
+      return;
+    }
+    camStream = stream;
+    const video = document.getElementById('camVideo');
+    video.srcObject = stream;
+    try { await video.play(); } catch (e) { /* autoplay is already requested on the element */ }
+    setCamMsg('Put your page under the camera, then press Capture.');
+    await fillCameraList(stream);
+  }
+
+  async function fillCameraList(stream) {
+    const sel = document.getElementById('camSelect');
+    sel.textContent = '';
+    try {
+      const cams = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+      const current = stream.getVideoTracks()[0] && stream.getVideoTracks()[0].getSettings().deviceId;
+      cams.forEach((c, i) => {
+        const o = document.createElement('option');
+        o.value = c.deviceId;
+        o.textContent = c.label || `Camera ${i + 1}`;
+        sel.appendChild(o);
+      });
+      if (current) sel.value = current;
+      sel.hidden = cams.length < 2; // nothing to choose between
+    } catch (e) {
+      sel.hidden = true;
+    }
+  }
+
+  function onCamSelect() {
+    const id = document.getElementById('camSelect').value;
+    safeSet('local', CAM_DEVICE_STORAGE, id);
+    startCamera(id);
+  }
+
+  function stopCamera() {
+    if (camStream) camStream.getTracks().forEach(t => t.stop());
+    camStream = null;
+    const video = document.getElementById('camVideo');
+    if (video) video.srcObject = null;
+    const panel = document.getElementById('camPanel');
+    if (panel) panel.hidden = true;
+    setCamMsg('');
+  }
+
+  function captureFromCamera() {
+    const video = document.getElementById('camVideo');
+    if (!camStream || !video.videoWidth) { setCamMsg('The camera is still starting. One moment…'); return; }
+    if (photoPages.length >= PHOTO_MAX_PAGES) { stopCamera(); return; }
+    photoPages.push(encodePhotoSource(video, video.videoWidth, video.videoHeight, document.getElementById('camEnhance').checked));
+    setPhotoMsg('');
+    renderPhotoThumbs();
+    const stage = document.getElementById('camStage');
+    stage.classList.remove('flash');
+    void stage.offsetWidth; // restart the flash animation
+    stage.classList.add('flash');
+    if (photoPages.length >= PHOTO_MAX_PAGES) {
+      stopCamera();
+      setPhotoMsg(`That's ${PHOTO_MAX_PAGES} pages, the most one check can hold.`);
+    } else {
+      setCamMsg(`Page ${photoPages.length} captured ✓ Put the next page under the camera, or press “Check the Work”.`);
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    const panel = document.getElementById('camPanel');
+    if (!panel || panel.hidden || e.code !== 'Space') return;
+    if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A'].includes(e.target.tagName)) return; // let those handle Space themselves
+    e.preventDefault();
+    captureFromCamera();
+  });
+  // Free the camera as soon as the student leaves the tab or the page.
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopCamera(); });
+  window.addEventListener('pagehide', stopCamera);
+
+  /* ════════════════════════════════════════
      TEACHER MODE (PIN) · ANSWER KEYS · TEST GRADING
      Saved answer keys live only in this browser's localStorage on the teacher's
      own device. The PIN gate keeps students from wandering into Teacher mode on
@@ -2121,6 +2314,7 @@ Return ONLY valid JSON (no markdown, no preamble):
   }
 
   function lockTeacher() {
+    stopCamera();
     safeRemove('session', TEACHER_UNLOCK_KEY);
     closeKeyEditor();
     photoLast = null;
@@ -2385,6 +2579,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     const grade = document.getElementById('photoGrade').value;
 
     stopReadAloud();
+    stopCamera(); // the page has been captured; switch the camera (and its light) off
     const btn = document.getElementById('photoAnalyzeBtn');
     photoBusy = true; renderPhotoThumbs();
     btn.textContent = 'Grading…';
