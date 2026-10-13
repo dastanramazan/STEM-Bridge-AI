@@ -2,12 +2,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.8.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.9.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**
 
-**Status (v0.8.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+**Status (v0.9.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
 ---
 
@@ -71,7 +71,7 @@ Photograph a student's handwritten page on a phone and the AI reads it, shows wh
 | Feature | Detail |
 |---|---|
 | **Who uses it** | A teacher grading (AI draft scores they can adjust before saving), or a student checking their own work instead of typing it |
-| **Input** | Phone camera or gallery, up to 4 pages per check |
+| **Input** | Phone camera, gallery, or a **live camera** (a USB document camera or webcam, with a Capture button and a clearer-writing boost), up to 4 pages per check |
 | **Output** | Transcription of what the AI read, scores, strengths, improvements, suggestions |
 | **Safeguards** | Warns when handwriting is too hard to read; photos are never stored or logged |
 
@@ -206,6 +206,7 @@ STEM-Bridge-AI/
 - **v0.4.0:** Teacher Dashboard, progress-since-last-attempt comparison, a free Google Gemini option, Read Aloud, and voice input for Kindergarten–1st Grade
 - **v0.5.0:** a default AI connection that needs no API key from students (the teacher's own Apps Script holds the key privately), with automatic retry and a fallback model when Gemini is busy
 - **v0.6.0:** Photo Check — photograph handwritten work to have it read and scored
+- **v0.9.0:** a live camera in Photo Check, so a student can work a problem on paper under a USB document camera and capture the page with one click
 - **v0.8.0:** a friendlier, student-first design: a light theme by default (dark optional), a simple greeting and three big tool cards, stars-and-words feedback with scores on request, system fonts only, and Settings and About windows
 - **v0.7.0:** grading of paper tests against a teacher's answer key, PIN-protected Teacher mode, and daily usage limits
 

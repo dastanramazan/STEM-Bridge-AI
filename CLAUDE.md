@@ -29,7 +29,7 @@ how student data is handled, `PRIVACY.md`.
 - Log only names, timestamps, tool, and scores. Never log student writing,
   code, test answers, or photos, and don't add raw-submission logging
   without an explicit, separate ask.
-- Photos and answer keys stay in the browser (page memory / the teacher's
+- Photos, live-camera frames, and answer keys stay in the browser (page memory / the teacher's
   `localStorage`); never persist photos or send keys to a server or Sheet.
 - Test results log only a percent in the score column; points and the test
   name go in the text "Detail" column (the Dashboard averages score columns).

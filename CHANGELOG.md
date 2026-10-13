@@ -4,6 +4,18 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.9.0] — 2026-10 — Live Camera for Paper Work
+
+### Added
+- **Live camera in Photo Check.** A "Live camera" button opens a live view from a USB document camera, a webcam, or a phone camera. A student can work a problem on paper, press **Capture** (or the space bar), and add the page to the check, up to 4 pages, without taking and choosing photos. If several cameras are connected, there is a menu to pick one, and the choice is remembered on that device.
+- **"Make the writing clearer"** (on by default): captured pages get an automatic contrast boost so paper looks white and pencil or pen looks dark, which helps the AI read handwriting. It leaves a flat or blank view untouched.
+- Clear, friendly messages when the camera is blocked, missing, busy, or unsupported (school computers sometimes block cameras).
+
+### Privacy
+- The live video is only shown on screen: nothing is recorded or sent. Only the one frame captured is kept, in memory, as a photo. The camera is switched off when the student presses "Check the Work", closes the camera, switches tools, or leaves the tab or page.
+
+---
+
 ## [0.8.0] — 2026-10 — A Friendlier, Student-First Design
 
 ### Changed
