@@ -34,6 +34,16 @@ how student data is handled, `PRIVACY.md`.
 - Test results log only a percent in the score column; points and the test
   name go in the text "Detail" column (the Dashboard averages score columns).
 
+## Feedback contract
+
+- The tool gives feedback, not solutions. Prompts for student-facing feedback
+  (`FEEDBACK_CONTRACT`) tell the AI never to rewrite the student's work or
+  supply a finished answer, and to return `checkYourself` (one or two things
+  to verify in a textbook, notes, or with the teacher). Every student result
+  shows the "Check this yourself" box and the "AI can make mistakes" note.
+- The Word file is built in the browser and never sent anywhere. The coding
+  tool's corrected code goes into it only after the student has revealed it.
+
 ## Documentation rules
 
 - Public docs must not contain statistics without a citation the owner has

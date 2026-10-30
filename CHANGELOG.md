@@ -4,6 +4,21 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.10.0] — 2026-10 — Save as Word, and Using AI Responsibly
+
+### Added
+- **Save as Word.** A "Save as Word" button under every student's feedback (writing, coding help, and a student's own photographed work) downloads a .docx the student can bring to a tutorial or email to a teacher. It holds the headline, the next step, stars-and-words for each skill, what's working, what to try, a "Check this yourself" list with tick boxes, blank lines for "Where I got stuck", "My question for my teacher" and "What I checked myself", and a reminder that AI can be wrong. A tick box lets the student include or leave out their own writing or code. The file is built entirely in the browser and never sent anywhere.
+- **"Check this yourself" on every result.** The AI now names one or two facts or steps to verify in a textbook, in notes, or with the teacher (a general reminder appears if it doesn't).
+- A note under every result: "AI can make mistakes. Check the facts with your textbook or your teacher."
+- A short **"AI is a helper, not a crutch"** card on a student's first visit (try it yourself first, check the AI, make it yours), also in About under "Using AI well".
+
+### Changed
+- **Feedback, not solutions.** The AI is told explicitly never to rewrite the student's work or give a finished answer, only to point out where and why and suggest one thing to try.
+- The coding tool's corrected code only goes into the Word file if the student chose to reveal it.
+- Word file names are plain ASCII (accents dropped, Cyrillic spelled out), e.g. `STEM-Bridge-feedback_Aygerim_2026-10-30.docx`.
+
+---
+
 ## [0.9.0] — 2026-10 — Live Camera for Paper Work
 
 ### Added
