@@ -2,12 +2,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.9.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.10.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**
 
-**Status (v0.9.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+**Status (v0.10.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
 ---
 
@@ -48,7 +48,7 @@ Delivers instant, personalized feedback on student scientific writing calibrated
 | **Assignment types** | Lab Report, Research Essay, Hypothesis, Data Analysis, Scientific Explanation |
 | **Grade levels** | K–1, 2, 3–5, 6–8, 9–10, 11–12, Undergraduate |
 | **Input options** | Type, or speak ("Speak Instead of Type") for Kindergarten–1st Grade |
-| **Output** | Overall score, strengths, improvements, specific next steps — with Read Aloud and progress-since-last-attempt comparison |
+| **Output** | Overall score, strengths, improvements, specific next steps — with Read Aloud, progress-since-last-attempt comparison, and **Save as Word** |
 | **Standards alignment** | Next Generation Science Standards (NGSS) |
 
 ### 💻 CodeBridge AI — CS Coding Tutor
@@ -206,6 +206,7 @@ STEM-Bridge-AI/
 - **v0.4.0:** Teacher Dashboard, progress-since-last-attempt comparison, a free Google Gemini option, Read Aloud, and voice input for Kindergarten–1st Grade
 - **v0.5.0:** a default AI connection that needs no API key from students (the teacher's own Apps Script holds the key privately), with automatic retry and a fallback model when Gemini is busy
 - **v0.6.0:** Photo Check — photograph handwritten work to have it read and scored
+- **v0.10.0:** students can save their feedback as a Word document (to bring to a tutorial or email to a teacher), plus "AI is a helper, not a crutch" guidance: a "Check this yourself" box on every result, a reminder that AI can be wrong, and a short first-visit card. The AI is also told explicitly to give feedback, not solutions
 - **v0.9.0:** a live camera in Photo Check, so a student can work a problem on paper under a USB document camera and capture the page with one click
 - **v0.8.0:** a friendlier, student-first design: a light theme by default (dark optional), a simple greeting and three big tool cards, stars-and-words feedback with scores on request, system fonts only, and Settings and About windows
 - **v0.7.0:** grading of paper tests against a teacher's answer key, PIN-protected Teacher mode, and daily usage limits
