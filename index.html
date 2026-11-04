@@ -363,6 +363,13 @@
     .dash-table{width:100%;border-collapse:collapse;font-size:.92rem;}
     .dash-table th,.dash-table td{padding:8px 10px;border-bottom:1px solid var(--border);text-align:left;}
     .dash-table th{color:var(--mut);font-size:.82rem;text-transform:uppercase;letter-spacing:.05em;}
+    .dev{font-family:var(--mono);font-weight:700;letter-spacing:.04em;background:var(--soft);border-radius:6px;padding:1px 6px;}
+    .dflag{display:inline-block;font-size:.8rem;font-weight:700;padding:1px 8px;border-radius:6px;margin:1px 4px 1px 0;border:2px solid var(--warn);color:var(--warn);}
+    .dflag.info{border-color:var(--a1);color:var(--a1-ink);}
+    .dash-note{font-size:.92rem;color:var(--mut);line-height:1.55;margin:0 0 12px;}
+    .dash-list{border:2px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:18px;background:var(--faint);}
+    .dash-list summary{cursor:pointer;font-weight:700;}
+    .dash-list textarea{min-height:110px;margin:8px 0;}
     .settings-sec{margin-top:22px;padding-top:6px;border-top:2px solid var(--border);}
     .advanced-checkbox{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-weight:600;}
     .advanced-checkbox input{width:22px;height:22px;flex:none;}
@@ -729,7 +736,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.10.0</span>
+  <span>Free and open source · MIT License · v0.10.1</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -776,6 +783,9 @@
       </div>
 
       <p class="apikey-note" style="margin-top:16px;">
+        This device's code: <b id="deviceCodeShown" class="dev"></b>. Your teacher sees it next to your name so they can tell devices apart. It is a random code, not your name or location.
+      </p>
+      <p class="apikey-note">
         Names are saved on this device only. <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">How student data is handled</a>
       </p>
     </div>
@@ -810,7 +820,7 @@
         <li><b>Make it yours.</b> Use the feedback to improve your own work. Don't copy it.</li>
       </ul>
       <p><b>Why we built it:</b> many students in rural and low-income schools have little access to expert STEM feedback, and 48 states reported teacher shortages in 2023–2024. This tool aims to give every student quick, personalized guidance.</p>
-      <p>Version 0.10.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.10.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1020,7 +1030,11 @@
     document.getElementById('themeDark').classList.toggle('active', dark);
   }
 
-  function openSettings() { document.getElementById('settingsOverlay').hidden = false; document.getElementById('useOwnKeyToggle').focus(); }
+  function openSettings() {
+    document.getElementById('deviceCodeShown').textContent = getDeviceCode();
+    document.getElementById('settingsOverlay').hidden = false;
+    document.getElementById('useOwnKeyToggle').focus();
+  }
   function closeSettings() { document.getElementById('settingsOverlay').hidden = true; updateSetupUI(); }
   function openAbout() { document.getElementById('aboutOverlay').hidden = false; }
   function closeAbout() { document.getElementById('aboutOverlay').hidden = true; }
@@ -1049,7 +1063,7 @@
     fetch(LOG_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
-      body: JSON.stringify({ action: 'log', ...payload })
+      body: JSON.stringify({ action: 'log', device: getDeviceCode(), ...payload })
     }).catch(() => { /* logging is best-effort; never interrupt the student's feedback */ });
   }
 
@@ -1090,39 +1104,113 @@
     }
   }
 
+  /* ── DEVICE CODE: a short random code per browser, so the teacher can tell
+     "this device" from "that device" even though anyone can type any name.
+     It is a hint, not proof: a shared school computer has one code for everyone,
+     and clearing the browser's data makes a new one. No IP address, device model,
+     or other personal detail is collected. ── */
+  const DEVICE_CODE_STORAGE = 'stemBridgeDeviceCode';
+  const DEVICE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // 32 characters, no 0/O/1/I
+  let deviceCodeMemo = '';
+
+  function getDeviceCode() {
+    const saved = safeGet('local', DEVICE_CODE_STORAGE);
+    if (saved && /^[A-HJ-NP-Z2-9]{4}$/.test(saved)) return saved;
+    if (!deviceCodeMemo) {
+      const bytes = new Uint8Array(4);
+      (window.crypto || window.msCrypto).getRandomValues(bytes);
+      deviceCodeMemo = Array.from(bytes, b => DEVICE_ALPHABET[b % 32]).join(''); // 256 is a multiple of 32, so no bias
+      safeSet('local', DEVICE_CODE_STORAGE, deviceCodeMemo);
+    }
+    return deviceCodeMemo;
+  }
+
+  /* ── DASHBOARD: who is who ── */
+  const CLASS_LIST_STORAGE = 'stemBridgeClassList'; // names only, on the teacher's own device
+  let dashEntries = [];
+
+  function normName(n) {
+    return String(n || '').trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  function loadClassListText() {
+    return safeGet('local', CLASS_LIST_STORAGE) || '';
+  }
+
+  function saveClassList() {
+    safeSet('local', CLASS_LIST_STORAGE, document.getElementById('classListInput').value);
+    renderDashboardStats(dashEntries);
+  }
+
   function renderDashboardStats(entries) {
+    dashEntries = entries;
+    const classNames = new Set(loadClassListText().split(/\r?\n/).map(normName).filter(Boolean));
+    const hasList = classNames.size > 0;
     const students = {};
+    const deviceNames = {};
     let writingCount = 0, codingCount = 0, photoCount = 0, testCount = 0;
     entries.forEach(e => {
-      const key = (e.name || 'Unknown').trim() || 'Unknown';
-      if (!students[key]) students[key] = { count: 0, scores: [], entries: [] };
-      students[key].count++;
-      students[key].entries.push(e);
-      (e.scores || []).forEach(s => { if (s !== '' && s != null && !isNaN(s)) students[key].scores.push(Number(s)); });
+      const shown = (e.name || 'Unknown').toString().trim() || 'Unknown';
+      const key = normName(shown) || 'unknown';
+      const dev = (e.device || '').toString().trim();
+      const t = new Date(e.timestamp).getTime();
+      if (!students[key]) students[key] = { name: shown, count: 0, scores: [], entries: [], devices: new Set(), first: Infinity, last: -Infinity };
+      const st = students[key];
+      st.count++;
+      st.entries.push(e);
+      if (dev) {
+        st.devices.add(dev);
+        (deviceNames[dev] = deviceNames[dev] || new Set()).add(key);
+      }
+      if (Number.isFinite(t)) { st.first = Math.min(st.first, t); st.last = Math.max(st.last, t); }
+      (e.scores || []).forEach(s => { if (s !== '' && s != null && !isNaN(s)) st.scores.push(Number(s)); });
       if (e.tool === 'writing') writingCount++;
       else if (e.tool === 'coding') codingCount++;
       else if (e.tool === 'photo') photoCount++;
       else if (e.tool === 'test') testCount++;
     });
 
-    const studentNames = Object.keys(students).sort();
-    const summaryRows = studentNames.map(name => {
-      const s = students[name];
-      const avg = s.scores.length ? Math.round(s.scores.reduce((a,b)=>a+b,0) / s.scores.length) : '—';
-      return `<tr><td>${escHtml(name)}</td><td>${s.count}</td><td>${avg}</td></tr>`;
-    }).join('');
-
+    const fmt = (ms) => Number.isFinite(ms) ? new Date(ms).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
     const formatDate = (ts) => {
       const d = new Date(ts);
-      return isNaN(d.getTime()) ? escHtml(String(ts)) : d.toLocaleString();
+      return isNaN(d.getTime()) ? escHtml(String(ts)) : d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' });
+    };
+    const devHtml = (dev) => dev ? `<code class="dev">${escHtml(dev)}</code>` : '—';
+
+    const keys = Object.keys(students).sort((a, b) => students[a].name.localeCompare(students[b].name));
+    let unknownCount = 0;
+    const flagsFor = (key) => {
+      const st = students[key];
+      const flags = [];
+      if (hasList && !classNames.has(key)) { flags.push('<span class="dflag">Not on class list</span>'); unknownCount++; }
+      if (st.devices.size > 1) flags.push(`<span class="dflag info">${st.devices.size} devices</span>`);
+      if ([...st.devices].some(d => deviceNames[d].size > 1)) flags.push('<span class="dflag info">Device used with other names</span>');
+      return flags.join('') || '—';
     };
 
-    const detailRows = studentNames.map(name => {
-      const sorted = [...students[name].entries].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+    const summaryRows = keys.map(key => {
+      const st = students[key];
+      const avg = st.scores.length ? Math.round(st.scores.reduce((a, b) => a + b, 0) / st.scores.length) : '—';
+      return `<tr><td>${escHtml(st.name)}</td><td>${st.count}</td><td>${avg}</td><td>${[...st.devices].map(devHtml).join(' ') || '—'}</td><td>${fmt(st.first)}</td><td>${fmt(st.last)}</td><td>${flagsFor(key)}</td></tr>`;
+    }).join('');
+
+    const recent = [...entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)).slice(0, 15);
+    const recentRows = recent.map(e => `
+        <tr>
+          <td>${formatDate(e.timestamp)}</td>
+          <td>${escHtml(e.name || 'Unknown')}</td>
+          <td>${devHtml((e.device || '').toString().trim())}</td>
+          <td>${escHtml(e.tool || '')}</td>
+          <td>${escHtml(e.detail || '')}</td>
+        </tr>`).join('');
+
+    const detailRows = keys.map(key => {
+      const sorted = [...students[key].entries].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       return sorted.map(e => `
         <tr>
-          <td>${escHtml(name)}</td>
+          <td>${escHtml(students[key].name)}</td>
           <td>${formatDate(e.timestamp)}</td>
+          <td>${devHtml((e.device || '').toString().trim())}</td>
           <td>${escHtml(e.tool || '')}</td>
           <td>${escHtml(e.detail || '')}</td>
           <td>${escHtml(e.grade || '')}</td>
@@ -1130,27 +1218,49 @@
         </tr>`).join('');
     }).join('');
 
+    const tz = (Intl.DateTimeFormat().resolvedOptions() || {}).timeZone || 'your time zone';
     document.getElementById('dashBody').innerHTML = `
       <div class="dash-stats-row">
         <div class="dash-stat"><div class="dash-stat-val">${entries.length}</div><div class="dash-stat-lbl">Total Uses</div></div>
-        <div class="dash-stat"><div class="dash-stat-val">${studentNames.length}</div><div class="dash-stat-lbl">Unique Students</div></div>
+        <div class="dash-stat"><div class="dash-stat-val">${keys.length}</div><div class="dash-stat-lbl">Unique Students</div></div>
         <div class="dash-stat"><div class="dash-stat-val">${writingCount}</div><div class="dash-stat-lbl">Writing</div></div>
         <div class="dash-stat"><div class="dash-stat-val">${codingCount}</div><div class="dash-stat-lbl">Coding</div></div>
         <div class="dash-stat"><div class="dash-stat-val">${photoCount}</div><div class="dash-stat-lbl">Photo</div></div>
         <div class="dash-stat"><div class="dash-stat-val">${testCount}</div><div class="dash-stat-lbl">Test</div></div>
+        ${hasList ? `<div class="dash-stat"><div class="dash-stat-val" id="dashUnknownCount">${unknownCount}</div><div class="dash-stat-lbl">Names not on list</div></div>` : ''}
       </div>
-      <table class="dash-table" style="margin-bottom:20px;">
-        <thead><tr><th>Student</th><th>Uses</th><th>Avg Score</th></tr></thead>
-        <tbody>${summaryRows || '<tr><td colspan="3">No usage recorded yet.</td></tr>'}</tbody>
-      </table>
+      <p class="dash-note">Anyone can type any name, so each entry also shows a <b>device code</b>: a short random code made by that browser. The same code under different names, or different codes under one name, are worth a look. A shared school computer has one code for everyone. Times are in your time zone (${escHtml(tz)}).</p>
+      <details class="dash-list">
+        <summary>Class list (optional)${hasList ? ` · ${classNames.size} names` : ''}</summary>
+        <p class="dash-note">One name per line. Names that are not on the list get a "Not on class list" flag. The list is saved only in this browser.</p>
+        <textarea id="classListInput" rows="5" placeholder="Maria Lopez&#10;Ben Carter">${escHtml(loadClassListText())}</textarea>
+        <button class="apikey-btn" type="button" onclick="saveClassList()">Save list</button>
+      </details>
+      <div class="sec-label">Latest activity</div>
+      <div style="overflow-x:auto;margin-bottom:20px;">
+        <table class="dash-table">
+          <thead><tr><th>When</th><th>Student</th><th>Device</th><th>Tool</th><th>Detail</th></tr></thead>
+          <tbody>${recentRows || '<tr><td colspan="5">No usage recorded yet.</td></tr>'}</tbody>
+        </table>
+      </div>
+      <div class="sec-label">Students</div>
+      <div style="overflow-x:auto;margin-bottom:20px;">
+        <table class="dash-table">
+          <thead><tr><th>Student</th><th>Uses</th><th>Avg</th><th>Devices</th><th>First seen</th><th>Last seen</th><th>Flags</th></tr></thead>
+          <tbody>${summaryRows || '<tr><td colspan="7">No usage recorded yet.</td></tr>'}</tbody>
+        </table>
+      </div>
       <div class="sec-label">Individual Results</div>
       <div style="overflow-x:auto;">
         <table class="dash-table">
-          <thead><tr><th>Student</th><th>Date</th><th>Tool</th><th>Detail</th><th>Grade</th><th>Scores</th></tr></thead>
-          <tbody>${detailRows || '<tr><td colspan="6">No usage recorded yet.</td></tr>'}</tbody>
+          <thead><tr><th>Student</th><th>When</th><th>Device</th><th>Tool</th><th>Detail</th><th>Grade</th><th>Scores</th></tr></thead>
+          <tbody>${detailRows || '<tr><td colspan="7">No usage recorded yet.</td></tr>'}</tbody>
         </table>
       </div>
     `;
+    // Counting flags happens while rendering rows, so the stat box is filled in afterwards.
+    const box = document.getElementById('dashUnknownCount');
+    if (box) box.textContent = String(unknownCount);
   }
 
   /* ── MODE SWITCH ──────────────────────── */

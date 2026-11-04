@@ -26,7 +26,8 @@ how student data is handled, `PRIVACY.md`.
 
 ## Privacy rules
 
-- Log only names, timestamps, tool, and scores. Never log student writing,
+- Log only names, timestamps, tool, scores, and the random device code (a
+  pseudonymous hint, never an IP address or device details). Never log student writing,
   code, test answers, or photos, and don't add raw-submission logging
   without an explicit, separate ask.
 - Photos, live-camera frames, and answer keys stay in the browser (page memory / the teacher's

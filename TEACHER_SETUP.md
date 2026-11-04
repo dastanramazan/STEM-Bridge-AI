@@ -145,6 +145,18 @@ one time, and needs no coding.
   "Check the Work", leave the tool, or switch tabs. On school-managed
   Chromebooks an administrator can block cameras; if the browser says the
   camera is blocked, ask your tech helper to allow it for this site.
+- **Telling people apart (device codes).** Anyone can type any name, so
+  each logged result also carries a **device code**: a short random code
+  (like `K7M2`) made by that browser. It appears in the Sheet's **Device**
+  column (column K; type `Device` in K1 if you want a heading) and in the
+  Teacher Dashboard next to each name. The dashboard flags a name used from
+  several devices, a device used with several names, and, if you paste your
+  class list under "Class list" in the dashboard, names that are not on it.
+  It is a hint, not proof: a shared school computer has one code for all
+  its users, and clearing the browser's data makes a new code. Students can
+  see their own code in ⚙️ Settings. The class list is saved only in your
+  browser. This needs the latest `Code.gs` (paste it in and deploy a New
+  version); older rows simply show a dash.
 - **Photo Check needs the updated script.** After updating the app, paste
   the latest `Code.gs` into Apps Script (keeping your PIN and key) and
   deploy a **New version**, otherwise photos are ignored by the old script.

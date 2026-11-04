@@ -4,6 +4,18 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.10.1] — 2026-11 — Telling People Apart
+
+### Added
+- **Device code.** Because anyone can type any name, every logged result now also carries a short random code that the browser makes for itself (for example `K7M2`). The Sheet has a new **Device** column and the Teacher Dashboard shows the code next to each name. Students can see their own code in Settings. No IP address or device details are collected.
+- **Dashboard flags:** a name used from several devices, a device used with several names, and "Not on class list" when the teacher has pasted a class list (saved only in the teacher's browser).
+- **Dashboard layout:** a "Latest activity" list (newest first), first-seen and last-seen times per student, dates with times in the viewer's time zone, and names that differ only by capital letters or spaces are counted as one student.
+
+### Changed
+- The Apps Script cleans the device value down to letters and digits before writing it, and keeps the Device column as text. Older rows without a code show a dash. Paste the new `Code.gs` and deploy a New version.
+
+---
+
 ## [0.10.0] — 2026-10 — Save as Word, and Using AI Responsibly
 
 ### Added

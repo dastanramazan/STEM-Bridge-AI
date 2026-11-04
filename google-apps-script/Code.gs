@@ -231,11 +231,18 @@ function handleLog_(data) {
     scores[1] ?? '',
     scores[2] ?? '',
     scores[3] ?? '',
-    scores[4] ?? ''
+    scores[4] ?? '',
+    cleanDeviceCode_(data.device)
   ]);
 
   return ContentService.createTextOutput(JSON.stringify({ ok: true }))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+// The short random code a browser makes for itself. Anything else is cut down to
+// letters and digits so a made-up value can't put odd content into the Sheet.
+function cleanDeviceCode_(value) {
+  return String(value || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8);
 }
 
 function doGet(e) {
@@ -262,7 +269,8 @@ function doGet(e) {
       tool: r[2],
       detail: r[3],
       grade: r[4],
-      scores: [r[5], r[6], r[7], r[8], r[9]].filter(v => v !== '')
+      scores: [r[5], r[6], r[7], r[8], r[9]].filter(v => v !== ''),
+      device: String(r[10] || '')
     }));
 
   return ContentService.createTextOutput(JSON.stringify({ entries }))
@@ -296,11 +304,12 @@ function getLogSheet_() {
   // literal "Timestamp" value rather than assuming it's always row 1,
   // so this only guards readability, not correctness.
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5']);
+    sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5', 'Device']);
   }
   // Force the text columns to plain text. Without this, Sheets' automatic
   // formatting silently reinterprets values like "6-8" or "9-10" as dates
   // (e.g. "September 10"), corrupting the grade level on every write.
   sheet.getRange('B:E').setNumberFormat('@');
+  sheet.getRange('K:K').setNumberFormat('@'); // device codes like 2345 must stay text
   return sheet;
 }
