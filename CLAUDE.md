@@ -35,6 +35,24 @@ how student data is handled, `PRIVACY.md`.
 - Test results log only a percent in the score column; points and the test
   name go in the text "Detail" column (the Dashboard averages score columns).
 
+## Teacher accounts
+
+- Teacher sign-in is Google Identity Services: the page gets an ID token, sends it
+  with each `t_*` request, and `Code.gs` verifies it with Google's `tokeninfo`
+  (audience = `GOOGLE_CLIENT_ID`, verified email, not expired) before anything
+  else. Never trust an email sent by the page. Whoever deployed the script
+  (`Session.getEffectiveUser()`) is the administrator; others are added in the
+  Teachers tab or by an optional `ALLOWED_TEACHER_DOMAINS` list.
+- Each school runs its own script and Sheet ("school instance"); the project
+  holds no shared database of children's data. Teachers, Classes and
+  Assignments live in tabs of that Sheet, formatted as plain text. Every write
+  checks ownership, sanitizes text, and respects the limits. Never store
+  student work there.
+- Google's sign-in script (`accounts.google.com/gsi/client`) loads only when a
+  teacher opens the Teacher area. Students must never trigger it.
+- `GOOGLE_CLIENT_ID` is public (not a secret) and empty by default, which keeps
+  the feature off.
+
 ## Feedback contract
 
 - The tool gives feedback, not solutions. Prompts for student-facing feedback

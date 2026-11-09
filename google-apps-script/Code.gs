@@ -67,6 +67,11 @@ function doPost(e) {
     return handleGenerate_(data);
   }
 
+  // Teacher accounts: classes and assignments (every request is checked against a Google sign-in).
+  if (typeof data.action === 'string' && data.action.indexOf('t_') === 0) {
+    return handleTeacher_(data);
+  }
+
   return handleLog_(data);
 }
 
@@ -312,4 +317,286 @@ function getLogSheet_() {
   sheet.getRange('B:E').setNumberFormat('@');
   sheet.getRange('K:K').setNumberFormat('@'); // device codes like 2345 must stay text
   return sheet;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEACHER ACCOUNTS: classes and assignments
+   Teachers sign in with Google in the app. The app sends Google's signed
+   "ID token" with each request, and this script checks it with Google
+   before doing anything. Classes and assignments are stored in tabs of
+   THIS spreadsheet (the school's own), never anywhere else. Student work
+   is not stored here, only the names, scores and tags the app logs.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// The public "client ID" of the STEM Bridge AI project's Google sign-in. It is not a
+// secret (it is also in the web page). Leave it empty to keep teacher sign-in switched off.
+const GOOGLE_CLIENT_ID = '';
+// Optional: let anyone with a verified Google account on these domains sign in as a teacher,
+// for example ['myschool.org']. Leave it empty to allow only people you add by email.
+const ALLOWED_TEACHER_DOMAINS = [];
+const MAX_CLASSES_PER_TEACHER = 50;
+const MAX_ASSIGNMENTS_PER_CLASS = 200;
+const CLASS_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I
+const HELP_LEVELS = ['hints', 'hints_example', 'reveal_after_2'];
+const ASSIGNMENT_TOOLS = ['writing', 'coding'];
+const TEACHER_TABS = {
+  Teachers: ['Email', 'Name', 'Role', 'Status', 'Added'],
+  Classes: ['ClassId', 'Code', 'Name', 'Year', 'TeacherEmail', 'Created', 'Archived'],
+  Assignments: ['AssignmentId', 'ClassId', 'Title', 'Instructions', 'RubricId', 'Tool', 'HelpLevel', 'Due', 'TeacherEmail', 'Created', 'Archived']
+};
+
+function teacherError_(code, message) {
+  const err = new Error(message);
+  err.teacherCode = code;
+  return err;
+}
+
+function handleTeacher_(data) {
+  try {
+    if (!GOOGLE_CLIENT_ID) throw teacherError_('not_configured', 'Teacher sign-in is not set up on this server yet.');
+    const user = verifyGoogleToken_(data.idToken);
+    const me = authorizeTeacher_(user);
+    switch (data.action) {
+      case 't_login':
+        return jsonOutput_({ ok: true, me: me });
+      case 't_overview':
+        return jsonOutput_(Object.assign({ ok: true, me: me }, teacherOverview_(me)));
+      case 't_class_create':
+        return jsonOutput_({ ok: true, class: withScriptLock_(() => createClass_(me, data)) });
+      case 't_class_archive':
+        withScriptLock_(() => archiveClass_(me, data));
+        return jsonOutput_({ ok: true });
+      case 't_assignment_create':
+        return jsonOutput_({ ok: true, assignment: withScriptLock_(() => createAssignment_(me, data)) });
+      case 't_assignment_archive':
+        withScriptLock_(() => archiveAssignment_(me, data));
+        return jsonOutput_({ ok: true });
+      case 't_teacher_add':
+        return jsonOutput_({ ok: true, teacher: withScriptLock_(() => addTeacher_(me, data)) });
+      case 't_teacher_remove':
+        withScriptLock_(() => removeTeacher_(me, data));
+        return jsonOutput_({ ok: true });
+      default:
+        throw teacherError_('bad_request', 'Unknown request.');
+    }
+  } catch (err) {
+    if (err && err.teacherCode) return jsonOutput_({ error: err.message, code: err.teacherCode });
+    return jsonOutput_({ error: 'Something went wrong on the server. Please try again.', code: 'server' });
+  }
+}
+
+function withScriptLock_(fn) {
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try { return fn(); } finally { lock.releaseLock(); }
+}
+
+/* ── checking Google's sign-in token ── */
+function sha256Hex_(text) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, text)
+    .map(b => ('0' + (b & 255).toString(16)).slice(-2)).join('');
+}
+
+function verifyGoogleToken_(idToken) {
+  const cache = CacheService.getScriptCache();
+  const bad = Number(cache.get('tok_bad') || 0);
+  if (typeof idToken !== 'string' || idToken.length < 20 || idToken.length > 4096 || idToken.split('.').length !== 3) {
+    throw teacherError_('auth', 'Please sign in with Google again.');
+  }
+  const key = 'tok_' + sha256Hex_(idToken); // the token itself is never stored
+  const cached = cache.get(key);
+  if (cached) return JSON.parse(cached);
+  if (bad >= 30) throw teacherError_('auth', 'Too many sign-in attempts. Please wait a few minutes and try again.');
+
+  const fail = () => { cache.put('tok_bad', String(bad + 1), 600); return teacherError_('auth', 'Please sign in with Google again.'); };
+  let info;
+  try {
+    const resp = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo?id_token=' + encodeURIComponent(idToken), { muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) throw fail();
+    info = JSON.parse(resp.getContentText());
+  } catch (e) {
+    if (e && e.teacherCode) throw e;
+    throw teacherError_('server', "Couldn't check your Google sign-in right now. Please try again.");
+  }
+  const now = Math.floor(Date.now() / 1000);
+  const issuerOk = info.iss === 'accounts.google.com' || info.iss === 'https://accounts.google.com';
+  if (info.aud !== GOOGLE_CLIENT_ID || !issuerOk || String(info.email_verified) !== 'true' || !info.email || Number(info.exp) <= now + 30) {
+    throw fail();
+  }
+  const user = { email: String(info.email).toLowerCase(), name: String(info.name || '').slice(0, 80), exp: Number(info.exp) };
+  cache.put(key, JSON.stringify(user), Math.max(1, Math.min(600, user.exp - now)));
+  return user;
+}
+
+/* ── tabs in the spreadsheet ── */
+function getTab_(name) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(TEACHER_TABS[name]);
+    // Plain text everywhere, so nothing typed in can turn into a formula, a date or a number.
+    sheet.getRange('A:Z').setNumberFormat('@');
+  }
+  return sheet;
+}
+
+function tabRows_(name) {
+  const values = getTab_(name).getDataRange().getValues();
+  const headers = values[0] || TEACHER_TABS[name];
+  return values.slice(1).map((r, i) => {
+    const o = { _row: i + 2 };
+    headers.forEach((h, j) => { o[h] = String(r[j] === undefined || r[j] === null ? '' : r[j]); });
+    return o;
+  }).filter(o => o[headers[0]] !== '');
+}
+
+function appendRowObj_(name, obj) {
+  getTab_(name).appendRow(TEACHER_TABS[name].map(h => obj[h] === undefined ? '' : String(obj[h])));
+}
+
+function setCell_(name, rowNumber, header, value) {
+  getTab_(name).getRange(rowNumber, TEACHER_TABS[name].indexOf(header) + 1).setValue(String(value));
+}
+
+function cleanLine_(value, max) {
+  return String(value === undefined || value === null ? '' : value).replace(/[\u0000-\u001F\u007F]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+
+function cleanBlock_(value, max) {
+  return String(value === undefined || value === null ? '' : value).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '').trim().slice(0, max);
+}
+
+/* ── who may use the teacher area ── */
+function authorizeTeacher_(user) {
+  const owner = String(Session.getEffectiveUser().getEmail() || '').toLowerCase();
+  return withScriptLock_(() => {
+    const row = tabRows_('Teachers').find(r => r.Email.toLowerCase() === user.email);
+    const now = new Date().toISOString();
+    if (user.email === owner) { // whoever deployed this script is always the administrator
+      if (!row) appendRowObj_('Teachers', { Email: user.email, Name: user.name, Role: 'admin', Status: 'active', Added: now });
+      else {
+        if (row.Role !== 'admin') setCell_('Teachers', row._row, 'Role', 'admin');
+        if (row.Status !== 'active') setCell_('Teachers', row._row, 'Status', 'active');
+      }
+      return { email: user.email, name: user.name, role: 'admin' };
+    }
+    if (row) {
+      if (row.Status !== 'active') throw teacherError_('forbidden', "This Google account isn't allowed to use the teacher area. Ask your administrator.");
+      if (user.name && user.name !== row.Name) setCell_('Teachers', row._row, 'Name', user.name);
+      return { email: user.email, name: user.name || row.Name, role: row.Role === 'admin' ? 'admin' : 'teacher' };
+    }
+    const domain = user.email.split('@')[1] || '';
+    if (ALLOWED_TEACHER_DOMAINS.map(d => String(d).toLowerCase()).indexOf(domain) !== -1) {
+      appendRowObj_('Teachers', { Email: user.email, Name: user.name, Role: 'teacher', Status: 'active', Added: now });
+      return { email: user.email, name: user.name, role: 'teacher' };
+    }
+    throw teacherError_('forbidden', "This Google account isn't on the school's teacher list. Ask your administrator to add it.");
+  });
+}
+
+/* ── what a teacher sees ── */
+function publicClass_(c) {
+  return { id: c.ClassId, code: c.Code, name: c.Name, year: c.Year, created: c.Created };
+}
+
+function publicAssignment_(a) {
+  return { id: a.AssignmentId, classId: a.ClassId, title: a.Title, instructions: a.Instructions, rubricId: a.RubricId,
+    tool: a.Tool, helpLevel: a.HelpLevel, due: a.Due, created: a.Created };
+}
+
+function teacherOverview_(me) {
+  const classes = tabRows_('Classes').filter(c => c.TeacherEmail.toLowerCase() === me.email && c.Archived !== 'yes');
+  const ids = {};
+  classes.forEach(c => { ids[c.ClassId] = true; });
+  const out = {
+    classes: classes.map(publicClass_),
+    assignments: tabRows_('Assignments').filter(a => ids[a.ClassId] && a.Archived !== 'yes').map(publicAssignment_)
+  };
+  if (me.role === 'admin') {
+    out.teachers = tabRows_('Teachers').map(t => ({ email: t.Email, name: t.Name, role: t.Role, status: t.Status }));
+  }
+  return out;
+}
+
+function ownedClass_(me, classId) {
+  const c = tabRows_('Classes').find(r => r.ClassId === String(classId) && r.Archived !== 'yes');
+  if (!c || c.TeacherEmail.toLowerCase() !== me.email) throw teacherError_('bad_request', "That class wasn't found.");
+  return c;
+}
+
+function createClass_(me, data) {
+  const name = cleanLine_(data.name, 80);
+  if (!name) throw teacherError_('bad_request', 'Please give the class a name.');
+  const all = tabRows_('Classes');
+  if (all.filter(c => c.TeacherEmail.toLowerCase() === me.email && c.Archived !== 'yes').length >= MAX_CLASSES_PER_TEACHER) {
+    throw teacherError_('bad_request', `You can have up to ${MAX_CLASSES_PER_TEACHER} classes. Archive one you no longer use.`);
+  }
+  const used = {};
+  all.forEach(c => { used[c.Code] = true; });
+  let code = '';
+  for (let tries = 0; tries < 50 && (!code || used[code]); tries++) {
+    code = '';
+    for (let i = 0; i < 4; i++) code += CLASS_CODE_ALPHABET.charAt(Math.floor(Math.random() * CLASS_CODE_ALPHABET.length));
+  }
+  if (used[code]) throw teacherError_('server', "Couldn't make a class code. Please try again.");
+  const row = { ClassId: Utilities.getUuid().slice(0, 8), Code: code, Name: name, Year: cleanLine_(data.year, 20),
+    TeacherEmail: me.email, Created: new Date().toISOString(), Archived: '' };
+  appendRowObj_('Classes', row);
+  return publicClass_(row);
+}
+
+function archiveClass_(me, data) {
+  const c = ownedClass_(me, data.classId);
+  setCell_('Classes', c._row, 'Archived', 'yes');
+}
+
+function createAssignment_(me, data) {
+  const cls = ownedClass_(me, data.classId);
+  const title = cleanLine_(data.title, 100);
+  if (!title) throw teacherError_('bad_request', 'Please give the assignment a title.');
+  const tool = ASSIGNMENT_TOOLS.indexOf(data.tool) !== -1 ? data.tool : 'writing';
+  const helpLevel = HELP_LEVELS.indexOf(data.helpLevel) !== -1 ? data.helpLevel : 'hints';
+  const due = /^\d{4}-\d{2}-\d{2}$/.test(String(data.due || '')) ? String(data.due) : '';
+  const rubricId = 'standard'; // the teacher's own rubrics arrive in a later step
+  const count = tabRows_('Assignments').filter(a => a.ClassId === cls.ClassId && a.Archived !== 'yes').length;
+  if (count >= MAX_ASSIGNMENTS_PER_CLASS) throw teacherError_('bad_request', `A class can have up to ${MAX_ASSIGNMENTS_PER_CLASS} assignments. Archive some old ones.`);
+  const row = { AssignmentId: Utilities.getUuid().slice(0, 8), ClassId: cls.ClassId, Title: title,
+    Instructions: cleanBlock_(data.instructions, 2000), RubricId: rubricId, Tool: tool, HelpLevel: helpLevel, Due: due,
+    TeacherEmail: me.email, Created: new Date().toISOString(), Archived: '' };
+  appendRowObj_('Assignments', row);
+  return publicAssignment_(row);
+}
+
+function archiveAssignment_(me, data) {
+  const a = tabRows_('Assignments').find(r => r.AssignmentId === String(data.assignmentId) && r.Archived !== 'yes');
+  if (!a || a.TeacherEmail.toLowerCase() !== me.email) throw teacherError_('bad_request', "That assignment wasn't found.");
+  setCell_('Assignments', a._row, 'Archived', 'yes');
+}
+
+function requireAdmin_(me) {
+  if (me.role !== 'admin') throw teacherError_('forbidden', 'Only an administrator can do that.');
+}
+
+function addTeacher_(me, data) {
+  requireAdmin_(me);
+  const email = cleanLine_(data.email, 120).toLowerCase();
+  if (!/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(email)) throw teacherError_('bad_request', 'Please enter a valid email address.');
+  const name = cleanLine_(data.name, 80);
+  const existing = tabRows_('Teachers').find(r => r.Email.toLowerCase() === email);
+  if (existing) {
+    if (existing.Status !== 'active') setCell_('Teachers', existing._row, 'Status', 'active');
+    return { email: email, name: existing.Name, role: existing.Role, status: 'active' };
+  }
+  appendRowObj_('Teachers', { Email: email, Name: name, Role: 'teacher', Status: 'active', Added: new Date().toISOString() });
+  return { email: email, name: name, role: 'teacher', status: 'active' };
+}
+
+function removeTeacher_(me, data) {
+  requireAdmin_(me);
+  const email = cleanLine_(data.email, 120).toLowerCase();
+  if (email === me.email) throw teacherError_('bad_request', "You can't remove your own account.");
+  const row = tabRows_('Teachers').find(r => r.Email.toLowerCase() === email);
+  if (!row) throw teacherError_('bad_request', "That teacher wasn't found.");
+  setCell_('Teachers', row._row, 'Status', 'removed');
 }

@@ -92,6 +92,47 @@ one time, and needs no coding.
 3. In the app, click **📊 Teacher Dashboard**, enter the PIN you set in
    Step 2, and confirm you see your test entry.
 
+## Optional: teacher sign-in (classes and assignments)
+
+This lets teachers sign in with Google, create classes and assignments, and
+(in later steps) use their own rubrics. Everything is stored in your own
+Google Sheet. It stays switched off until you do the two parts below.
+
+**Part A: once for the whole project (done by the project owner).** Create
+the project's public Google sign-in "client ID". Google's menus change names
+from time to time, so look for the closest match.
+1. Go to [console.cloud.google.com](https://console.cloud.google.com), sign in,
+   and create a project (for example "STEM Bridge AI").
+2. Open **APIs & Services → OAuth consent screen** (it may be called "Google
+   Auth Platform"). Choose **External**, give the app a name and your support
+   email, keep the basic scopes (email, profile, openid), and **publish** the
+   app so any Google account can sign in.
+3. Open **Credentials → Create credentials → OAuth client ID**. Choose
+   **Web application**. Under **Authorized JavaScript origins** add the
+   address of the web page, for example `https://dastanramazan.github.io`
+   (only the address, no path). Leave redirect addresses empty. Create it
+   and copy the **Client ID** (it ends in `.apps.googleusercontent.com`).
+4. Put the Client ID in `index.html` (the `GOOGLE_CLIENT_ID` line) and
+   publish. The Client ID is not a secret; it is also visible in the page.
+
+**Part B: for each school or teacher's own script.**
+1. In your Apps Script, set `GOOGLE_CLIENT_ID` (near the top of the teacher
+   section) to the same Client ID.
+2. Optional: to let everyone with a school Google account sign in as a
+   teacher, set `ALLOWED_TEACHER_DOMAINS` to your school's domain, for
+   example `['myschool.org']`. Otherwise only people you add by email can sign in.
+3. Save, then **Deploy → Manage deployments → ✏️ → New version → Deploy**.
+   Google may ask you to approve one more permission (to see your email
+   address). That is expected.
+4. Open the app, click **📊 Teacher → Open the teacher area**, and sign in
+   with the Google account that owns the script. You become the
+   **administrator**. Use the **Teachers** tab to add colleagues by email.
+5. Create a class. You get a class code and a link to share with students.
+
+A Google account that is not on your list is refused. Teachers see only
+their own classes and assignments. The Sheet gains three tabs (Teachers,
+Classes, Assignments); never put student work in them.
+
 ## Good to know
 
 - **No submitted writing or code is ever stored** — only names,
