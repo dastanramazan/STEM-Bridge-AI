@@ -128,11 +128,11 @@
     #k1FallbackNote{display:none;}
     #k1FallbackNote:not([hidden]){display:flex;}
     .fl[style*="font-size"]{font-weight:500;color:var(--mut);}
-    select,textarea,#photoWorkName,#teacherPin,#keyName,#apiKeyInput,.dash-body input[type="password"]{
+    select,textarea,#photoWorkName,#teacherPin,#keyName,#apiKeyInput,.t-input,.dash-body input[type="password"]{
       width:100%;background:var(--faint);border:2px solid var(--border);border-radius:12px;
       color:var(--txt);padding:11px 14px;min-height:46px;outline:none;transition:border-color .15s;
     }
-    select:focus,textarea:focus,#photoWorkName:focus,#teacherPin:focus,#keyName:focus,#apiKeyInput:focus,.dash-body input[type="password"]:focus{border-color:var(--a1);}
+    select:focus,textarea:focus,#photoWorkName:focus,#teacherPin:focus,#keyName:focus,#apiKeyInput:focus,.t-input:focus,.dash-body input[type="password"]:focus{border-color:var(--a1);}
     .coding-mode select:focus,.coding-mode textarea:focus{border-color:var(--a2);}
     input::placeholder,textarea::placeholder{color:var(--mut);opacity:.8;}
     textarea{resize:vertical;min-height:170px;line-height:1.6;}
@@ -370,6 +370,20 @@
     .dash-list{border:2px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:18px;background:var(--faint);}
     .dash-list summary{cursor:pointer;font-weight:700;}
     .dash-list textarea{min-height:110px;margin:8px 0;}
+    .t-modal{max-width:860px;}
+    .t-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+    .t-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;}
+    .t-tab{min-height:44px;padding:8px 18px;border-radius:999px;font-weight:700;border:2px solid var(--border2);background:transparent;color:var(--txt);}
+    .t-tab:hover{border-color:var(--a1);color:var(--a1-ink);}
+    .t-tab.active{background:var(--a1-bg);border-color:var(--a1);color:var(--a1-ink);}
+    .t-card{border:2px solid var(--border);border-radius:14px;padding:14px;margin-bottom:12px;background:var(--faint);}
+    .t-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;}
+    .t-link{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+    .t-link .t-input{flex:1 1 240px;width:auto;}
+    .t-instr{margin-top:6px;white-space:pre-wrap;line-height:1.5;}
+    .code-chip{font-family:var(--mono);font-weight:800;font-size:1.35rem;letter-spacing:.14em;background:var(--a1-bg);color:var(--a1-ink);border-radius:10px;padding:4px 12px;white-space:nowrap;}
+    .t-ok{color:var(--a3);font-weight:700;margin:0 0 10px;line-height:1.5;}
+    .gsi-slot{min-height:44px;margin:12px 0;}
     .settings-sec{margin-top:22px;padding-top:6px;border-top:2px solid var(--border);}
     .advanced-checkbox{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-weight:600;}
     .advanced-checkbox input{width:22px;height:22px;flex:none;}
@@ -736,7 +750,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.10.1</span>
+  <span>Free and open source · MIT License · v0.11.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -820,8 +834,19 @@
         <li><b>Make it yours.</b> Use the feedback to improve your own work. Don't copy it.</li>
       </ul>
       <p><b>Why we built it:</b> many students in rural and low-income schools have little access to expert STEM feedback, and 48 states reported teacher shortages in 2023–2024. This tool aims to give every student quick, personalized guidance.</p>
-      <p>Version 0.10.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.11.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ TEACHER AREA MODAL ══ -->
+<div class="dash-overlay" id="teacherOverlay" hidden>
+  <div class="dash-modal t-modal" role="dialog" aria-modal="true" aria-labelledby="teacherTitle">
+    <div class="dash-head">
+      <span id="teacherTitle">🍎 Teacher area</span>
+      <button class="dash-close" type="button" onclick="closeTeacherArea()" aria-label="Close teacher area">✕</button>
+    </div>
+    <div class="dash-body" id="teacherBody"></div>
   </div>
 </div>
 
@@ -1041,7 +1066,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    ['settingsOverlay', 'aboutOverlay', 'dashOverlay'].forEach(id => {
+    ['settingsOverlay', 'aboutOverlay', 'dashOverlay', 'teacherOverlay'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.hidden) el.hidden = true;
     });
@@ -1056,6 +1081,8 @@
   });
 
   /* ── USAGE LOGGING (optional — see TEACHER_SETUP.md) ─── */
+  // The public client ID of the project's Google sign-in (not a secret). Empty = teacher sign-in is off.
+  const GOOGLE_CLIENT_ID = '';
   const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwOqN_w7G6Mt-to_YrMcMUQL2_qo5KF2H9y8vIYpiPCM-k5cP-ivBgLfRS-xmmdTNjj/exec';
 
   function logUsage(payload) {
@@ -1065,6 +1092,322 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
       body: JSON.stringify({ action: 'log', device: getDeviceCode(), ...payload })
     }).catch(() => { /* logging is best-effort; never interrupt the student's feedback */ });
+  }
+
+  /* ════════════════════════════════════════
+     TEACHER AREA: sign in with Google, then classes and assignments.
+     Google's sign-in script is loaded only when a teacher opens this window, so
+     students never load it. Everything is stored in the school's own Google Sheet
+     through its Apps Script; the page only holds the sign-in token in memory.
+  ════════════════════════════════════════ */
+  let teacherToken = '';
+  let teacherMe = null;
+  let teacherData = null;
+  let teacherTab = 'classes';
+  let teacherNotice = '';
+  let gsiPromise = null;
+
+  const HELP_LABELS = {
+    hints: 'Hints only (recommended)',
+    hints_example: 'Hints and an example',
+    reveal_after_2: 'Show the fix after 2 tries'
+  };
+  const TOOL_LABELS = { writing: 'Science writing', coding: 'Coding' };
+
+  function openTeacherArea() {
+    document.getElementById('dashOverlay').hidden = true;
+    document.getElementById('teacherOverlay').hidden = false;
+    renderTeacherArea();
+  }
+
+  function closeTeacherArea() {
+    document.getElementById('teacherOverlay').hidden = true;
+  }
+
+  function setTMsg(text, ok) {
+    const el = document.getElementById('tMsg');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = ok ? 't-ok' : 'photo-msg';
+  }
+
+  function loadGoogleSignIn() {
+    if (window.google && window.google.accounts && window.google.accounts.id) return Promise.resolve();
+    if (!gsiPromise) {
+      gsiPromise = new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://accounts.google.com/gsi/client';
+        s.async = true;
+        s.defer = true;
+        s.onload = () => resolve();
+        s.onerror = () => { gsiPromise = null; reject(new Error('could not load Google sign-in')); };
+        document.head.appendChild(s);
+      });
+    }
+    return gsiPromise;
+  }
+
+  function renderTeacherArea() {
+    const body = document.getElementById('teacherBody');
+    if (!GOOGLE_CLIENT_ID || !LOG_ENDPOINT) {
+      body.innerHTML = `<p class="dash-note">Teacher sign-in isn't set up on this site yet. It needs the school's Apps Script and a Google sign-in client ID. See <b>TEACHER_SETUP.md</b> in the project files.</p>`;
+      return;
+    }
+    if (!teacherMe) { renderTeacherSignIn(); return; }
+    renderTeacherSignedIn();
+  }
+
+  function renderTeacherSignIn() {
+    document.getElementById('teacherBody').innerHTML = `
+      <p>Sign in with the Google account your school gave you to create classes and assignments. Your administrator decides who may sign in.</p>
+      <div id="gsiButton" class="gsi-slot"></div>
+      <div id="tMsg" class="photo-msg" role="status"></div>`;
+    if (teacherNotice) { setTMsg(teacherNotice); teacherNotice = ''; }
+    loadGoogleSignIn().then(() => {
+      const slot = document.getElementById('gsiButton');
+      if (!slot) return;
+      google.accounts.id.initialize({ client_id: GOOGLE_CLIENT_ID, callback: onGoogleCredential, auto_select: false });
+      google.accounts.id.renderButton(slot, { theme: 'outline', size: 'large', text: 'signin_with' });
+    }).catch(() => setTMsg("Couldn't load Google sign-in. Check that this network allows accounts.google.com."));
+  }
+
+  async function onGoogleCredential(response) {
+    teacherToken = response && response.credential ? response.credential : '';
+    setTMsg('Signing in…', true);
+    try {
+      const login = await teacherCall('t_login');
+      teacherMe = login.me;
+      teacherData = await teacherCall('t_overview');
+      teacherTab = 'classes';
+      renderTeacherSignedIn();
+    } catch (e) {
+      teacherToken = ''; teacherMe = null;
+      setTMsg(e.message);
+    }
+  }
+
+  async function teacherCall(action, payload) {
+    const data = await fetchJsonWithTimeout(LOG_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
+      body: JSON.stringify({ action, idToken: teacherToken, ...(payload || {}) })
+    });
+    if (data && data.ok) return data;
+    const err = new Error((data && data.error) || 'Something went wrong. Please try again.');
+    err.code = data && data.code;
+    if (err.code === 'auth' && teacherMe) {
+      teacherToken = ''; teacherMe = null; teacherData = null;
+      teacherNotice = 'Your Google sign-in ended. Please sign in again.';
+      if (!document.getElementById('teacherOverlay').hidden) renderTeacherArea();
+    }
+    throw err;
+  }
+
+  function teacherSignOut() {
+    try { if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect(); } catch (e) { /* ignore */ }
+    teacherToken = ''; teacherMe = null; teacherData = null;
+    renderTeacherArea();
+  }
+
+  function setTeacherTab(tab) {
+    teacherTab = tab;
+    renderTeacherSignedIn();
+  }
+
+  function classLink(code) {
+    return `${location.origin}${location.pathname}?class=${encodeURIComponent(code)}`;
+  }
+
+  function formatDue(due) {
+    if (!due) return '';
+    const d = new Date(due + 'T00:00:00');
+    return isNaN(d.getTime()) ? escHtml(due) : d.toLocaleDateString(undefined, { dateStyle: 'medium' });
+  }
+
+  function renderTeacherSignedIn() {
+    const me = teacherMe;
+    const tabs = [['classes', 'Classes'], ['assignments', 'Assignments']];
+    if (me.role === 'admin') tabs.push(['teachers', 'Teachers']);
+    const panel = teacherTab === 'assignments' ? assignmentsPanelHtml()
+      : teacherTab === 'teachers' && me.role === 'admin' ? teachersPanelHtml()
+      : classesPanelHtml();
+    document.getElementById('teacherBody').innerHTML = `
+      <div class="t-head">
+        <div><b>${escHtml(me.name || me.email)}</b><div class="dash-note" style="margin:0;">${escHtml(me.email)} · ${me.role === 'admin' ? 'Administrator' : 'Teacher'}</div></div>
+        <button class="apikey-btn" type="button" onclick="teacherSignOut()">Sign out</button>
+      </div>
+      <div class="t-tabs" role="tablist">${tabs.map(([k, l]) =>
+        `<button type="button" role="tab" class="t-tab${k === teacherTab ? ' active' : ''}" onclick="setTeacherTab('${k}')">${l}</button>`).join('')}</div>
+      <div id="tMsg" class="photo-msg" role="status"></div>
+      <div id="tPanel">${panel}</div>`;
+  }
+
+  function classesPanelHtml() {
+    const d = teacherData;
+    const list = d.classes.length ? d.classes.map(c => {
+      const n = d.assignments.filter(a => a.classId === c.id).length;
+      return `
+      <div class="t-card">
+        <div class="t-row">
+          <div><b>${escHtml(c.name)}</b>${c.year ? ` <span class="dash-note" style="display:inline;">· ${escHtml(c.year)}</span>` : ''}
+            <div class="dash-note" style="margin:0;">${n} assignment${n === 1 ? '' : 's'}</div></div>
+          <div class="code-chip" title="Class code">${escHtml(c.code)}</div>
+        </div>
+        <div class="t-link">
+          <input class="t-input" readonly value="${escHtml(classLink(c.code))}" aria-label="Student link for ${escHtml(c.name)}" />
+          <button type="button" class="apikey-btn" data-code="${escHtml(c.code)}" onclick="copyClassLink(this)">Copy link</button>
+          <button type="button" class="apikey-btn" data-id="${escHtml(c.id)}" onclick="archiveClassBtn(this)">Archive</button>
+        </div>
+      </div>`;
+    }).join('') : '<p class="dash-note">No classes yet. Create your first one below.</p>';
+    return `${list}
+      <div class="t-card">
+        <b>New class</b>
+        <div class="fl">Class name</div>
+        <input class="t-input" id="newClassName" maxlength="80" placeholder="e.g. 6th Science, Period 2" />
+        <div class="fl">School year (optional)</div>
+        <input class="t-input" id="newClassYear" maxlength="20" placeholder="2026–2027" />
+        <button type="button" class="btn-main writing-btn" style="margin-top:12px;" onclick="createClassFromForm()">Create class</button>
+      </div>`;
+  }
+
+  function assignmentsPanelHtml() {
+    const d = teacherData;
+    if (!d.classes.length) return '<p class="dash-note">Create a class first (in the Classes tab), then add assignments to it.</p>';
+    const list = d.classes.map(c => {
+      const items = d.assignments.filter(a => a.classId === c.id);
+      return `<div class="sec-label">${escHtml(c.name)} · code ${escHtml(c.code)}</div>` + (items.length ? items.map(a => `
+        <div class="t-card">
+          <div class="t-row">
+            <div><b>${escHtml(a.title)}</b>
+              <div class="dash-note" style="margin:0;">${escHtml(TOOL_LABELS[a.tool] || a.tool)} · ${escHtml(HELP_LABELS[a.helpLevel] || a.helpLevel)}${a.due ? ` · due ${formatDue(a.due)}` : ''}</div>
+              ${a.instructions ? `<div class="t-instr">${escHtml(a.instructions)}</div>` : ''}</div>
+            <button type="button" class="apikey-btn" data-id="${escHtml(a.id)}" onclick="archiveAssignmentBtn(this)">Archive</button>
+          </div>
+        </div>`).join('') : '<p class="dash-note">No assignments in this class yet.</p>');
+    }).join('');
+    return `${list}
+      <div class="t-card">
+        <b>New assignment</b>
+        <div class="fl">Class</div>
+        <select class="t-input" id="newAsgClass">${d.classes.map(c => `<option value="${escHtml(c.id)}">${escHtml(c.name)}</option>`).join('')}</select>
+        <div class="fl">Title</div>
+        <input class="t-input" id="newAsgTitle" maxlength="100" placeholder="e.g. Lab report: dissolving sugar" />
+        <div class="fl">Instructions for students (optional)</div>
+        <textarea class="t-input" id="newAsgInstr" maxlength="2000" rows="3" placeholder="e.g. Write up our experiment with 3 water temperatures. Include a data table with units."></textarea>
+        <div class="fl">Tool</div>
+        <select class="t-input" id="newAsgTool"><option value="writing">Science writing</option><option value="coding">Coding</option></select>
+        <div class="fl">How much help should the AI give?</div>
+        <select class="t-input" id="newAsgHelp"><option value="hints">${HELP_LABELS.hints}</option><option value="hints_example">${HELP_LABELS.hints_example}</option><option value="reveal_after_2">${HELP_LABELS.reveal_after_2}</option></select>
+        <div class="fl">Rubric</div>
+        <select class="t-input" id="newAsgRubric" disabled><option>Standard (5 criteria)</option></select>
+        <div class="dash-note" style="margin:4px 0 0;">Your own rubrics come in a later step. For now the standard five criteria are used.</div>
+        <div class="fl">Due date (optional)</div>
+        <input class="t-input" type="date" id="newAsgDue" />
+        <button type="button" class="btn-main writing-btn" style="margin-top:12px;" onclick="createAssignmentFromForm()">Create assignment</button>
+      </div>`;
+  }
+
+  function teachersPanelHtml() {
+    const rows = (teacherData.teachers || []).map(t => `
+      <tr><td>${escHtml(t.email)}</td><td>${escHtml(t.name || '')}</td><td>${escHtml(t.role)}</td><td>${escHtml(t.status)}</td>
+      <td>${t.role !== 'admin' && t.status === 'active' ? `<button type="button" class="apikey-btn" data-email="${escHtml(t.email)}" onclick="removeTeacherBtn(this)">Remove</button>` : ''}</td></tr>`).join('');
+    return `
+      <p class="dash-note">Only the people listed here (and anyone on an allowed school domain, if your script sets one) can sign in to this area.</p>
+      <div style="overflow-x:auto;"><table class="dash-table"><thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+      <div class="t-card" style="margin-top:14px;">
+        <b>Add a teacher</b>
+        <div class="fl">Google account email</div>
+        <input class="t-input" id="newTeacherEmail" maxlength="120" placeholder="teacher@yourschool.org" />
+        <div class="fl">Name (optional)</div>
+        <input class="t-input" id="newTeacherName" maxlength="80" />
+        <button type="button" class="btn-main writing-btn" style="margin-top:12px;" onclick="addTeacherFromForm()">Add teacher</button>
+      </div>`;
+  }
+
+  async function teacherAction(fn, okMessage) {
+    try {
+      await fn();
+      renderTeacherSignedIn();
+      if (okMessage) setTMsg(okMessage, true);
+    } catch (e) {
+      if (e.code !== 'auth') setTMsg(e.message); // an ended sign-in already sent the teacher back to the sign-in screen
+    }
+  }
+
+  function createClassFromForm() {
+    const name = document.getElementById('newClassName').value;
+    const year = document.getElementById('newClassYear').value;
+    teacherAction(async () => {
+      const r = await teacherCall('t_class_create', { name, year });
+      teacherData.classes.push(r.class);
+    }, 'Class created ✓ Share the link or the code with your students.');
+  }
+
+  function archiveClassBtn(btn) {
+    const id = btn.dataset.id;
+    const c = teacherData.classes.find(x => x.id === id);
+    if (!c || !confirm(`Archive the class "${c.name}"? It disappears from your list.`)) return;
+    teacherAction(async () => {
+      await teacherCall('t_class_archive', { classId: id });
+      teacherData.classes = teacherData.classes.filter(x => x.id !== id);
+      teacherData.assignments = teacherData.assignments.filter(a => a.classId !== id);
+    }, 'Class archived.');
+  }
+
+  function createAssignmentFromForm() {
+    const payload = {
+      classId: document.getElementById('newAsgClass').value,
+      title: document.getElementById('newAsgTitle').value,
+      instructions: document.getElementById('newAsgInstr').value,
+      tool: document.getElementById('newAsgTool').value,
+      helpLevel: document.getElementById('newAsgHelp').value,
+      due: document.getElementById('newAsgDue').value
+    };
+    teacherAction(async () => {
+      const r = await teacherCall('t_assignment_create', payload);
+      teacherData.assignments.push(r.assignment);
+    }, 'Assignment created ✓');
+  }
+
+  function archiveAssignmentBtn(btn) {
+    const id = btn.dataset.id;
+    const a = teacherData.assignments.find(x => x.id === id);
+    if (!a || !confirm(`Archive the assignment "${a.title}"?`)) return;
+    teacherAction(async () => {
+      await teacherCall('t_assignment_archive', { assignmentId: id });
+      teacherData.assignments = teacherData.assignments.filter(x => x.id !== id);
+    }, 'Assignment archived.');
+  }
+
+  function addTeacherFromForm() {
+    const email = document.getElementById('newTeacherEmail').value;
+    const name = document.getElementById('newTeacherName').value;
+    teacherAction(async () => {
+      const r = await teacherCall('t_teacher_add', { email, name });
+      teacherData.teachers = (teacherData.teachers || []).filter(t => t.email !== r.teacher.email).concat([r.teacher]);
+    }, 'Teacher added ✓ They can now sign in with that Google account.');
+  }
+
+  function removeTeacherBtn(btn) {
+    const email = btn.dataset.email;
+    if (!confirm(`Remove ${email}? They will no longer be able to sign in.`)) return;
+    teacherAction(async () => {
+      await teacherCall('t_teacher_remove', { email });
+      teacherData.teachers = teacherData.teachers.map(t => t.email === email ? { ...t, status: 'removed' } : t);
+    }, 'Teacher removed.');
+  }
+
+  function copyClassLink(btn) {
+    const link = classLink(btn.dataset.code);
+    const done = () => setTMsg('Link copied ✓', true);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(done, () => setTMsg('Select the link and copy it (Ctrl+C or Cmd+C).'));
+    } else {
+      const input = btn.parentElement.querySelector('input');
+      input.select();
+      try { document.execCommand('copy'); done(); } catch (e) { setTMsg('Select the link and copy it (Ctrl+C or Cmd+C).'); }
+    }
   }
 
   /* ── TEACHER DASHBOARD ─────────────────── */
@@ -1083,7 +1426,15 @@
         `<p style="font-size:.875rem;line-height:1.7;color:var(--mut);">Usage tracking isn't set up yet. See <strong>TEACHER_SETUP.md</strong> in the project files for a 10-minute one-time setup.</p>`;
       return;
     }
+    const teacherEntry = GOOGLE_CLIENT_ID ? `
+      <div class="t-card">
+        <b>🍎 Teacher area</b>
+        <div class="dash-note" style="margin:2px 0 8px;">Create classes and assignments. Sign in with Google.</div>
+        <button type="button" class="btn-main photo-btn" onclick="openTeacherArea()">Open the teacher area</button>
+      </div>
+      <div class="sec-label">Usage dashboard (PIN)</div>` : '';
     document.getElementById('dashBody').innerHTML = `
+      ${teacherEntry}
       <input type="password" id="dashPin" placeholder="Enter your PIN" onkeydown="if(event.key==='Enter')loadDashboard()" />
       <button class="btn-main writing-btn" onclick="loadDashboard()" style="margin-bottom:8px;">View Stats</button>
       ${errorMsg ? `<div style="color:var(--err);font-size:.95rem;font-weight:600;">${escHtml(errorMsg)}</div>` : ''}

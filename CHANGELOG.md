@@ -4,6 +4,20 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.11.0] — 2026-11 — Teacher Accounts, Step 1: Sign-in, Classes, Assignments
+
+### Added
+- **Teacher area (optional).** In 📊 Teacher, a new "Teacher area" opens a window where a teacher signs in with Google, creates **classes** (each gets a short class code and a link to give students) and **assignments** (title, instructions, tool, due date, and how much help the AI may give: hints only, hints and an example, or show the fix after 2 tries). Classes and assignments can be archived. A "Teachers" tab lets the administrator add or remove teachers by email.
+- **Where it lives:** in new tabs (Teachers, Classes, Assignments) of the school's own Google Sheet, written by the school's own Apps Script. The project holds no shared database. Student work is not stored there.
+- **How it is protected:** every request carries Google's signed sign-in token, which the script checks with Google (right app, verified email, not expired) before doing anything. Only the script's owner (administrator) and the people they add, or optionally anyone on an allowed school domain, may sign in. A teacher can only see and change their own classes and assignments. The new tabs are plain text, so nothing typed in can become a formula. There are limits on the number of classes and assignments, and bad sign-in attempts are throttled.
+- Google's sign-in script is loaded only when a teacher opens the Teacher area, never for students.
+- The feature stays off until the public Google client ID is set in both `index.html` and the school's script (see TEACHER_SETUP.md).
+
+### Not yet
+- Students can't join a class by its code or link yet, teachers can't write their own rubrics yet (the standard five criteria are used), and there are no per-class results yet. These are the next steps.
+
+---
+
 ## [0.10.1] — 2026-11 — Telling People Apart
 
 ### Added
