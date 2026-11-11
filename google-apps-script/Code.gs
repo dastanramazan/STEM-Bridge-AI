@@ -25,7 +25,7 @@
  *      setup". Type a teacher PIN and paste your free Gemini key from
  *      aistudio.google.com/apikey. They are saved privately, not in this code.
  *   3. Deploy > New deployment > Web app (Execute as: Me, Who has access: Anyone).
- *   4. Copy the Web app URL into the website: Settings > Connect my school.
+ *   4. Copy the Web app URL into the website: Settings > For teachers: set up my school.
  *
  * (Older setups that edit the PIN and GEMINI_API_KEY constants below keep working.
  * Values saved with the setup form take priority over the constants.)
@@ -781,7 +781,7 @@ function setupDialogHtml_() {
     + '<li>Close this window. Click <b>Extensions → Apps Script</b>.</li>'
     + '<li>Click <b>Deploy → New deployment</b>, the gear icon, then <b>Web app</b>.</li>'
     + '<li>Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, then <b>Deploy</b> and approve the permissions.</li>'
-    + '<li>Copy the <b>Web app URL</b> and paste it on the STEM Bridge AI website: <b>Settings → Connect my school</b>.</li></ol></div>'
+    + '<li>Copy the <b>Web app URL</b> and paste it on the STEM Bridge AI website: <b>Settings → For teachers: set up my school</b>.</li></ol></div>'
     + '<script>'
     + 'function line(ok,t){return "<div class=\\""+(ok?"ok":"bad")+"\\">"+(ok?"✓ ":"✗ ")+t+"</div>";}'
     + 'function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}'

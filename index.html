@@ -783,7 +783,7 @@
         <p class="dash-note" id="schoolStatus" style="margin-top:8px;"></p>
         <div id="schoolNotes"></div>
         <ol class="about-list">
-          <li><a id="schoolTemplateLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Make your own copy of the template Sheet</a> (it already contains the script).</li>
+          <li>Make your own copy of the template Sheet; it already contains the script. <a id="schoolTemplateLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Open the template</a><span id="schoolTemplateNone">Your project contact will send you the link.</span></li>
           <li>In your copy, reload the page and open the menu <b>STEM Bridge AI → Set up / check my setup</b>. Type a PIN and paste your free AI key.</li>
           <li>In the Sheet: <b>Extensions → Apps Script → Deploy → New deployment → Web app</b> (Execute as <b>Me</b>, access <b>Anyone</b>) and copy the <b>Web app URL</b>.</li>
           <li>Paste that address here:</li>
@@ -1222,6 +1222,7 @@
     document.getElementById('studentLinkBox').hidden = !connected;
     document.getElementById('studentLinkInput').value = link;
     document.getElementById('schoolTemplateLink').hidden = !TEMPLATE_COPY_URL;
+    document.getElementById('schoolTemplateNone').hidden = !!TEMPLATE_COPY_URL;
     if (TEMPLATE_COPY_URL) document.getElementById('schoolTemplateLink').href = TEMPLATE_COPY_URL;
     const notes = info ? schoolNotes(info) : [];
     document.getElementById('schoolNotes').innerHTML = notes.map(n => `<div class="photo-warn">${escHtml(n)}</div>`).join('');
