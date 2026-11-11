@@ -35,6 +35,22 @@ how student data is handled, `PRIVACY.md`.
 - Test results log only a percent in the score column; points and the test
   name go in the text "Detail" column (the Dashboard averages score columns).
 
+## School connection and setup
+
+- A school's PIN, AI key, name, and allowed domains are saved with the Sheet
+  menu form into Script Properties (`setting_*` keys, read via `getSetting_`),
+  which win over the constants in `Code.gs`. Never echo secrets back to the form
+  or the page. A placeholder or empty PIN/key counts as not set: never accept the
+  public example PIN.
+- `doGet?action=info` is the one public, secret-free reply (version, school name,
+  what is set up). Keep it that way.
+- The page's `LOG_ENDPOINT` is a `let`: the shared demo by default, or a school's
+  Web app address saved in `localStorage` after the user pasted it or confirmed a
+  `?s=` link. Only addresses matching `SCRIPT_URL_RE` (script.google.com Web app
+  `/exec`) are accepted, and a `?s=` link must be confirmed by the user before
+  anything is saved or sent. Bump `SCRIPT_VERSION` in `Code.gs` and
+  `EXPECTED_SCRIPT_VERSION` in the page together when `Code.gs` changes.
+
 ## Teacher accounts
 
 - Teacher sign-in is Google Identity Services: the page gets an ID token, sends it

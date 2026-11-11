@@ -13,6 +13,63 @@ class trial:
 Both are off until you complete this setup. It takes about 10 minutes,
 one time, and needs no coding.
 
+## Quick start (about 10 minutes, no code to edit)
+
+You need a Google account. You do **not** need to edit any code or touch GitHub.
+
+**1. Make your own copy of the template Sheet.** Open the template link your
+project contact gave you (it ends in `/copy`) and click **Make a copy**. The
+copy already contains the script. (No link yet? Use the "Manual setup" steps
+further down.)
+
+**2. Set your PIN and AI key.** In your copy, reload the page. A new menu
+**STEM Bridge AI** appears at the top. Click **STEM Bridge AI → Set up / check
+my setup**. Google will ask you to approve permissions the first time (click
+**Advanced → Go to … (unsafe)**: this is your own copy). In the form:
+- type your school's name (students see it when they connect),
+- choose a **teacher PIN** (4 or more characters, no spaces),
+- paste your free **AI key** from [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+  (sign in, click *Create API key*; no credit card).
+
+Click **Save**. The form tells you whether the key works. Your PIN and key are
+saved privately in the script, not in the code.
+
+**3. Publish it.** In the Sheet click **Extensions → Apps Script**, then
+**Deploy → New deployment**, the gear icon, **Web app**. Set **Execute as: Me**
+and **Who has access: Anyone**, click **Deploy**, approve the permissions, and
+copy the **Web app URL** (it ends in `/exec`).
+
+**4. Connect the website.** Open the STEM Bridge AI website on your computer, click
+**⚙️ Settings → 🏫 For teachers: set up my school**, paste the Web app URL, and click
+**Check and connect**. It confirms your school's name and checks that everything is set up.
+
+**5. Give students the link.** After connecting, the same place shows a **link for
+your students**. Copy it and share it (on the board, by email, or in Google Classroom).
+When a student opens it, they are asked once to confirm they are connecting to your
+school. Their names and scores go to your Sheet, and your PIN opens the Teacher Dashboard.
+
+That's it. Later updates: if the website says your script is out of date, open
+**Extensions → Apps Script**, replace the code with the newest `Code.gs`, then
+**Deploy → Manage deployments → ✏️ → New version → Deploy**. Your PIN, key and data stay.
+
+### For the project owner: build the template once
+
+1. Create a new Google Sheet named "STEM Bridge AI: school template".
+2. **Extensions → Apps Script**, delete the starter code, paste in the whole of
+   `google-apps-script/Code.gs`, and save. Do **not** type a PIN or a key anywhere.
+3. Set `GOOGLE_CLIENT_ID` near the top of the teacher section to the project's public
+   Google client ID if you have created one (see "Optional: teacher sign-in" below).
+4. Click **Share → General access → Anyone with the link → Viewer**. Copy the link and
+   change the end of it from `/edit…` to `/copy`. That is the template link to give schools.
+5. Put the same `/copy` link in `index.html` as `TEMPLATE_COPY_URL` so the website
+   can show a "Make your own copy" button.
+6. Whenever `Code.gs` changes, paste the new version into the template too.
+
+## Manual setup (the older method, still works)
+
+If you prefer to paste the code yourself and keep your PIN and key in the script
+(or you have no template link), follow these steps.
+
 ## What this does
 
 - Students see the app work immediately — no API key required, no signup.
@@ -208,6 +265,7 @@ Classes, Assignments); never put student work in them.
   reset every midnight in the script's time zone. Students are identified
   by the name they typed, so the class-wide limit is the hard backstop.
   Anyone using their own API key is not limited.
+- **The website no longer needs editing.** The older method asked you to change `LOG_ENDPOINT` in `index.html` on GitHub. With the Quick start you paste your Web app URL in ⚙️ Settings instead, and the website remembers it on that device. Students get a link that carries your school's address.
 - If `LOG_ENDPOINT` is left blank, both the default AI connection and
   usage tracking are disabled — students would need to provide their own
   API key in ⚙️ Settings to use the app at all.
