@@ -4,6 +4,21 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.12.0] — 2026-11 — Easy Setup for a School
+
+### Added
+- **No more editing code.** A new **STEM Bridge AI** menu in the school's Google Sheet opens a setup form for the teacher PIN, the free Gemini AI key, the school's name, and (optionally) allowed school email domains. The PIN and key are saved in the script's private storage, not in its code. The form checks the AI key with Google and never shows secrets back. Older setups that keep the PIN and key in the code still work, and values saved in the form take priority.
+- **No more editing the website on GitHub.** In **⚙️ Settings → 🏫 For teachers: set up my school** a teacher pastes the Web app address once. The page checks that it really is a STEM Bridge AI school script (a public "business card" reply with its version, school name, and what is set up), remembers it on that device, and shows a **link for students**.
+- **Student links** like `…/?s=<school>` ask before connecting: "This link connects STEM Bridge AI to *School*'s own server… Only continue if your teacher gave you this link." Nothing is saved or sent until the student says yes. Malformed or hostile values are ignored, and a link to something that isn't a STEM Bridge AI school offers no way to connect. Class links from the Teacher area include the school automatically.
+- **Update and setup hints:** if the school's script is older than the page expects, or the PIN or AI key is still missing, Settings explains the exact steps.
+- A **template Sheet** approach (make a copy of a Sheet that already contains the script) and a rewritten Quick start in TEACHER_SETUP.md; instructions for building the template once.
+
+### Changed
+- **Safer defaults:** a script whose PIN was never set no longer accepts the public example PIN. It says to open the setup form instead. A school whose AI key isn't set gets a clear message instead of an error.
+- The website's built-in connection is now the shared demo; a school's own address replaces it per device.
+
+---
+
 ## [0.11.0] — 2026-11 — Teacher Accounts, Step 1: Sign-in, Classes, Assignments
 
 ### Added

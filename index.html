@@ -750,11 +750,19 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.11.0</span>
+  <span>Free and open source · MIT License · v0.12.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
 </footer>
+
+<!-- ═══════════════════════════════ SCHOOL LINK CONFIRMATION ══ -->
+<div class="dash-overlay" id="schoolOverlay" hidden>
+  <div class="dash-modal" style="max-width:520px;" role="dialog" aria-modal="true" aria-labelledby="schoolConfirmTitle">
+    <div class="dash-head"><span id="schoolConfirmTitle">🏫 Connect to a school?</span></div>
+    <div class="dash-body" id="schoolConfirmBody"></div>
+  </div>
+</div>
 
 <!-- ═══════════════════════════════ SETTINGS MODAL ══ -->
 <div class="dash-overlay" id="settingsOverlay" hidden>
@@ -769,6 +777,29 @@
         <button type="button" class="role-pill active" id="themeLight" onclick="setTheme('light')">☀️ Light</button>
         <button type="button" class="role-pill" id="themeDark" onclick="setTheme('dark')">🌙 Dark</button>
       </div>
+
+      <details class="dash-list" id="schoolSection" style="margin-top:18px;">
+        <summary>🏫 For teachers: set up my school</summary>
+        <p class="dash-note" id="schoolStatus" style="margin-top:8px;"></p>
+        <div id="schoolNotes"></div>
+        <ol class="about-list">
+          <li>Make your own copy of the template Sheet; it already contains the script. <a id="schoolTemplateLink" href="#" target="_blank" rel="noopener noreferrer" hidden>Open the template</a><span id="schoolTemplateNone">Your project contact will send you the link.</span></li>
+          <li>In your copy, reload the page and open the menu <b>STEM Bridge AI → Set up / check my setup</b>. Type a PIN and paste your free AI key.</li>
+          <li>In the Sheet: <b>Extensions → Apps Script → Deploy → New deployment → Web app</b> (Execute as <b>Me</b>, access <b>Anyone</b>) and copy the <b>Web app URL</b>.</li>
+          <li>Paste that address here:</li>
+        </ol>
+        <input type="text" class="t-input" id="schoolUrlInput" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" />
+        <div class="photo-actions" style="margin-top:8px;">
+          <button type="button" class="apikey-btn" onclick="connectSchoolFromInput()">Check and connect</button>
+          <button type="button" class="apikey-btn" id="schoolDisconnectBtn" onclick="disconnectSchool()" hidden>Use the demo connection</button>
+        </div>
+        <div id="studentLinkBox" hidden>
+          <div class="fl">Link for your students</div>
+          <div class="t-link"><input class="t-input" id="studentLinkInput" readonly /><button type="button" class="apikey-btn" onclick="copyStudentLink()">Copy link</button></div>
+        </div>
+        <div id="schoolMsg" class="photo-msg" role="status"></div>
+        <p class="dash-note">The full guide is in <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/TEACHER_SETUP.md" target="_blank" rel="noopener noreferrer">TEACHER_SETUP.md</a>.</p>
+      </details>
 
       <div class="settings-sec">
         <div class="fl">School or organization?</div>
@@ -834,7 +865,7 @@
         <li><b>Make it yours.</b> Use the feedback to improve your own work. Don't copy it.</li>
       </ul>
       <p><b>Why we built it:</b> many students in rural and low-income schools have little access to expert STEM feedback, and 48 states reported teacher shortages in 2023–2024. This tool aims to give every student quick, personalized guidance.</p>
-      <p>Version 0.11.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.12.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1058,6 +1089,7 @@
   function openSettings() {
     document.getElementById('deviceCodeShown').textContent = getDeviceCode();
     document.getElementById('settingsOverlay').hidden = false;
+    refreshSchoolSettings();
     document.getElementById('useOwnKeyToggle').focus();
   }
   function closeSettings() { document.getElementById('settingsOverlay').hidden = true; updateSetupUI(); }
@@ -1083,7 +1115,12 @@
   /* ── USAGE LOGGING (optional — see TEACHER_SETUP.md) ─── */
   // The public client ID of the project's Google sign-in (not a secret). Empty = teacher sign-in is off.
   const GOOGLE_CLIENT_ID = '';
-  const LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwOqN_w7G6Mt-to_YrMcMUQL2_qo5KF2H9y8vIYpiPCM-k5cP-ivBgLfRS-xmmdTNjj/exec';
+  // The project's shared demo connection. A school replaces it with its own (Settings > Set up for my school).
+  const DEFAULT_LOG_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwOqN_w7G6Mt-to_YrMcMUQL2_qo5KF2H9y8vIYpiPCM-k5cP-ivBgLfRS-xmmdTNjj/exec';
+  let LOG_ENDPOINT = (() => {
+    const saved = safeGet('local', 'stemBridgeSchoolUrl');
+    return saved && /^https:\/\/script\.google\.com\/(?:a\/macros\/[A-Za-z0-9.\-]+\/|macros\/)s\/[A-Za-z0-9_\-]{20,}\/exec$/.test(saved) ? saved : DEFAULT_LOG_ENDPOINT;
+  })();
 
   function logUsage(payload) {
     if (!LOG_ENDPOINT) return;
@@ -1092,6 +1129,188 @@
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
       body: JSON.stringify({ action: 'log', device: getDeviceCode(), ...payload })
     }).catch(() => { /* logging is best-effort; never interrupt the student's feedback */ });
+  }
+
+  /* ════════════════════════════════════════
+     SCHOOL CONNECTION: each school runs its own Apps Script. A teacher pastes its
+     "Web app" address here once (no code editing), and gives students a link that
+     carries it. Nothing is sent to an address until the user has confirmed it.
+  ════════════════════════════════════════ */
+  const EXPECTED_SCRIPT_VERSION = '0.12.0'; // the newest Code.gs this page knows about
+  const TEMPLATE_COPY_URL = ''; // "Make a copy" link of the template Sheet, once the project owner has created it
+  const SCHOOL_URL_STORAGE = 'stemBridgeSchoolUrl';
+  const SCRIPT_URL_RE = /^https:\/\/script\.google\.com\/(?:a\/macros\/([A-Za-z0-9.\-]+)\/|macros\/)s\/([A-Za-z0-9_\-]{20,})\/exec$/;
+
+  // Accepts a pasted Web app address and returns it cleaned, or '' if it isn't one.
+  function normalizeSchoolUrl(raw) {
+    const url = String(raw || '').trim().split(/[?#]/)[0];
+    return SCRIPT_URL_RE.test(url) ? url : '';
+  }
+
+  // The short piece of the address that goes in a student link: ?s=<id> (or domain~id).
+  function schoolParamFor(url) {
+    if (url === DEFAULT_LOG_ENDPOINT) return '';
+    const m = SCRIPT_URL_RE.exec(url || '');
+    return m ? (m[1] ? `${m[1]}~${m[2]}` : m[2]) : '';
+  }
+
+  function schoolUrlFromParam(value) {
+    const m = /^(?:([A-Za-z0-9.\-]+)~)?([A-Za-z0-9_\-]{20,})$/.exec(String(value || ''));
+    if (!m) return '';
+    return m[1] ? `https://script.google.com/a/macros/${m[1]}/s/${m[2]}/exec` : `https://script.google.com/macros/s/${m[2]}/exec`;
+  }
+
+  function versionLess(a, b) {
+    const pa = String(a).split('.').map(n => parseInt(n, 10) || 0);
+    const pb = String(b).split('.').map(n => parseInt(n, 10) || 0);
+    for (let i = 0; i < 3; i++) {
+      if ((pa[i] || 0) !== (pb[i] || 0)) return (pa[i] || 0) < (pb[i] || 0);
+    }
+    return false;
+  }
+
+  async function fetchSchoolInfo(url) {
+    let info;
+    try {
+      info = await fetchJsonWithTimeout(`${url}?action=info`, { method: 'GET' }, 15000);
+    } catch (e) {
+      throw new Error("Couldn't reach that address. Check that you copied the whole Web app URL, and that the web app is deployed with access set to \"Anyone\".");
+    }
+    if (!info || info.ok !== true || info.app !== 'stem-bridge-ai' || typeof info.version !== 'string') {
+      throw new Error("That address didn't answer like a STEM Bridge AI school. Check that you copied the Web app URL of the right script.");
+    }
+    return info;
+  }
+
+  function saveSchoolUrl(url) {
+    LOG_ENDPOINT = url;
+    if (url === DEFAULT_LOG_ENDPOINT) safeRemove('local', SCHOOL_URL_STORAGE);
+    else safeSet('local', SCHOOL_URL_STORAGE, url);
+    updateSetupUI();
+  }
+
+  function setSchoolMsg(text, ok) {
+    const el = document.getElementById('schoolMsg');
+    el.textContent = text || '';
+    el.className = ok ? 't-ok' : 'photo-msg';
+  }
+
+  function schoolNotes(info) {
+    const notes = [];
+    if (versionLess(info.version, EXPECTED_SCRIPT_VERSION)) {
+      notes.push(`Your school's script is version ${info.version} and this page works best with ${EXPECTED_SCRIPT_VERSION}. To update: open your Sheet, Extensions → Apps Script, replace the code with the latest Code.gs, then Deploy → Manage deployments → ✏️ → New version → Deploy.`);
+    }
+    const missing = [];
+    if (info.setup && !info.setup.pin) missing.push('the teacher PIN');
+    if (info.setup && !info.setup.aiKey) missing.push('the AI key');
+    if (missing.length) notes.push(`Setup isn't finished yet: ${missing.join(' and ')} ${missing.length > 1 ? 'are' : 'is'} missing. In your Sheet, open the menu STEM Bridge AI → Set up / check my setup.`);
+    return notes;
+  }
+
+  function renderSchoolSettings(info) {
+    const connected = LOG_ENDPOINT !== DEFAULT_LOG_ENDPOINT;
+    const status = document.getElementById('schoolStatus');
+    if (!connected) {
+      status.textContent = "This page is using the project's shared demo connection (limited). To use your own school's connection, set it up with the steps below and paste its web address here.";
+    } else if (info) {
+      status.textContent = `Connected to ${info.school || 'your school'} (script version ${info.version}).`;
+    } else {
+      status.textContent = 'Connected to your school.';
+    }
+    document.getElementById('schoolDisconnectBtn').hidden = !connected;
+    const link = connected ? `${location.origin}${location.pathname}?s=${encodeURIComponent(schoolParamFor(LOG_ENDPOINT))}` : '';
+    document.getElementById('studentLinkBox').hidden = !connected;
+    document.getElementById('studentLinkInput').value = link;
+    document.getElementById('schoolTemplateLink').hidden = !TEMPLATE_COPY_URL;
+    document.getElementById('schoolTemplateNone').hidden = !!TEMPLATE_COPY_URL;
+    if (TEMPLATE_COPY_URL) document.getElementById('schoolTemplateLink').href = TEMPLATE_COPY_URL;
+    const notes = info ? schoolNotes(info) : [];
+    document.getElementById('schoolNotes').innerHTML = notes.map(n => `<div class="photo-warn">${escHtml(n)}</div>`).join('');
+  }
+
+  async function refreshSchoolSettings() {
+    renderSchoolSettings(null);
+    setSchoolMsg('');
+    if (LOG_ENDPOINT === DEFAULT_LOG_ENDPOINT) return;
+    try { renderSchoolSettings(await fetchSchoolInfo(LOG_ENDPOINT)); } catch (e) { /* offline: keep the plain status */ }
+  }
+
+  async function connectSchoolFromInput() {
+    const raw = document.getElementById('schoolUrlInput').value;
+    const url = normalizeSchoolUrl(raw);
+    if (!url) {
+      setSchoolMsg(/\/dev(\?|$)/.test(String(raw).trim())
+        ? 'That is a test address (it ends with /dev). Use the Web app URL that ends with /exec.'
+        : "That doesn't look like a Web app URL. It starts with https://script.google.com/macros/s/ and ends with /exec.");
+      return;
+    }
+    setSchoolMsg('Checking…', true);
+    try {
+      const info = await fetchSchoolInfo(url);
+      saveSchoolUrl(url);
+      document.getElementById('schoolUrlInput').value = '';
+      renderSchoolSettings(info);
+      setSchoolMsg('Connected ✓ Give your students the link below.', true);
+    } catch (e) {
+      setSchoolMsg(e.message);
+    }
+  }
+
+  function disconnectSchool() {
+    saveSchoolUrl(DEFAULT_LOG_ENDPOINT);
+    renderSchoolSettings(null);
+    setSchoolMsg('Back to the shared demo connection.', true);
+  }
+
+  function copyStudentLink() {
+    const input = document.getElementById('studentLinkInput');
+    const done = () => setSchoolMsg('Link copied ✓', true);
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(input.value).then(done, () => setSchoolMsg('Select the link and copy it (Ctrl+C or Cmd+C).'));
+    else { input.select(); try { document.execCommand('copy'); done(); } catch (e) { setSchoolMsg('Select the link and copy it (Ctrl+C or Cmd+C).'); } }
+  }
+
+  /* ── a student opens a link like ?s=<school>: ask before connecting ── */
+  let schoolLinkUrl = '';
+  let schoolLinkClean = () => {};
+
+  async function handleSchoolLink() {
+    const params = new URLSearchParams(location.search);
+    if (!params.has('s')) return;
+    const url = schoolUrlFromParam(params.get('s'));
+    const clean = () => {
+      params.delete('s');
+      const q = params.toString();
+      history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
+    };
+    if (!url || url === LOG_ENDPOINT) { clean(); return; }
+    schoolLinkUrl = url;
+    schoolLinkClean = clean;
+    const body = document.getElementById('schoolConfirmBody');
+    body.innerHTML = '<p>Checking this link…</p>';
+    document.getElementById('schoolOverlay').hidden = false;
+    try {
+      const info = await fetchSchoolInfo(url);
+      body.innerHTML = `
+        <p>This link connects STEM Bridge AI to <b>${escHtml(info.school || 'a school')}</b>'s own server.</p>
+        <p class="dash-note">Your name and scores will be saved in that school's Google Sheet, and what you write is sent to that school's AI connection. Only continue if your teacher gave you this link.</p>
+        <div class="photo-actions">
+          <button type="button" class="btn-main writing-btn" onclick="confirmSchoolLink()">Yes, connect</button>
+          <button type="button" class="apikey-btn" onclick="declineSchoolLink()">No, thanks</button>
+        </div>`;
+    } catch (e) {
+      body.innerHTML = `<p>${escHtml(e.message)}</p><button type="button" class="apikey-btn" onclick="declineSchoolLink()">Close</button>`;
+    }
+  }
+
+  function confirmSchoolLink() {
+    saveSchoolUrl(schoolLinkUrl);
+    schoolLinkClean();
+    document.getElementById('schoolOverlay').hidden = true;
+  }
+
+  function declineSchoolLink() {
+    schoolLinkClean();
+    document.getElementById('schoolOverlay').hidden = true;
   }
 
   /* ════════════════════════════════════════
@@ -1215,7 +1434,8 @@
   }
 
   function classLink(code) {
-    return `${location.origin}${location.pathname}?class=${encodeURIComponent(code)}`;
+    const school = schoolParamFor(LOG_ENDPOINT); // empty on the shared demo connection
+    return `${location.origin}${location.pathname}?${school ? 's=' + encodeURIComponent(school) + '&' : ''}class=${encodeURIComponent(code)}`;
   }
 
   function formatDue(due) {
@@ -1448,7 +1668,7 @@
     try {
       const r = await fetch(`${LOG_ENDPOINT}?pin=${encodeURIComponent(pin)}`);
       const data = await r.json();
-      if (data.error) { renderDashboardPinPrompt(data.locked ? data.error : 'Incorrect PIN.'); return; }
+      if (data.error) { renderDashboardPinPrompt(data.locked || data.code === 'not_set' ? data.error : 'Incorrect PIN.'); return; }
       renderDashboardStats(data.entries || []);
     } catch (e) {
       renderDashboardPinPrompt('Could not load stats. Check your connection and try again.');
@@ -3108,7 +3328,7 @@ Return ONLY valid JSON (no markdown, no preamble):
         setTeacherPinMsg('');
         setPhotoRole('teacher');
       } else {
-        setTeacherPinMsg(data.locked ? data.error : 'Incorrect PIN.');
+        setTeacherPinMsg(data.locked || data.code === 'not_set' ? data.error : 'Incorrect PIN.');
       }
     } catch (e) {
       setTeacherPinMsg("Couldn't check the PIN. Check your connection and try again.");
@@ -3628,7 +3848,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     }, opts.timeoutMs);
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
-      if (data?.error?.status === 'DAILY_LIMIT') throw new Error(data.error.message);
+      if (data?.error?.status === 'DAILY_LIMIT' || data?.error?.status === 'NOT_CONFIGURED') throw new Error(data.error.message);
       throw new Error(friendlyGeminiError(data));
     }
     return text;
@@ -3675,6 +3895,7 @@ Return ONLY valid JSON (no markdown, no preamble):
   initPhotoMode();
   updateSetupUI();
   initTheme();
+  handleSchoolLink();
 </script>
 </body>
 </html>

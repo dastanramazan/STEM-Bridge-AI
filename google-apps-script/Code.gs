@@ -17,24 +17,22 @@
  *    bypasses this proxy entirely and calls Gemini/Anthropic directly
  *    with their own key, same as before.
  *
- * SETUP — see TEACHER_SETUP.md in the project for the full walkthrough.
- * Quick version:
- *   1. Create a new Google Sheet.
- *   2. Extensions > Apps Script.
- *   3. Delete the starter code and paste this whole file in.
- *   4. Change PIN below to something only you know.
- *   5. Change GEMINI_API_KEY below to your own free key from
- *      aistudio.google.com/apikey, so the app works by default without
- *      visitors needing their own key.
- *   6. Deploy > New deployment > type: Web app.
- *        - Execute as: Me
- *        - Who has access: Anyone
- *   7. Click Deploy, then authorize the permissions it asks for.
- *   8. Copy the "Web app URL" and paste it into LOG_ENDPOINT in index.html.
+ * EASY SETUP — see TEACHER_SETUP.md ("Quick start"):
+ *   1. Make your own copy of the STEM Bridge AI template Sheet (this script is
+ *      already inside it), or paste this whole file into Extensions > Apps Script
+ *      of a new Sheet.
+ *   2. Reload the Sheet and open the new menu "STEM Bridge AI > Set up / check my
+ *      setup". Type a teacher PIN and paste your free Gemini key from
+ *      aistudio.google.com/apikey. They are saved privately, not in this code.
+ *   3. Deploy > New deployment > Web app (Execute as: Me, Who has access: Anyone).
+ *   4. Copy the Web app URL into the website: Settings > For teachers: set up my school.
+ *
+ * (Older setups that edit the PIN and GEMINI_API_KEY constants below keep working.
+ * Values saved with the setup form take priority over the constants.)
  */
 
-const PIN = 'change-me-1234'; // <-- set your own PIN before deploying
-const GEMINI_API_KEY = 'paste-your-gemini-api-key-here'; // <-- from aistudio.google.com/apikey
+const PIN = 'change-me-1234'; // optional: prefer the Sheet menu STEM Bridge AI > Set up
+const GEMINI_API_KEY = 'paste-your-gemini-api-key-here'; // optional: prefer the Sheet menu STEM Bridge AI > Set up
 const GEMINI_MODEL = 'gemini-flash-latest';
 // Used only if GEMINI_MODEL stays overloaded after a retry. A lighter model
 // usually has spare capacity when the main one is busy.
@@ -82,6 +80,10 @@ function handleGenerate_(data) {
   const imageParts = buildImageParts_(data.images);
   if (typeof imageParts === 'string') {
     return jsonOutput_({ error: { code: 400, status: 'INVALID_ARGUMENT', message: imageParts } });
+  }
+
+  if (!getGeminiKey_()) {
+    return jsonOutput_({ error: { code: 400, status: 'NOT_CONFIGURED', message: "This school's AI key isn't set up yet. Please ask your administrator to finish the setup (Google Sheet menu: STEM Bridge AI > Set up)." } });
   }
 
   const limitError = reserveAnalysis_(data.name);
@@ -213,7 +215,7 @@ function fetchGemini_(model, body) {
     return UrlFetchApp.fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: 'post',
       contentType: 'application/json',
-      headers: { 'x-goog-api-key': GEMINI_API_KEY },
+      headers: { 'x-goog-api-key': getGeminiKey_() },
       payload: body,
       muteHttpExceptions: true // return Gemini's real error body instead of throwing
     });
@@ -251,7 +253,16 @@ function cleanDeviceCode_(value) {
 }
 
 function doGet(e) {
+  // Public "business card": lets the website confirm this is a STEM Bridge AI school
+  // script and see its version. Contains no secrets and needs no PIN.
+  if (e.parameter.action === 'info') {
+    return jsonOutput_(schoolInfo_());
+  }
+
   const pinResult = checkPin_(e.parameter.pin);
+  if (pinResult === 'unset') {
+    return jsonOutput_({ error: 'The teacher PIN has not been set up yet. In your Google Sheet, open the menu STEM Bridge AI > Set up.', code: 'not_set' });
+  }
   if (pinResult === 'locked') {
     return jsonOutput_({ error: 'Too many wrong PIN attempts. Please wait 15 minutes and try again.', locked: true });
   }
@@ -289,8 +300,10 @@ function checkPin_(pin) {
   const cache = CacheService.getScriptCache();
   const failures = Number(cache.get('pin_failures') || 0);
   if (failures >= MAX_PIN_FAILURES) return 'locked';
+  const expected = getPin_();
+  if (!expected) return 'unset'; // never fall back to a public default PIN
   if (!pin) return 'bad'; // nothing was typed; don't count it as a guess
-  if (pin === PIN) {
+  if (pin === expected) {
     if (failures) cache.remove('pin_failures');
     return 'ok';
   }
@@ -353,7 +366,7 @@ function teacherError_(code, message) {
 
 function handleTeacher_(data) {
   try {
-    if (!GOOGLE_CLIENT_ID) throw teacherError_('not_configured', 'Teacher sign-in is not set up on this server yet.');
+    if (!getClientId_()) throw teacherError_('not_configured', 'Teacher sign-in is not set up on this server yet.');
     const user = verifyGoogleToken_(data.idToken);
     const me = authorizeTeacher_(user);
     switch (data.action) {
@@ -420,7 +433,7 @@ function verifyGoogleToken_(idToken) {
   }
   const now = Math.floor(Date.now() / 1000);
   const issuerOk = info.iss === 'accounts.google.com' || info.iss === 'https://accounts.google.com';
-  if (info.aud !== GOOGLE_CLIENT_ID || !issuerOk || String(info.email_verified) !== 'true' || !info.email || Number(info.exp) <= now + 30) {
+  if (info.aud !== getClientId_() || !issuerOk || String(info.email_verified) !== 'true' || !info.email || Number(info.exp) <= now + 30) {
     throw fail();
   }
   const user = { email: String(info.email).toLowerCase(), name: String(info.name || '').slice(0, 80), exp: Number(info.exp) };
@@ -487,7 +500,7 @@ function authorizeTeacher_(user) {
       return { email: user.email, name: user.name || row.Name, role: row.Role === 'admin' ? 'admin' : 'teacher' };
     }
     const domain = user.email.split('@')[1] || '';
-    if (ALLOWED_TEACHER_DOMAINS.map(d => String(d).toLowerCase()).indexOf(domain) !== -1) {
+    if (getAllowedDomains_().indexOf(domain) !== -1) {
       appendRowObj_('Teachers', { Email: user.email, Name: user.name, Role: 'teacher', Status: 'active', Added: now });
       return { email: user.email, name: user.name, role: 'teacher' };
     }
@@ -599,4 +612,187 @@ function removeTeacher_(me, data) {
   const row = tabRows_('Teachers').find(r => r.Email.toLowerCase() === email);
   if (!row) throw teacherError_('bad_request', "That teacher wasn't found.");
   setCell_('Teachers', row._row, 'Status', 'removed');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EASY SETUP: settings kept in the script's private storage
+   Instead of editing code, an administrator opens the Google Sheet menu
+   "STEM Bridge AI → Set up", types the PIN and pastes the AI key into a
+   form, and they are saved in Script Properties. Values saved there win over
+   the constants at the top of this file (which still work for older setups).
+   Secrets are never sent back to the form or to the web page.
+   ═══════════════════════════════════════════════════════════════════ */
+
+// Shown to the web page so it can tell whether this script is up to date.
+const SCRIPT_VERSION = '0.12.0';
+const SETTINGS_PREFIX = 'setting_';
+const PLACEHOLDER_PIN = 'change-me-1234';
+const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
+
+function getSetting_(name, fallback) {
+  const value = PropertiesService.getScriptProperties().getProperty(SETTINGS_PREFIX + name);
+  return value !== null && value !== undefined && value !== '' ? value : fallback;
+}
+
+// A PIN or key that is still the placeholder counts as "not set", so a forgotten
+// setting can never leave a publicly known default PIN in charge.
+function getPin_() {
+  const pin = String(getSetting_('PIN', PIN) || '');
+  return !pin || pin === PLACEHOLDER_PIN ? '' : pin;
+}
+
+function getGeminiKey_() {
+  const key = String(getSetting_('GEMINI_API_KEY', GEMINI_API_KEY) || '');
+  return !key || key === PLACEHOLDER_KEY ? '' : key;
+}
+
+function getClientId_() {
+  return String(getSetting_('GOOGLE_CLIENT_ID', GOOGLE_CLIENT_ID) || '');
+}
+
+function getAllowedDomains_() {
+  const raw = getSetting_('ALLOWED_TEACHER_DOMAINS', '');
+  const list = raw ? String(raw).split(/[\s,;]+/) : ALLOWED_TEACHER_DOMAINS;
+  return list.map(d => String(d).trim().toLowerCase()).filter(Boolean);
+}
+
+function getSchoolName_() {
+  return String(getSetting_('SCHOOL_NAME', '') || '').slice(0, 80);
+}
+
+function setSetting_(name, value) {
+  PropertiesService.getScriptProperties().setProperty(SETTINGS_PREFIX + name, String(value));
+}
+
+// What the web page may learn without a PIN: that this is a STEM Bridge AI school
+// script, which version, its public name, and which parts are set up. No secrets.
+function schoolInfo_() {
+  return {
+    ok: true,
+    app: 'stem-bridge-ai',
+    version: SCRIPT_VERSION,
+    school: getSchoolName_(),
+    setup: { pin: !!getPin_(), aiKey: !!getGeminiKey_(), teacherSignIn: !!getClientId_() }
+  };
+}
+
+function webAppUrl_() {
+  try {
+    const url = ScriptApp.getService().getUrl() || '';
+    return /\/exec$/.test(url) ? url : '';
+  } catch (e) {
+    return '';
+  }
+}
+
+// A key that Google's AI service accepts returns its model list. Returns
+// 'valid', 'invalid', or 'unknown' (couldn't reach Google).
+function checkGeminiKey_(key) {
+  try {
+    const resp = UrlFetchApp.fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1', {
+      headers: { 'x-goog-api-key': key },
+      muteHttpExceptions: true
+    });
+    const code = resp.getResponseCode();
+    if (code === 200) return 'valid';
+    if (code === 400 || code === 401 || code === 403) return 'invalid';
+    return 'unknown';
+  } catch (e) {
+    return 'unknown';
+  }
+}
+
+// Called by the setup form in the Sheet (so these names must not end with "_").
+function getSetupStatus() {
+  return Object.assign(schoolInfo_(), {
+    domains: getAllowedDomains_().join(', '),
+    webAppUrl: webAppUrl_()
+  });
+}
+
+function saveSetup(form) {
+  form = form || {};
+  const problems = [];
+  const notes = [];
+
+  const school = cleanLine_(form.school, 80);
+  if (form.school !== undefined && form.school !== null && String(form.school).trim() !== '' ) setSetting_('SCHOOL_NAME', school);
+
+  const pin = String(form.pin === undefined || form.pin === null ? '' : form.pin).trim();
+  if (pin) {
+    if (pin.length < 4 || pin.length > 40 || /\s/.test(pin) || pin === PLACEHOLDER_PIN) {
+      problems.push('The PIN needs 4 to 40 characters with no spaces, and it can\'t be the example PIN.');
+    } else {
+      setSetting_('PIN', pin);
+      notes.push('PIN saved.');
+    }
+  }
+
+  const key = String(form.key === undefined || form.key === null ? '' : form.key).trim();
+  if (key) {
+    if (key.length < 20 || key.length > 200 || /\s/.test(key)) {
+      problems.push("That doesn't look like an AI key. It is one long piece of text without spaces.");
+    } else {
+      const verdict = checkGeminiKey_(key);
+      if (verdict === 'invalid') {
+        problems.push('Google says this AI key is not valid. Please copy it again from aistudio.google.com/apikey.');
+      } else {
+        setSetting_('GEMINI_API_KEY', key);
+        notes.push(verdict === 'valid' ? 'AI key saved and checked: it works.' : "AI key saved. (Couldn't check it with Google right now.)");
+      }
+    }
+  }
+
+  if (form.domains !== undefined && form.domains !== null) {
+    const domains = String(form.domains).split(/[\s,;]+/).map(d => d.trim().toLowerCase()).filter(d => /^[a-z0-9.\-]+\.[a-z]{2,}$/.test(d));
+    setSetting_('ALLOWED_TEACHER_DOMAINS', domains.join(','));
+  }
+
+  return Object.assign(getSetupStatus(), { problems: problems, notes: notes });
+}
+
+function onOpen() {
+  try {
+    SpreadsheetApp.getUi().createMenu('STEM Bridge AI')
+      .addItem('Set up / check my setup', 'showSetupDialog')
+      .addToUi();
+  } catch (e) { /* not opened from a Sheet: no menu */ }
+}
+
+function showSetupDialog() {
+  const html = HtmlService.createHtmlOutput(setupDialogHtml_()).setWidth(480).setHeight(680);
+  SpreadsheetApp.getUi().showModalDialog(html, 'STEM Bridge AI: set up');
+}
+
+function setupDialogHtml_() {
+  return '<!doctype html><html><head><base target="_top"><meta charset="utf-8"><style>'
+    + 'body{font:14px/1.5 system-ui,Arial,sans-serif;margin:16px;color:#1b2540}h3{margin:16px 0 4px;font-size:15px}'
+    + 'label{display:block;font-weight:700;margin:12px 0 3px}input{width:100%;box-sizing:border-box;padding:8px 10px;border:2px solid #c3d2ee;border-radius:8px;font:inherit}'
+    + 'small{color:#46526e;display:block;margin-top:3px}button{margin-top:14px;padding:10px 18px;border:0;border-radius:10px;background:#0ea5e9;color:#fff;font:700 15px system-ui;cursor:pointer}'
+    + '.ok{color:#15803d}.bad{color:#b91c1c}.box{background:#eef4ff;border-radius:10px;padding:10px 12px;margin:12px 0}ol{margin:6px 0 0 18px;padding:0}code{background:#fff;padding:1px 5px;border-radius:5px;word-break:break-all}'
+    + '</style></head><body>'
+    + '<div id="status" class="box">Checking…</div>'
+    + '<label for="school">School name (shown to students when they connect)</label><input id="school" maxlength="80" placeholder="e.g. Harmony Science Academy">'
+    + '<label for="pin">Teacher PIN</label><input id="pin" type="password" autocomplete="off" placeholder="Leave empty to keep the current PIN"><small>4 or more characters, no spaces. Only you should know it.</small>'
+    + '<label for="key">AI key (Google Gemini)</label><input id="key" type="password" autocomplete="off" placeholder="Leave empty to keep the current key"><small>Free: get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> (sign in, click Create API key).</small>'
+    + '<label for="domains">School email domains (optional)</label><input id="domains" placeholder="myschool.org"><small>Anyone with a Google account on these domains may sign in as a teacher. Leave empty to add teachers one by one.</small>'
+    + '<button id="save">Save</button><div id="result"></div>'
+    + '<div id="next" class="box" style="display:none"><b>Last step: publish it</b><ol>'
+    + '<li>Close this window. Click <b>Extensions → Apps Script</b>.</li>'
+    + '<li>Click <b>Deploy → New deployment</b>, the gear icon, then <b>Web app</b>.</li>'
+    + '<li>Set <b>Execute as: Me</b> and <b>Who has access: Anyone</b>, then <b>Deploy</b> and approve the permissions.</li>'
+    + '<li>Copy the <b>Web app URL</b> and paste it on the STEM Bridge AI website: <b>Settings → For teachers: set up my school</b>.</li></ol></div>'
+    + '<script>'
+    + 'function line(ok,t){return "<div class=\\""+(ok?"ok":"bad")+"\\">"+(ok?"✓ ":"✗ ")+t+"</div>";}'
+    + 'function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}'
+    + 'function show(s){var h="<b>Your setup</b>"+line(s.setup.pin,s.setup.pin?"Teacher PIN is set":"Teacher PIN is not set yet")+line(s.setup.aiKey,s.setup.aiKey?"AI key is set":"AI key is not set yet")+line(s.setup.teacherSignIn,s.setup.teacherSignIn?"Teacher sign-in is available":"Teacher sign-in is off (optional)");'
+    + 'h+=s.webAppUrl?"<div>Your school address:<br><code>"+esc(s.webAppUrl)+"</code></div>":"<div>Not published yet. See the last step below.</div>";document.getElementById("status").innerHTML=h;'
+    + 'document.getElementById("school").placeholder=s.school||document.getElementById("school").placeholder;document.getElementById("domains").value=s.domains||"";'
+    + 'if(s.setup.pin&&s.setup.aiKey)document.getElementById("next").style.display="block";}'
+    + 'google.script.run.withSuccessHandler(show).getSetupStatus();'
+    + 'document.getElementById("save").onclick=function(){var b=this;b.disabled=true;document.getElementById("result").innerHTML="Saving…";'
+    + 'google.script.run.withSuccessHandler(function(s){b.disabled=false;var h="";(s.notes||[]).forEach(function(n){h+=line(true,esc(n));});(s.problems||[]).forEach(function(p){h+=line(false,esc(p));});document.getElementById("result").innerHTML=h;document.getElementById("pin").value="";document.getElementById("key").value="";show(s);})'
+    + '.withFailureHandler(function(e){b.disabled=false;document.getElementById("result").innerHTML=line(false,esc(e.message||e));})'
+    + '.saveSetup({school:document.getElementById("school").value,pin:document.getElementById("pin").value,key:document.getElementById("key").value,domains:document.getElementById("domains").value});};'
+    + '</script></body></html>';
 }
