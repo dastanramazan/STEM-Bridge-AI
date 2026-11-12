@@ -383,6 +383,7 @@
     .t-instr{margin-top:6px;white-space:pre-wrap;line-height:1.5;}
     .code-chip{font-family:var(--mono);font-weight:800;font-size:1.35rem;letter-spacing:.14em;background:var(--a1-bg);color:var(--a1-ink);border-radius:10px;padding:4px 12px;white-space:nowrap;}
     .t-ok{color:var(--a3);font-weight:700;margin:0 0 10px;line-height:1.5;}
+    .err-fix{max-width:320px;margin-top:6px;}
     .gsi-slot{min-height:44px;margin:12px 0;}
     .settings-sec{margin-top:22px;padding-top:6px;border-top:2px solid var(--border);}
     .advanced-checkbox{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-weight:600;}
@@ -750,7 +751,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.12.0</span>
+  <span>Free and open source · MIT License · v0.12.1</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -865,7 +866,7 @@
         <li><b>Make it yours.</b> Use the feedback to improve your own work. Don't copy it.</li>
       </ul>
       <p><b>Why we built it:</b> many students in rural and low-income schools have little access to expert STEM feedback, and 48 states reported teacher shortages in 2023–2024. This tool aims to give every student quick, personalized guidance.</p>
-      <p>Version 0.12.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.12.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -2220,7 +2221,7 @@ Return ONLY valid JSON (no markdown, no preamble):
       renderWritingFeedback(d);
       logUsage({ name: studentName, tool: 'writing', detail: atype.replace(/_/g,' '), grade, scores: d.scores.map(s => safeScore(s.score)) });
     } catch(e) {
-      showError(e.message);
+      showError(e);
     }
     btn.disabled = false; btn.innerHTML = '⚡ Check my writing';
   }
@@ -2660,7 +2661,7 @@ Return ONLY valid JSON (no markdown, no preamble):
         scores: [safeScore(d.quality), safeScore(d.correctness), safeScore(d.gradeReadiness)].filter(s => s > 0)
       });
     } catch(e) {
-      showError(e.message);
+      showError(e);
     }
     btn.disabled = false; btn.innerHTML = '💡 Help me with my code';
   }
@@ -3012,7 +3013,7 @@ Return ONLY valid JSON (no markdown, no preamble):
         logUsage({ name: workName, tool: 'photo', detail: atype.replace(/_/g,' '), grade, scores: d.scores.map(s => safeScore(s.score)) });
       }
     } catch (e) {
-      showError(e.message);
+      showError(e);
     }
     btn.textContent = photoButtonLabel();
     photoBusy = false;
@@ -3615,7 +3616,7 @@ Return ONLY valid JSON (no markdown, no preamble):
       validateTestResponse(d);
       renderTestFeedback(d, { workName, keyName: key.name, grade });
     } catch (e) {
-      showError(e.message);
+      showError(e);
     }
     btn.textContent = photoButtonLabel();
     photoBusy = false;
@@ -3859,22 +3860,47 @@ Return ONLY valid JSON (no markdown, no preamble):
       return callGeminiViaProxy(system, userContent, opts);
     }
     if (opts.images?.length && currentProvider !== 'gemini') {
-      throw new Error('Photo Check works with the default connection or your own Gemini key. Switch the provider to Gemini, or uncheck "Provide your own API key".');
+      throw ownKeyError('Photo Check works with the default connection or your own Gemini key. Switch the provider to Gemini in Settings, or use the free access instead.');
     }
     const apiKey = getApiKey();
-    if (!apiKey) throw new Error(`Add your ${PROVIDERS[currentProvider].shortName} API key in Settings (⚙️) before requesting feedback.`);
+    if (!apiKey) throw ownKeyError(`Add your ${PROVIDERS[currentProvider].shortName} API key in Settings (⚙️) before requesting feedback, or use the free access instead.`);
 
     return currentProvider === 'gemini'
       ? callGemini(system, userContent, apiKey, opts)
       : callAnthropic(system, userContent, apiKey);
   }
 
-  function showError(msg) {
+  // An error that "using the free shared access instead" can fix (the visitor had turned on
+  // "use our own AI key" and no usable key was set).
+  function ownKeyError(message) {
+    const err = new Error(message);
+    err.code = 'OWN_KEY';
+    return err;
+  }
+
+  // Accepts a message or an Error. Errors from own-key mode get a one-click way out.
+  function showError(arg) {
+    const msg = typeof arg === 'string' ? arg : (arg && arg.message) || 'Something went wrong. Please try again.';
+    const fix = arg && arg.code === 'OWN_KEY'
+      ? '<button type="button" class="btn-main writing-btn err-fix" onclick="useFreeAccessAndRetry()">Use free access instead</button>'
+      : '';
     document.getElementById('output-body').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">⚠️</div>
         <p style="color:var(--err);font-weight:600;">${escHtml(msg)}</p>
+        ${fix}
       </div>`;
+  }
+
+  // Turns "use our own AI key" off and tries the same request again through the free shared connection.
+  function useFreeAccessAndRetry() {
+    useOwnKey = false;
+    document.getElementById('useOwnKeyToggle').checked = false;
+    document.getElementById('customKeySection').hidden = true;
+    safeSet('local', USE_OWN_KEY_STORAGE, '');
+    updateSetupUI();
+    const retry = currentMode === 'coding' ? analyzeCoding : currentMode === 'photo' ? analyzePhoto : analyzeWriting;
+    retry();
   }
 
   function escHtml(s) {
