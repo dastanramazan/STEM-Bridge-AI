@@ -4,6 +4,13 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.12.1] — 2026-11 — "Use free access instead" button
+
+### Fixed
+- If "use our own AI key" was switched on (it is remembered in the browser) and no usable key was set, students saw only "Add your Anthropic API key in Settings…" with no easy way out. The message now also offers a **"Use free access instead"** button that turns the option off and tries the same request again through the free shared connection. It works for writing, coding help, and photo checks (including the "Anthropic can't read photos" case). Other errors, such as the daily limit, are unchanged.
+
+---
+
 ## [0.12.0] — 2026-11 — Easy Setup for a School
 
 ### Added
