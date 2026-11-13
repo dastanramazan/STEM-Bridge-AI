@@ -4,6 +4,15 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.13.1] — 2026-11 — Wording Fixes and Slow-Answer Handling
+
+### Changed
+- **Claims trimmed after review.** The About window no longer shows the "48 states" statistic or says "Kindergarten through college", and its "Why we built it" text is now phrased as what the tool is *designed to* do. The grade menus no longer offer "Undergraduate" (writing, coding, and photo), and the coding tutor's instructions no longer mention undergraduates. The README tagline now says "designed for" instead of "delivering expert-level", and its grade list matches the menus (K–12).
+- **Slow coding answers.** The page now waits up to 75 seconds (was 45) for the AI, because the 45-second wait could end before the school's server did when the AI thought for a long time or had to retry. After 20 seconds the spinner says "Still working. The AI is taking longer than usual." The timeout message now says the AI is slow and suggests a shorter piece of code or text.
+- The school's script now records, in the Apps Script "Executions" log, how long each AI call took, which model answered with what status, and the sizes of the request (never the text itself), so the cause of a slow or failed answer can be read off directly.
+
+---
+
 ## [0.13.0] — 2026-11 — Feedback Form for Teachers
 
 ### Added

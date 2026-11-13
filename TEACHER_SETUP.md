@@ -202,6 +202,17 @@ are numbers, so you can average them with `=AVERAGE(C2:C)`. This needs the lates
 Only quote a comment where MayQuote is `yes`, and keep the original rows with their dates.
 Schools with their own script do not need to do anything for this.
 
+## If answers are slow or "time out"
+
+The AI sometimes takes a while, especially for code, and Google's free AI tier can be
+busy. The website waits up to 75 seconds and says "Still working" after 20. To see what
+happened, open your Sheet, then **Extensions → Apps Script → Executions** (the list icon),
+click the run that matches the time, and look at its log. For each answer it records
+`totalMs` (how long in all), `attempts` (each model tried, the status Google returned,
+and how many milliseconds it took) and the size of the request. A 503 means Google was
+overloaded; a long `ms` on a status 200 means the AI thought for a long time (a shorter
+question is faster). It never records what the student wrote.
+
 ## Good to know
 
 - **No submitted writing or code is ever stored** — only names,
