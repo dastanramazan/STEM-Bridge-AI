@@ -384,6 +384,27 @@
     .code-chip{font-family:var(--mono);font-weight:800;font-size:1.35rem;letter-spacing:.14em;background:var(--a1-bg);color:var(--a1-ink);border-radius:10px;padding:4px 12px;white-space:nowrap;}
     .t-ok{color:var(--a3);font-weight:700;margin:0 0 10px;line-height:1.5;}
     .err-fix{max-width:320px;margin-top:6px;}
+    .fb-q{border:none;margin:0 0 18px;padding:0;min-width:0;}
+    .fb-q legend{font-weight:700;margin-bottom:8px;padding:0;}
+    .fb-choices{display:flex;flex-wrap:wrap;gap:8px;}
+    .fb-pill{position:relative;cursor:pointer;}
+    .fb-pill input{position:absolute;opacity:0;width:1px;height:1px;}
+    .fb-pill span{display:inline-block;min-height:44px;padding:10px 16px;border-radius:999px;border:2px solid var(--border2);font-weight:700;}
+    .fb-pill:hover span{border-color:var(--a1);}
+    .fb-pill input:checked + span{background:var(--a1-bg);border-color:var(--a1);color:var(--a1-ink);}
+    .fb-pill input:focus-visible + span{outline:3px solid var(--a1);outline-offset:2px;}
+    .fb-stars{display:flex;gap:2px;}
+    .fb-star{position:relative;cursor:pointer;font-size:2.3rem;line-height:1;color:var(--star-off);padding:0 3px;border-radius:8px;}
+    .fb-star input{position:absolute;opacity:0;width:1px;height:1px;}
+    .fb-star.on{color:var(--star);}
+    .fb-star:hover{transform:scale(1.1);}
+    .fb-star:focus-within{outline:3px solid var(--a1);}
+    .fb-ends{display:flex;justify-content:space-between;max-width:300px;color:var(--mut);}
+    .fb-ends small{font-size:.875rem;}
+    .fb-check{display:flex;gap:10px;align-items:center;min-height:44px;margin:8px 0;cursor:pointer;}
+    .fb-check input{width:22px;height:22px;flex:none;}
+    .fb-trap{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
+    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
     .gsi-slot{min-height:44px;margin:12px 0;}
     .settings-sec{margin-top:22px;padding-top:6px;border-top:2px solid var(--border);}
     .advanced-checkbox{display:flex;align-items:center;gap:10px;min-height:44px;cursor:pointer;font-weight:600;}
@@ -751,10 +772,11 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.12.1</span>
+  <span>Free and open source · MIT License · v0.13.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
+  <button type="button" onclick="openFeedback()">💬 Rate this tool</button>
 </footer>
 
 <!-- ═══════════════════════════════ SCHOOL LINK CONFIRMATION ══ -->
@@ -866,7 +888,8 @@
         <li><b>Make it yours.</b> Use the feedback to improve your own work. Don't copy it.</li>
       </ul>
       <p><b>Why we built it:</b> many students in rural and low-income schools have little access to expert STEM feedback, and 48 states reported teacher shortages in 2023–2024. This tool aims to give every student quick, personalized guidance.</p>
-      <p>Version 0.12.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
+      <p>Version 0.13.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -890,6 +913,17 @@
       <button class="dash-close" type="button" onclick="closeDashboard()" aria-label="Close dashboard">✕</button>
     </div>
     <div class="dash-body" id="dashBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ FEEDBACK FORM ══ -->
+<div class="dash-overlay" id="feedbackOverlay" hidden>
+  <div class="dash-modal" style="max-width:640px;" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+    <div class="dash-head">
+      <span id="feedbackTitle">💬 Tell us what you think</span>
+      <button class="dash-close" type="button" onclick="closeFeedback()" aria-label="Close feedback form">✕</button>
+    </div>
+    <div class="dash-body" id="feedbackBody"></div>
   </div>
 </div>
 
@@ -1099,7 +1133,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    ['settingsOverlay', 'aboutOverlay', 'dashOverlay', 'teacherOverlay'].forEach(id => {
+    ['settingsOverlay', 'aboutOverlay', 'dashOverlay', 'teacherOverlay', 'feedbackOverlay'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.hidden) el.hidden = true;
     });
@@ -1137,7 +1171,7 @@
      "Web app" address here once (no code editing), and gives students a link that
      carries it. Nothing is sent to an address until the user has confirmed it.
   ════════════════════════════════════════ */
-  const EXPECTED_SCRIPT_VERSION = '0.12.0'; // the newest Code.gs this page knows about
+  const EXPECTED_SCRIPT_VERSION = '0.12.0'; // the oldest Code.gs this page still fully supports
   const TEMPLATE_COPY_URL = ''; // "Make a copy" link of the template Sheet, once the project owner has created it
   const SCHOOL_URL_STORAGE = 'stemBridgeSchoolUrl';
   const SCRIPT_URL_RE = /^https:\/\/script\.google\.com\/(?:a\/macros\/([A-Za-z0-9.\-]+)\/|macros\/)s\/([A-Za-z0-9_\-]{20,})\/exec$/;
@@ -1315,6 +1349,134 @@
   }
 
   /* ════════════════════════════════════════
+     FEEDBACK FORM: teachers and other adults rate the tool (about five quick
+     questions plus an optional comment). Answers go to the project's own
+     script (DEFAULT_LOG_ENDPOINT), never to a school's script, and never
+     include student information.
+  ════════════════════════════════════════ */
+  const APP_VERSION = '0.13.0';
+  const FEEDBACK_SENT_STORAGE = 'stemBridgeFeedbackAt';
+  const FEEDBACK_ROLES = [['teacher', 'Teacher'], ['leader', 'School or district leader'], ['university', 'University or after-school program'], ['parent', 'Parent'], ['other', 'Other']];
+  const FEEDBACK_INTENT = [['yes', 'Yes'], ['maybe', 'Maybe'], ['no', 'No']];
+  let feedbackAvail = null; // null = not checked yet
+
+  function feedbackLinkHtml() {
+    return `<p class="dash-note" style="margin-top:14px;">Tried it? <a href="#" onclick="event.preventDefault();openFeedback()">Tell us what you think (about a minute)</a></p>`;
+  }
+
+  function closeFeedback() { document.getElementById('feedbackOverlay').hidden = true; }
+
+  async function feedbackAvailable() {
+    if (feedbackAvail !== null) return feedbackAvail;
+    const info = await fetchJsonWithTimeout(`${DEFAULT_LOG_ENDPOINT}?action=info`, { method: 'GET' }, 15000);
+    feedbackAvail = !!(info && info.ok === true && Array.isArray(info.features) && info.features.includes('feedback'));
+    return feedbackAvail;
+  }
+
+  async function openFeedback() {
+    const body = document.getElementById('feedbackBody');
+    document.getElementById('feedbackOverlay').hidden = false;
+    body.innerHTML = '<p>Loading…</p>';
+    let ok;
+    try { ok = await feedbackAvailable(); } catch (e) {
+      body.innerHTML = "<p>Couldn't reach the server just now. Please try again in a little while.</p>";
+      return;
+    }
+    if (!ok) {
+      body.innerHTML = "<p>The feedback form isn't switched on yet. Please check back soon, and thank you for your interest!</p>";
+      return;
+    }
+    const sentAt = Number(safeGet('local', FEEDBACK_SENT_STORAGE) || 0);
+    if (sentAt && Date.now() - sentAt < 24 * 3600 * 1000) {
+      body.innerHTML = `<p>You already sent feedback today. Thank you! 💙</p><button type="button" class="apikey-btn" onclick="renderFeedbackForm()">Send another answer</button>`;
+      return;
+    }
+    renderFeedbackForm();
+  }
+
+  function starQuestionHtml(name, label) {
+    const stars = [1, 2, 3, 4, 5].map(n =>
+      `<label class="fb-star"><input type="radio" name="${name}" value="${n}" onchange="paintStars('${name}')"><span aria-hidden="true">★</span><span class="sr-only">${n} out of 5</span></label>`).join('');
+    return `<fieldset class="fb-q"><legend>${label}</legend><div class="fb-stars">${stars}</div><div class="fb-ends"><small>Not at all</small><small>Very</small></div></fieldset>`;
+  }
+
+  function pillQuestionHtml(name, label, options) {
+    return `<fieldset class="fb-q"><legend>${label}</legend><div class="fb-choices">${options.map(([v, t]) =>
+      `<label class="fb-pill"><input type="radio" name="${name}" value="${v}"><span>${escHtml(t)}</span></label>`).join('')}</div></fieldset>`;
+  }
+
+  function paintStars(name) {
+    const checked = document.querySelector(`#feedbackForm input[name="${name}"]:checked`);
+    const n = checked ? Number(checked.value) : 0;
+    document.querySelectorAll(`#feedbackForm input[name="${name}"]`).forEach(inp => {
+      inp.closest('.fb-star').classList.toggle('on', Number(inp.value) <= n);
+    });
+  }
+
+  function renderFeedbackForm() {
+    document.getElementById('feedbackBody').innerHTML = `
+      <form id="feedbackForm" onsubmit="submitFeedback(event)" novalidate>
+        <p class="dash-note">For teachers and other adults (students: please ask your teacher). It takes about a minute. Please don't write student names or student work.</p>
+        ${pillQuestionHtml('role', '1. I am a…', FEEDBACK_ROLES)}
+        ${starQuestionHtml('useful', '2. How useful would STEM Bridge AI be for your students?')}
+        ${starQuestionHtml('easy', '3. How easy was it to use?')}
+        ${starQuestionHtml('quality', '4. How good was the AI feedback?')}
+        ${pillQuestionHtml('wouldUse', '5. Would you use it with your students?', FEEDBACK_INTENT)}
+        <label class="fl" for="fbComment">Anything else? What would make it more useful? (optional)</label>
+        <textarea id="fbComment" class="t-input" maxlength="1500" rows="4"></textarea>
+        <label class="fb-check"><input type="checkbox" id="fbQuote"> You may quote my comment (without my name)</label>
+        <label class="fl" for="fbContact">Email, only if you'd like a reply (optional)</label>
+        <input type="email" id="fbContact" class="t-input" maxlength="120" autocomplete="email" />
+        <div class="fb-trap" aria-hidden="true"><label>Website <input type="text" id="fbWebsite" tabindex="-1" autocomplete="off" /></label></div>
+        <button type="submit" class="btn-main writing-btn" id="fbSend" style="margin-top:14px;">Send feedback</button>
+        <div id="fbMsg" class="photo-msg" role="status"></div>
+        <p class="dash-note">Your answers go to the STEM Bridge AI project team. We never ask for or store student information here.</p>
+      </form>`;
+  }
+
+  async function submitFeedback(event) {
+    event.preventDefault();
+    const val = name => { const el = document.querySelector(`#feedbackForm input[name="${name}"]:checked`); return el ? el.value : ''; };
+    const payload = {
+      action: 'feedback',
+      device: getDeviceCode(),
+      role: val('role'), useful: val('useful'), easy: val('easy'), quality: val('quality'), wouldUse: val('wouldUse'),
+      comment: document.getElementById('fbComment').value.trim(),
+      mayQuote: document.getElementById('fbQuote').checked,
+      contact: document.getElementById('fbContact').value.trim(),
+      website: document.getElementById('fbWebsite').value,
+      page: APP_VERSION
+    };
+    const msg = document.getElementById('fbMsg');
+    if (!payload.role && !payload.useful && !payload.easy && !payload.quality && !payload.wouldUse && !payload.comment) {
+      msg.className = 'photo-msg';
+      msg.textContent = 'Please answer at least one question.';
+      return;
+    }
+    const btn = document.getElementById('fbSend');
+    btn.disabled = true;
+    msg.className = 't-ok';
+    msg.textContent = 'Sending…';
+    try {
+      const data = await fetchJsonWithTimeout(DEFAULT_LOG_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
+        body: JSON.stringify(payload)
+      }, 20000);
+      if (data && data.ok === true && data.feedback === true) {
+        safeSet('local', FEEDBACK_SENT_STORAGE, String(Date.now()));
+        document.getElementById('feedbackBody').innerHTML = '<p style="font-size:1.1rem;"><b>Thank you! 💙</b></p><p>Your answers were sent to the STEM Bridge AI team. They help us decide what to improve next.</p><button type="button" class="apikey-btn" onclick="closeFeedback()">Close</button>';
+        return;
+      }
+      throw new Error((data && data.error) || "That didn't go through. Please try again later.");
+    } catch (e) {
+      btn.disabled = false;
+      msg.className = 'photo-msg';
+      msg.textContent = /Could not reach|timed out/.test(e.message) ? "Couldn't reach the server. Please check your connection and try again." : e.message;
+    }
+  }
+
+  /* ════════════════════════════════════════
      TEACHER AREA: sign in with Google, then classes and assignments.
      Google's sign-in script is loaded only when a teacher opens this window, so
      students never load it. Everything is stored in the school's own Google Sheet
@@ -1460,7 +1622,8 @@
       <div class="t-tabs" role="tablist">${tabs.map(([k, l]) =>
         `<button type="button" role="tab" class="t-tab${k === teacherTab ? ' active' : ''}" onclick="setTeacherTab('${k}')">${l}</button>`).join('')}</div>
       <div id="tMsg" class="photo-msg" role="status"></div>
-      <div id="tPanel">${panel}</div>`;
+      <div id="tPanel">${panel}</div>
+      ${feedbackLinkHtml()}`;
   }
 
   function classesPanelHtml() {
@@ -1830,6 +1993,7 @@
         </table>
       </div>
     `;
+    document.getElementById('dashBody').insertAdjacentHTML('beforeend', feedbackLinkHtml());
     // Counting flags happens while rendering rows, so the stat box is filled in afterwards.
     const box = document.getElementById('dashUnknownCount');
     if (box) box.textContent = String(unknownCount);
