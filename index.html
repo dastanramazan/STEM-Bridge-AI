@@ -770,7 +770,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.13.1</span>
+  <span>Free and open source · MIT License · v0.13.2</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -886,7 +886,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.13.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.13.2 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -3927,6 +3927,23 @@ Return ONLY valid JSON (no markdown, no preamble):
     return detail ? `${prefix} ${detail}` : `${prefix} Please try again.`;
   }
 
+  // An error that is usually temporary, so the error box offers a "Try again" button.
+  function retryableError(message) {
+    const err = new Error(message);
+    err.code = 'RETRY';
+    return err;
+  }
+
+  // Builds the Error for a Gemini reply that had no answer. Overload and internal errors are
+  // temporary, so they get a plain message (not Google's wording) and a "Try again" button.
+  function geminiError(data) {
+    const status = data?.error?.status;
+    if (status === 'UNAVAILABLE' || status === 'INTERNAL') {
+      return retryableError('The AI service is very busy right now. Your text is still here. Wait a minute, then press Try again.');
+    }
+    return new Error(friendlyGeminiError(data));
+  }
+
   function friendlyGeminiError(data) {
     const detail = data?.error?.message;
     const reason = data?.error?.details?.find(d => d.reason)?.reason;
@@ -3939,14 +3956,19 @@ Return ONLY valid JSON (no markdown, no preamble):
   async function fetchJsonWithTimeout(url, options, timeoutMs = API_TIMEOUT_MS) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    let r;
     try {
-      const r = await fetch(url, { ...options, signal: controller.signal });
+      r = await fetch(url, { ...options, signal: controller.signal });
       return await r.json();
     } catch (e) {
       if (e.name === 'AbortError') {
-        throw new Error(`The request timed out after ${timeoutMs / 1000} seconds because the AI is slow right now. Please try again. A shorter piece of code or text is quicker.`);
+        throw retryableError(`The request timed out after ${timeoutMs / 1000} seconds because the AI is slow right now. Please try again. A shorter piece of code or text is quicker.`);
       }
-      throw new Error('Could not reach the AI service. Please check your internet connection and try again.');
+      if (r) {
+        // The server answered, but not with the data we expected (usually a temporary error page).
+        throw retryableError('The AI service sent back a reply the page could not read. This is usually temporary. Wait a minute and try again.');
+      }
+      throw retryableError('Could not reach the AI service. Check your internet connection and try again. If you are on a school or work network or VPN, it may be blocking script.google.com; try another network or a private window.');
     } finally {
       clearTimeout(timeoutId);
     }
@@ -3995,7 +4017,7 @@ Return ONLY valid JSON (no markdown, no preamble):
       }, opts.timeoutMs);
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
-      throw new Error(friendlyGeminiError(data));
+      throw geminiError(data);
     }
     return text;
   }
@@ -4018,7 +4040,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (!text) {
       if (data?.error?.status === 'DAILY_LIMIT' || data?.error?.status === 'NOT_CONFIGURED') throw new Error(data.error.message);
-      throw new Error(friendlyGeminiError(data));
+      throw geminiError(data);
     }
     return text;
   }
@@ -4051,7 +4073,9 @@ Return ONLY valid JSON (no markdown, no preamble):
     const msg = typeof arg === 'string' ? arg : (arg && arg.message) || 'Something went wrong. Please try again.';
     const fix = arg && arg.code === 'OWN_KEY'
       ? '<button type="button" class="btn-main writing-btn err-fix" onclick="useFreeAccessAndRetry()">Use free access instead</button>'
-      : '';
+      : arg && arg.code === 'RETRY'
+        ? '<button type="button" class="btn-main writing-btn err-fix" onclick="retryCurrent()">Try again</button>'
+        : '';
     document.getElementById('output-body').innerHTML = `
       <div class="empty-state">
         <div class="empty-icon">⚠️</div>
@@ -4067,6 +4091,11 @@ Return ONLY valid JSON (no markdown, no preamble):
     document.getElementById('customKeySection').hidden = true;
     safeSet('local', USE_OWN_KEY_STORAGE, '');
     updateSetupUI();
+    retryCurrent();
+  }
+
+  // Runs the current tool again with what is already on the screen.
+  function retryCurrent() {
     const retry = currentMode === 'coding' ? analyzeCoding : currentMode === 'photo' ? analyzePhoto : analyzeWriting;
     retry();
   }

@@ -8,6 +8,12 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.13.2] — 2026-11 — Sturdier When Google's AI Is Busy
+
+- **Three models, longer retries.** When Gemini is overloaded, the school script now tries the main model, then the lighter fallback, then a third model (two attempts each), and keeps retrying for up to 30 seconds instead of 20. A model name Google no longer serves is skipped instead of ending the request.
+- **Clearer errors with a "Try again" button.** Busy, timed-out and unreadable replies now say so in plain words (not Google's wording) and show a button that re-runs the request with the text still on the screen. "Could not reach the AI service" now also mentions that a school or work network or VPN can block `script.google.com`.
+- Update the school script (new `Code.gs`, then Deploy → New version) to get the extra models; the page changes work with any script.
+
 ## [0.13.1] — 2026-11 — Wording Fixes and Slow-Answer Handling
 
 ### Changed

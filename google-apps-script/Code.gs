@@ -37,8 +37,12 @@ const GEMINI_MODEL = 'gemini-flash-latest';
 // Used only if GEMINI_MODEL stays overloaded after a retry. A lighter model
 // usually has spare capacity when the main one is busy.
 const GEMINI_FALLBACK_MODEL = 'gemini-flash-lite-latest';
+// Last resort, tried only after the two above stayed busy. A model name Google
+// no longer serves is skipped (the next one is tried), so a stale name here
+// can never break answers.
+const GEMINI_THIRD_MODEL = 'gemini-2.5-flash';
 const RETRYABLE_STATUS_CODES = [429, 500, 503]; // rate-limited, internal error, overloaded
-const MAX_RETRY_WINDOW_MS = 20000; // don't START a new attempt after this; the app itself gives up at 45s
+const MAX_RETRY_WINDOW_MS = 30000; // don't START a new attempt after this; the page itself gives up at 75s
 // Daily limits on the default (shared-key) connection, counted per calendar
 // day in the script's time zone. Only analyses that actually succeed use up
 // the allowance. Students who bring their own API key never touch this.
@@ -106,7 +110,7 @@ function handleGenerate_(data) {
 
   // Brief overloads often clear within a second or two, so try the main
   // model twice before switching to the fallback model (also twice).
-  const attempts = [GEMINI_MODEL, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GEMINI_FALLBACK_MODEL];
+  const attempts = [GEMINI_MODEL, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GEMINI_FALLBACK_MODEL, GEMINI_THIRD_MODEL, GEMINI_THIRD_MODEL];
   const startedAt = Date.now();
   let response = null;
   const trace = []; // timing only, for finding out why an answer was slow (no student content)
@@ -120,6 +124,7 @@ function handleGenerate_(data) {
     response = fetchGemini_(attempts[i], body);
     const status = response ? response.getResponseCode() : 503;
     trace.push({ model: attempts[i], status: status, ms: Date.now() - attemptStartedAt });
+    if (status === 404) continue; // that model name is not served; try the next one
     if (!RETRYABLE_STATUS_CODES.includes(status)) break;
   }
   // Shown in the Apps Script "Executions" log. Only sizes and times, never what the student wrote.
@@ -634,7 +639,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.13.1';
+const SCRIPT_VERSION = '0.13.2';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
