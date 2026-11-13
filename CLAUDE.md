@@ -35,6 +35,17 @@ how student data is handled, `PRIVACY.md`.
 - Test results log only a percent in the score column; points and the test
   name go in the text "Detail" column (the Dashboard averages score columns).
 
+## Feedback form
+
+- The "Rate this tool" form is for adults and collects no student information. It
+  posts to `DEFAULT_LOG_ENDPOINT` (the project's own script), never to a school's
+  script. The page only shows the form when `?action=info` lists the `feedback`
+  feature, and only says "Thank you" when the reply has `feedback: true`, so an
+  older script (which would log a junk row for an unknown action) is never sent
+  feedback. Ratings are stored as numbers in the Feedback tab; text columns are
+  plain text. Real answers are evidence only if they are real: never invent or
+  seed feedback.
+
 ## School connection and setup
 
 - A school's PIN, AI key, name, and allowed domains are saved with the Sheet
@@ -48,8 +59,9 @@ how student data is handled, `PRIVACY.md`.
   Web app address saved in `localStorage` after the user pasted it or confirmed a
   `?s=` link. Only addresses matching `SCRIPT_URL_RE` (script.google.com Web app
   `/exec`) are accepted, and a `?s=` link must be confirmed by the user before
-  anything is saved or sent. Bump `SCRIPT_VERSION` in `Code.gs` and
-  `EXPECTED_SCRIPT_VERSION` in the page together when `Code.gs` changes.
+  anything is saved or sent. `SCRIPT_VERSION` in `Code.gs` is the current
+  version; `EXPECTED_SCRIPT_VERSION` in the page is the oldest one it still fully
+  supports (raise it only when the page needs a newer school script).
 
 ## Teacher accounts
 

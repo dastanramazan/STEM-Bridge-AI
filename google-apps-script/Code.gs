@@ -65,6 +65,10 @@ function doPost(e) {
     return handleGenerate_(data);
   }
 
+  if (data.action === 'feedback') {
+    return handleFeedback_(data);
+  }
+
   // Teacher accounts: classes and assignments (every request is checked against a Google sign-in).
   if (typeof data.action === 'string' && data.action.indexOf('t_') === 0) {
     return handleTeacher_(data);
@@ -624,7 +628,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.12.0';
+const SCRIPT_VERSION = '0.13.0';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
@@ -672,6 +676,7 @@ function schoolInfo_() {
     app: 'stem-bridge-ai',
     version: SCRIPT_VERSION,
     school: getSchoolName_(),
+    features: ['feedback'],
     setup: { pin: !!getPin_(), aiKey: !!getGeminiKey_(), teacherSignIn: !!getClientId_() }
   };
 }
@@ -795,4 +800,74 @@ function setupDialogHtml_() {
     + '.withFailureHandler(function(e){b.disabled=false;document.getElementById("result").innerHTML=line(false,esc(e.message||e));})'
     + '.saveSetup({school:document.getElementById("school").value,pin:document.getElementById("pin").value,key:document.getElementById("key").value,domains:document.getElementById("domains").value});};'
     + '</script></body></html>';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   FEEDBACK FORM: teachers and other adults rate the tool
+   A short form on the web page (about five questions and an optional comment)
+   sends its answers here. They go into the "Feedback" tab of this Sheet. No
+   student names or student work are collected. Anonymous answers are allowed.
+   ═══════════════════════════════════════════════════════════════════ */
+const FEEDBACK_ROLES = ['teacher', 'leader', 'university', 'parent', 'other'];
+const FEEDBACK_INTENT = ['yes', 'maybe', 'no'];
+const FEEDBACK_HEADERS = ['Timestamp', 'Role', 'Useful', 'Easy', 'AIQuality', 'WouldUse', 'Comment', 'MayQuote', 'Contact', 'Device', 'PageVersion'];
+const MAX_FEEDBACK_PER_DEVICE = 3;   // per 6 hours (the longest a script cache entry can last)
+const MAX_FEEDBACK_PER_HOUR = 60;    // across everyone, so a flood can't fill the Sheet
+
+function getFeedbackTab_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Feedback');
+  if (!sheet) {
+    sheet = ss.insertSheet('Feedback');
+    sheet.appendRow(FEEDBACK_HEADERS);
+    // Text columns stay plain text so nothing typed in can become a formula. The three rating
+    // columns (C to E) stay numbers so the Sheet can average them.
+    ['B:B', 'F:K'].forEach(range => sheet.getRange(range).setNumberFormat('@'));
+  }
+  return sheet;
+}
+
+function ratingValue_(v) {
+  const n = parseInt(v, 10);
+  return n >= 1 && n <= 5 ? n : '';
+}
+
+function handleFeedback_(data) {
+  // A hidden "website" field that people never see: bots fill it in. Pretend it worked, store nothing.
+  if (String(data.website === undefined || data.website === null ? '' : data.website).trim() !== '') {
+    return jsonOutput_({ ok: true, feedback: true });
+  }
+  const entry = {
+    role: FEEDBACK_ROLES.indexOf(data.role) !== -1 ? data.role : '',
+    useful: ratingValue_(data.useful),
+    easy: ratingValue_(data.easy),
+    quality: ratingValue_(data.quality),
+    wouldUse: FEEDBACK_INTENT.indexOf(data.wouldUse) !== -1 ? data.wouldUse : '',
+    comment: cleanBlock_(data.comment, 1500),
+    mayQuote: data.mayQuote === true || data.mayQuote === 'yes' ? 'yes' : 'no',
+    contact: cleanLine_(data.contact, 120),
+    device: cleanDeviceCode_(data.device),
+    version: cleanLine_(data.page, 12)
+  };
+  if (!entry.role && entry.useful === '' && entry.easy === '' && entry.quality === '' && !entry.wouldUse && !entry.comment) {
+    return jsonOutput_({ error: 'Please answer at least one question.', code: 'empty' });
+  }
+
+  const cache = CacheService.getScriptCache();
+  const hourKey = 'fb_all_' + Math.floor(Date.now() / 3600000);
+  const deviceKey = 'fb_dev_' + (entry.device || 'none');
+  if (Number(cache.get(hourKey) || 0) >= MAX_FEEDBACK_PER_HOUR) {
+    return jsonOutput_({ error: 'Lots of feedback is arriving right now. Please try again in a little while.', code: 'busy' });
+  }
+  if (Number(cache.get(deviceKey) || 0) >= MAX_FEEDBACK_PER_DEVICE) {
+    return jsonOutput_({ error: 'You have already sent feedback a few times today. Thank you!', code: 'rate' });
+  }
+
+  withScriptLock_(() => {
+    getFeedbackTab_().appendRow([new Date(), entry.role, entry.useful, entry.easy, entry.quality, entry.wouldUse,
+      entry.comment, entry.mayQuote, entry.contact, entry.device, entry.version]);
+  });
+  cache.put(hourKey, String(Number(cache.get(hourKey) || 0) + 1), 3600);
+  cache.put(deviceKey, String(Number(cache.get(deviceKey) || 0) + 1), 21600);
+  return jsonOutput_({ ok: true, feedback: true });
 }

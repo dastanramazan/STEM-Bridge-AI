@@ -190,6 +190,18 @@ A Google account that is not on your list is refused. Teachers see only
 their own classes and assignments. The Sheet gains three tabs (Teachers,
 Classes, Assignments); never put student work in them.
 
+## Reading the feedback people send (project owner)
+
+When teachers or other adults use **💬 Rate this tool** on the website, their answers
+arrive in a **Feedback** tab of the Sheet that belongs to the project's own script
+(the one the website uses by default). Columns: Timestamp, Role, Useful, Easy, AIQuality
+(1 to 5), WouldUse (yes, maybe, no), Comment, MayQuote (whether the comment may be quoted
+without a name), Contact (email, only if they gave one), Device, PageVersion. The ratings
+are numbers, so you can average them with `=AVERAGE(C2:C)`. This needs the latest
+`Code.gs` in that script (paste it in, keep your PIN and key, and deploy a New version).
+Only quote a comment where MayQuote is `yes`, and keep the original rows with their dates.
+Schools with their own script do not need to do anything for this.
+
 ## Good to know
 
 - **No submitted writing or code is ever stored** — only names,

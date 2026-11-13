@@ -4,6 +4,19 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [0.13.0] — 2026-11 — Feedback Form for Teachers
+
+### Added
+- **"Rate this tool"** (footer, About, the Teacher area and the Teacher Dashboard): a short form for teachers and other adults with five quick questions (role; how useful for students; how easy to use; how good the AI feedback was; would you use it with your students), an optional comment, a tick box "You may quote my comment (without my name)", and an optional email for a reply. It takes about a minute and works with the keyboard and on phones.
+- Answers go to a new **Feedback** tab in the project team's own Google Sheet (never to a school's script) and contain no student information. The form refuses to appear unless the server says it can take feedback, and only shows "Thank you" when the server confirms it stored the answer, so nothing is silently lost.
+- Protection against spam: a hidden bot-trap field, a limit per device (3 per 6 hours) and a limit for everyone (60 per hour), length limits, control characters removed, and text columns kept as plain text so nothing can become a formula.
+
+### Notes
+- The project team's script must be updated with the new `Code.gs` before the form switches on. Until then visitors see "The feedback form isn't switched on yet."
+- A school's own script does not need updating: feedback always goes to the project's script.
+
+---
+
 ## [0.12.1] — 2026-11 — "Use free access instead" button
 
 ### Fixed
