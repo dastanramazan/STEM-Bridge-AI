@@ -109,16 +109,22 @@ function handleGenerate_(data) {
   const attempts = [GEMINI_MODEL, GEMINI_MODEL, GEMINI_FALLBACK_MODEL, GEMINI_FALLBACK_MODEL];
   const startedAt = Date.now();
   let response = null;
+  const trace = []; // timing only, for finding out why an answer was slow (no student content)
 
   for (let i = 0; i < attempts.length; i++) {
     if (i > 0) {
       if (Date.now() - startedAt > MAX_RETRY_WINDOW_MS) break;
       Utilities.sleep(1000 * i);
     }
+    const attemptStartedAt = Date.now();
     response = fetchGemini_(attempts[i], body);
     const status = response ? response.getResponseCode() : 503;
+    trace.push({ model: attempts[i], status: status, ms: Date.now() - attemptStartedAt });
     if (!RETRYABLE_STATUS_CODES.includes(status)) break;
   }
+  // Shown in the Apps Script "Executions" log. Only sizes and times, never what the student wrote.
+  console.log(JSON.stringify({ generate: { totalMs: Date.now() - startedAt, attempts: trace,
+    promptChars: String(data.userContent || '').length, systemChars: String(data.system || '').length, images: imageParts.length } }));
 
   // Pass Gemini's response straight through - same shape the client
   // already knows how to parse (candidates[...] on success, error{...}
@@ -628,7 +634,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.13.0';
+const SCRIPT_VERSION = '0.13.1';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';

@@ -2,12 +2,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.13.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.13.1-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
-> **A unified, open-source AI platform delivering expert-level STEM writing feedback and coding tutoring to rural and underserved U.S. students — free, zero-dependency, and deployable in any school environment.**
+> **A unified, open-source AI platform designed for STEM writing feedback and coding tutoring in rural and underserved U.S. classrooms — free, zero-dependency, and deployable in any school environment.**
 
-**Status (v0.13.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+**Status (v0.13.1):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
 ---
 
@@ -46,7 +46,7 @@ Delivers instant, personalized feedback on student scientific writing calibrated
 |---|---|
 | **Scoring** | 5 dimensions (Scientific Accuracy, Evidence Use, Clarity, Structure, Reasoning) for grade 2 and up; a simplified 2-dimension rubric for Kindergarten–1st Grade dictated observations |
 | **Assignment types** | Lab Report, Research Essay, Hypothesis, Data Analysis, Scientific Explanation |
-| **Grade levels** | K–1, 2, 3–5, 6–8, 9–10, 11–12, Undergraduate |
+| **Grade levels** | K–1, 2, 3–5, 6–8, 9–10, 11–12 |
 | **Input options** | Type, or speak ("Speak Instead of Type") for Kindergarten–1st Grade |
 | **Output** | Overall score, strengths, improvements, specific next steps — with Read Aloud, progress-since-last-attempt comparison, and **Save as Word** |
 | **Standards alignment** | Next Generation Science Standards (NGSS) |
@@ -58,7 +58,7 @@ Provides grade-calibrated coding assistance for text-based programming languages
 |---|---|
 | **Feedback modes** | Code Feedback, Concept Q&A, Debug Help |
 | **Languages** | Python, JavaScript, Java, Scratch, C++, SQL |
-| **Grade calibration** | Strict language complexity matching (6-8 → Undergraduate) |
+| **Grade calibration** | Strict language complexity matching (grades 6-8 to 11-12) |
 | **Teaching style** | Guidance-first — explanations lead with hints; the corrected code stays hidden behind a "try it yourself first" reveal |
 | **Output** | Quality metrics, explanation, corrected code, learning next steps — with Read Aloud and progress-since-last-attempt comparison |
 | **Population focus** | Rural and low-income students without CS specialist access |
