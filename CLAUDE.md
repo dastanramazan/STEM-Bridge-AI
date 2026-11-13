@@ -97,8 +97,9 @@ how student data is handled, `PRIVACY.md`.
   supplied, and must not state classroom-usage numbers, student counts, or
   learning outcomes without documentation. The project has not had a
   classroom pilot yet, and the docs say so.
-- Word the "48 states" figure as teacher shortages; only say "CS teacher"
-  if the owner confirms the cited source covers computer science.
+- Do not use the "48 states" teacher-shortage figure (removed from the About
+  panel, README, and research.md); don't reintroduce it without a source the
+  owner has verified.
 
 ## Workflow
 

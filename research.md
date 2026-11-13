@@ -4,8 +4,7 @@
 
 The United States faces two simultaneous, federally documented crises in STEM education:
 
-### Crisis 1: CS Teacher Shortage
-- 48 states reported critical teacher shortages in 2023–2024 (U.S. Dept. of Education Teacher Shortage Area designations)
+### Crisis 1: Limited Access to CS Instruction
 - Over 667,000 new computing jobs are projected by 2030 (BLS, 2023)
 - Hispanic students are 26% of K-12 enrollment but earn fewer than 8% of computing degrees (NSF, 2023)
 - Schools serving 75%+ low-income students are 3× less likely to offer CS courses (Code.org, 2024)
@@ -87,12 +86,11 @@ STEM Bridge AI relates to the following federal priorities:
 
 1. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112.
 2. Black, P., & Wiliam, D. (1998). Assessment and classroom learning. *Assessment in Education*, 5(1), 7–74.
-3. U.S. Department of Education. *Teacher Shortage Areas* (2023–2024 designations).
-4. NSF. (2023). *Women, Minorities, and Persons with Disabilities in Science and Engineering*.
-5. Code.org. (2024). *State of Computer Science Education Annual Report*.
-6. BLS. (2023). *Occupational Outlook Handbook: Computer and Information Technology*.
-7. U.S. Dept. of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
-8. Executive Order, *Advancing Artificial Intelligence Education for American Youth*. (Apr. 23, 2025). The White House.
-9. NSF Dear Colleague Letter 25-036. (Aug. 25, 2025).
-10. NGSS Lead States. (2013). *Next Generation Science Standards: For States, By States*.
-11. CSTA. (2017). *K-12 Computer Science Framework*.
+3. NSF. (2023). *Women, Minorities, and Persons with Disabilities in Science and Engineering*.
+4. Code.org. (2024). *State of Computer Science Education Annual Report*.
+5. BLS. (2023). *Occupational Outlook Handbook: Computer and Information Technology*.
+6. U.S. Dept. of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
+7. Executive Order, *Advancing Artificial Intelligence Education for American Youth*. (Apr. 23, 2025). The White House.
+8. NSF Dear Colleague Letter 25-036. (Aug. 25, 2025).
+9. NGSS Lead States. (2013). *Next Generation Science Standards: For States, By States*.
+10. CSTA. (2017). *K-12 Computer Science Framework*.

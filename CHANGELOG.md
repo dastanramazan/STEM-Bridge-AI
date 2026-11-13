@@ -4,6 +4,10 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
+## [Unreleased]
+
+- **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
+
 ## [0.13.1] — 2026-11 — Wording Fixes and Slow-Answer Handling
 
 ### Changed

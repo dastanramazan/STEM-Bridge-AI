@@ -15,7 +15,7 @@
 
 The United States faces two simultaneous, documented crises in STEM education:
 
-1. **Teacher Shortage:** 48 states reported critical shortages of qualified teachers in 2023–2024 (U.S. Dept. of Education Teacher Shortage Area designations). Over **667,000 new computing jobs** are projected by 2030 (BLS, 2023), and students without CS instruction are poorly positioned to compete for them.
+1. **Computing Skills Gap:** Over **667,000 new computing jobs** are projected by 2030 (BLS, 2023), and students without CS instruction are poorly positioned to compete for them.
 
 2. **STEM Writing Gap:** Scientific writing is a foundational skill for STEM careers, and students in schools without science specialists have few chances to practice it and receive expert feedback.
 
@@ -169,7 +169,6 @@ This project is part of ongoing research into **AI-assisted STEM education equit
 ### The Evidence Base
 
 - Feedback is among the most powerful influences on learning and achievement, but its effect can be positive or negative depending on how it is given (Hattie & Timperley, 2007) — which is why CodeBridge AI leads with hints and questions rather than finished answers.
-- 48 states reported critical teacher shortages in 2023–2024 (U.S. Dept. of Education Teacher Shortage Area designations).
 - Hispanic students are 26% of K-12 enrollment but earn fewer than 8% of computing degrees (NSF, 2023).
 
 ### Planned Evaluation (not yet started)
@@ -262,11 +261,10 @@ Developed as part of independent AI-in-education research focused on STEM equity
 ## 📚 References
 
 1. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112.
-2. U.S. Department of Education. *Teacher Shortage Areas* (2023–2024 designations).
-3. NSF. (2023). *Women, Minorities, and Persons with Disabilities in Science and Engineering*.
-4. Code.org. (2024). *State of Computer Science Education Annual Report*.
-5. U.S. Bureau of Labor Statistics. (2023). *Occupational Outlook Handbook: Computer and Information Technology Occupations*.
-6. U.S. Department of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
-7. Executive Order, *Advancing Artificial Intelligence Education for American Youth*. (Apr. 23, 2025). The White House.
-8. NSF Dear Colleague Letter 25-036, *Supplemental Funding Requests to Support K-12 AI Teams for the Presidential AI Challenge*. (Aug. 25, 2025).
-9. Next Generation Science Standards (NGSS). (2013). *Next Generation Science Standards: For States, By States*.
+2. NSF. (2023). *Women, Minorities, and Persons with Disabilities in Science and Engineering*.
+3. Code.org. (2024). *State of Computer Science Education Annual Report*.
+4. U.S. Bureau of Labor Statistics. (2023). *Occupational Outlook Handbook: Computer and Information Technology Occupations*.
+5. U.S. Department of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
+6. Executive Order, *Advancing Artificial Intelligence Education for American Youth*. (Apr. 23, 2025). The White House.
+7. NSF Dear Colleague Letter 25-036, *Supplemental Funding Requests to Support K-12 AI Teams for the Presidential AI Challenge*. (Aug. 25, 2025).
+8. Next Generation Science Standards (NGSS). (2013). *Next Generation Science Standards: For States, By States*.
