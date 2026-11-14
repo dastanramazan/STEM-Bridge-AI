@@ -8,6 +8,10 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [Unreleased] — Feedback in Spanish
+
+- **"Feedback in: English / Español."** A small menu in the feedback box lets a student or teacher ask for the feedback in Spanish. It applies to Science Writing, Coding Helper, and Photo Check feedback. The page itself, the skill names, the student's own words, and any code stay as they are; only the AI's feedback text changes. A student may write in English or Spanish, and the AI is told not to lower a score because of the language. Read Aloud uses a Spanish voice when Spanish is chosen. The choice is remembered on the device. English requests are unchanged. Paper-test grading against an answer key is not affected. The Spanish wording comes from the AI and has not yet been reviewed by a Spanish-speaking teacher.
+
 ## [0.13.2] — 2026-11 — Sturdier When Google's AI Is Busy
 
 - **Three models, longer retries.** When Gemini is overloaded, the school script now tries the main model, then the lighter fallback, then a third model (two attempts each), and keeps retrying for up to 30 seconds instead of 20. A model name Google no longer serves is skipped instead of ending the request.

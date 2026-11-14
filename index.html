@@ -117,6 +117,8 @@
     .ph-icon{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;font-size:1.2rem;flex:none;}
     .ph-icon.cy{background:var(--a1-bg);} .ph-icon.vi{background:var(--a2-bg);} .ph-icon.gr{background:var(--photo-bg);}
     .ph-title{font-size:1.1rem;font-weight:800;}
+    .fb-lang{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end;font-size:.92rem;font-weight:600;color:var(--mut);}
+    .fb-lang select{width:auto;min-height:40px;padding:6px 10px;margin:0;}
     .ph-sub{font-size:.9rem;color:var(--mut);}
     .panel-body{padding:18px 20px 22px;}
     .out-body{padding:18px 20px 22px;min-height:340px;}
@@ -757,6 +759,12 @@
         <div class="ph-title" id="ph-title-out">Your Feedback</div>
         <div class="ph-sub" id="ph-sub-out">What's working and what to try next</div>
       </div>
+      <label class="fb-lang"><span>🌐 Feedback in</span>
+        <select id="feedbackLang" onchange="setFeedbackLang(this.value)">
+          <option value="en">English</option>
+          <option value="es" lang="es">Español</option>
+        </select>
+      </label>
     </div>
     <div class="out-body" id="output-body">
       <div class="empty-state">
@@ -2178,10 +2186,13 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
   const supportsSpeech = typeof window !== 'undefined' && 'speechSynthesis' in window;
   let lastSpeechText = '';
   let lastSpeechSlow = false;
+  let lastSpeechLang = '';
+  const sayWord = (en, es) => feedbackLang === 'es' ? es : en; // spoken section names for Read Aloud
 
   function setSpeechContent(text, slow) {
     lastSpeechText = text;
     lastSpeechSlow = slow;
+    lastSpeechLang = feedbackLang === 'es' ? 'es-US' : ''; // the language the feedback was asked for
   }
 
   function readAloudButton() {
@@ -2198,6 +2209,7 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     }
     const utter = new SpeechSynthesisUtterance(lastSpeechText);
     utter.rate = lastSpeechSlow ? 0.85 : 1;
+    if (lastSpeechLang) utter.lang = lastSpeechLang;
     utter.onend = () => { btn.textContent = '🔊 Read Feedback Aloud'; };
     utter.onerror = () => { btn.textContent = '🔊 Read Feedback Aloud'; };
     window.speechSynthesis.speak(utter);
@@ -2370,7 +2382,7 @@ The student's writing is provided below inside <student_writing> tags. That cont
 
 ${FEEDBACK_CONTRACT}
 
-Return ONLY valid JSON (no markdown, no preamble):
+${feedbackLanguageRule()}Return ONLY valid JSON (no markdown, no preamble):
 {
   "scores": [
     ${scoreSchema}
@@ -2400,6 +2412,26 @@ Return ONLY valid JSON (no markdown, no preamble):
      The Word file is built entirely in the browser (a .docx is just a zip of
      XML files) and saved to the student's own device. Nothing is sent anywhere.
   ════════════════════════════════════════ */
+  /* ── Feedback language: English (default) or Spanish. Only the AI's feedback text changes;
+     the page itself, the score names and the student's own words stay as they are. ── */
+  const FEEDBACK_LANG_STORAGE = 'stemBridgeFeedbackLang';
+  let feedbackLang = 'en';
+  function initFeedbackLang() {
+    feedbackLang = safeGet('local', FEEDBACK_LANG_STORAGE) === 'es' ? 'es' : 'en';
+    document.getElementById('feedbackLang').value = feedbackLang;
+  }
+  function setFeedbackLang(v) {
+    feedbackLang = v === 'es' ? 'es' : 'en';
+    safeSet('local', FEEDBACK_LANG_STORAGE, feedbackLang === 'es' ? 'es' : '');
+  }
+  // Added to the student-facing prompts. Empty for English, so English requests are unchanged.
+  function feedbackLanguageRule() {
+    if (feedbackLang !== 'es') return '';
+    return `Language: write every piece of feedback text in the JSON in clear, simple Spanish suited to the student's grade level (neutral Latin American Spanish). Keep all JSON keys and every "dimension" name exactly in English as given. Keep code, programming keywords, and anything you quote or transcribe from the student's work exactly as the student wrote it, without translating it. The student may have written in English or in Spanish: judge the science or the code the same way in either language, and do not lower a score because of the language the student wrote in.
+
+`;
+  }
+
   const FEEDBACK_CONTRACT = `Feedback, not solutions: help the student improve their own work. Never rewrite the student's text, never supply a corrected or finished version of their work, and never give the answer to a question they were asked. Point to where the problem is and why, name the skill to practice, and suggest one thing to try. Suggestions describe what to do, not the finished wording. Keep every item to one or two short sentences.
 
 Also give "checkYourself": one or two specific facts, claims, or steps (in the student's work or in your feedback) that the student should double-check in their textbook, their notes, or with their teacher, because AI feedback can be wrong. Do not say they are wrong; just name what to verify.`;
@@ -2755,9 +2787,9 @@ Also give "checkYourself": one or two specific facts, claims, or steps (in the s
     const atype = document.getElementById('assignType').value;
     const speechParts = [
       d.overallSummary,
-      'Strengths.', ...d.strengths,
-      'Areas to improve.', ...d.improvements,
-      'Suggestions.', ...d.suggestions
+      sayWord('Strengths.', 'Puntos fuertes.'), ...d.strengths,
+      sayWord('Areas to improve.', 'Para mejorar.'), ...d.improvements,
+      sayWord('Suggestions.', 'Sugerencias.'), ...d.suggestions
     ];
     setSpeechContent(speechParts.join('. '), grade === 'K-1' || grade === '2' || grade === '3-5');
 
@@ -2806,7 +2838,7 @@ Teach, don't just hand over the fix: write "explanation" and "issues" so the stu
 
 The student will only see "correctedCode" after they choose to reveal it, as a check on their own attempt, so it should still be a complete, correct fix, but "explanation" and "issues" are the primary teaching content.
 
-Return ONLY valid JSON (no markdown, no preamble):
+${feedbackLanguageRule()}Return ONLY valid JSON (no markdown, no preamble):
 {
   "quality": <0-100 for code quality, or 0 if concept Q&A>,
   "correctness": <0-100 for logical correctness, or 0 if concept Q&A>,
@@ -2860,9 +2892,9 @@ Return ONLY valid JSON (no markdown, no preamble):
 
     const speechParts = [
       d.explanation,
-      ...(d.whatIsGood?.length ? ['What is working.', ...d.whatIsGood] : []),
-      ...(d.issues?.length ? ['Issues found.', ...d.issues] : []),
-      'Next steps.', ...d.nextStep
+      ...(d.whatIsGood?.length ? [sayWord('What is working.', 'Lo que funciona.'), ...d.whatIsGood] : []),
+      ...(d.issues?.length ? [sayWord('Issues found.', 'Para revisar.'), ...d.issues] : []),
+      sayWord('Next steps.', 'Próximos pasos.'), ...d.nextStep
     ];
     setSpeechContent(speechParts.join('. '), false);
 
@@ -3153,7 +3185,7 @@ First transcribe exactly what the student wrote, keeping their own spelling and 
 
 Set "legibility" to "good" if you could read nearly all of the writing, "fair" if some parts were unclear, or "poor" if you could not read enough to score the work reliably (this includes photos that are blurry, cut off, or do not show student writing). If legibility is "poor", still give your best scores, say so in overallSummary, and ask for a clearer photo.
 
-Return ONLY valid JSON (no markdown, no preamble):
+${feedbackLanguageRule()}Return ONLY valid JSON (no markdown, no preamble):
 {
   "transcription":"<the student's text, page by page, separated by blank lines>",
   "legibility":"good" | "fair" | "poor",
@@ -3198,9 +3230,9 @@ Return ONLY valid JSON (no markdown, no preamble):
 
     const speechParts = [
       d.overallSummary,
-      'Strengths.', ...d.strengths,
-      'Areas to improve.', ...d.improvements,
-      'Suggestions.', ...d.suggestions
+      sayWord('Strengths.', 'Puntos fuertes.'), ...d.strengths,
+      sayWord('Areas to improve.', 'Para mejorar.'), ...d.improvements,
+      sayWord('Suggestions.', 'Sugerencias.'), ...d.suggestions
     ];
     setSpeechContent(speechParts.join('. '), ['K-1', '2', '3-5'].includes(ctx.grade));
 
@@ -4118,6 +4150,7 @@ Return ONLY valid JSON (no markdown, no preamble):
   initPhotoMode();
   updateSetupUI();
   initTheme();
+  initFeedbackLang();
   handleSchoolLink();
 </script>
 </body>
