@@ -5,7 +5,7 @@
 [![Version](https://img.shields.io/badge/Version-0.13.2-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
-> **A unified, open-source AI platform designed for STEM writing feedback and coding tutoring in rural and underserved U.S. classrooms — free, zero-dependency, and deployable in any school environment.**
+> **A free, open-source AI tool designed to give K–12 students feedback on science writing, code, and handwritten work. Built for schools with limited resources: students need only a web browser, and a school needs only a Google account to run its own copy.**
 
 **Status (v0.13.2):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
@@ -13,15 +13,13 @@
 
 ## 🎯 The Problem
 
-The United States faces two simultaneous, documented crises in STEM education:
+Many U.S. students have little access to computer science teaching or to individual feedback on their work:
 
-1. **Computing Skills Gap:** Over **667,000 new computing jobs** are projected by 2030 (BLS, 2023), and students without CS instruction are poorly positioned to compete for them.
+1. **Access to computer science.** Only 60% of U.S. public high schools offered a foundational computer science course in 2024–25, and in the 42 states that report participation, 6.1% of high school students took one. Rural and urban schools, small schools, and schools with a high percentage of students receiving free meals are less likely to offer it (Code.org and CSforALL, *2025 State of AI + CS Education*).
 
-2. **STEM Writing Gap:** Scientific writing is a foundational skill for STEM careers, and students in schools without science specialists have few chances to practice it and receive expert feedback.
+2. **Feedback on science writing.** Writing a clear scientific explanation takes practice with feedback, and one teacher with many students cannot give every student detailed comments on every draft.
 
-**Both gaps fall hardest on the same students:** those in rural and Title I schools, who are less likely to have access to specialized tutors, coding bootcamps, or AP CS courses.
-
-STEM Bridge AI addresses both gaps in a single, free, open-source platform.
+STEM Bridge AI is designed to help with both in a single, free, open-source tool.
 
 ---
 
@@ -39,8 +37,8 @@ Good to know: the shared free AI connection has daily limits (10 analyses per st
 
 STEM Bridge AI contains three integrated tools:
 
-### 🔬 SciWrite AI — STEM Writing Feedback
-Delivers instant, personalized feedback on student scientific writing calibrated to grade level and assignment type.
+### 🔬 Science Writing — STEM Writing Feedback
+Gives feedback on student scientific writing calibrated to grade level and assignment type.
 
 | Feature | Detail |
 |---|---|
@@ -49,9 +47,9 @@ Delivers instant, personalized feedback on student scientific writing calibrated
 | **Grade levels** | K–1, 2, 3–5, 6–8, 9–10, 11–12 |
 | **Input options** | Type, or speak ("Speak Instead of Type") for Kindergarten–1st Grade |
 | **Output** | Overall score, strengths, improvements, specific next steps — with Read Aloud, progress-since-last-attempt comparison, and **Save as Word** |
-| **Standards alignment** | Next Generation Science Standards (NGSS) |
+| **Standards** | Rubric informed by the Next Generation Science Standards (NGSS) practices; not yet validated |
 
-### 💻 CodeBridge AI — CS Coding Tutor
+### 💻 Coding Helper — CS Coding Tutor
 Provides grade-calibrated coding assistance for text-based programming languages, with three interaction modes.
 
 | Feature | Detail |
@@ -63,10 +61,10 @@ Provides grade-calibrated coding assistance for text-based programming languages
 | **Output** | Quality metrics, explanation, corrected code, learning next steps — with Read Aloud and progress-since-last-attempt comparison |
 | **Population focus** | Rural and low-income students without CS specialist access |
 
-K-5 students are better served by block-based tools (Scratch, CodeMonkey) and are directed to SciWrite AI instead, which covers the full K-12 range.
+K-5 students are better served by block-based tools (Scratch, CodeMonkey) and are directed to Science Writing instead, which covers the full K-12 range.
 
 ### 📷 Photo Check — Handwritten Work
-Photograph a student's handwritten page on a phone and the AI reads it, shows what it read, and scores it with the SciWrite rubric.
+Photograph a student's handwritten page on a phone and the AI reads it, shows what it read, and scores it with the Science Writing rubric.
 
 | Feature | Detail |
 |---|---|
@@ -92,11 +90,11 @@ Students enter their name once per device; the app can log usage (name, timestam
 ```
 Student Input (Browser) — typed, or spoken via browser speech recognition (K-1)
        │
-       ├── Mode: SciWrite AI (Writing Track)
+       ├── Mode: Science Writing (Writing Track)
        │         Grade Level + Assignment Type
        │         → NGSS-aligned rubric prompt (5 dimensions, or 2 for K-1)
        │
-       └── Mode: CodeBridge AI (Coding Track)
+       └── Mode: Coding Helper (Coding Track)
                  Grade Level + Language + Feedback Mode
                  → Grade-calibrated, guidance-first tutoring prompt
                          │
@@ -153,9 +151,9 @@ and scores.
 
 ---
 
-## 🔬 Research Context & National Importance
+## 🔬 Why This Matters
 
-This project is part of ongoing research into **AI-assisted STEM education equity** for underserved U.S. student populations.
+This is a teacher-built tool. No research study has been run with it yet; the planned evaluation is described below.
 
 ### Federal Policy Alignment
 
@@ -164,19 +162,18 @@ This project is part of ongoing research into **AI-assisted STEM education equit
 | Executive Order *Advancing Artificial Intelligence Education for American Youth* (Apr. 23, 2025) | Sets a federal policy of "the appropriate integration of AI into education" and AI training for educators; this project is a free AI tool for classrooms plus the educator training goal below |
 | NSF Dear Colleague Letter 25-036 (Aug. 25, 2025) | Supports K-12 AI teams for the Presidential AI Challenge and asks funded teams to plan for engaging regions or localities particularly in need of AI education resources, the population this project targets |
 | U.S. Dept. of Education, *Artificial Intelligence and the Future of Teaching and Learning* (2023) | Emphasizes keeping teachers in the loop and attending to equity in educational AI, which is why the Teacher Dashboard and teacher review of AI marks exist |
-| Code.org, *State of Computer Science Education* (2024) | Documents that schools serving mostly low-income students are less likely to offer CS courses, the gap CodeBridge AI addresses |
+| Code.org and CSforALL, *2025 State of AI + CS Education* | Reports that rural and urban schools, small schools, and schools with a high percentage of students receiving free meals are less likely to offer computer science, the gap Coding Helper is designed for |
 
 ### The Evidence Base
 
-- Feedback is among the most powerful influences on learning and achievement, but its effect can be positive or negative depending on how it is given (Hattie & Timperley, 2007) — which is why CodeBridge AI leads with hints and questions rather than finished answers.
-- Hispanic students are 26% of K-12 enrollment but earn fewer than 8% of computing degrees (NSF, 2023).
+- Feedback is among the most powerful influences on learning and achievement, but its effect can be positive or negative depending on how it is given (Hattie & Timperley, 2007) — which is why Coding Helper leads with hints and questions rather than finished answers.
 
 ### Planned Evaluation (not yet started)
 
 No evaluation has been run yet. The plan is to work with a university computing-education researcher once classroom pilots exist.
 
-- [ ] Pre/post study: student writing improvement using SciWrite AI feedback vs. control
-- [ ] Coding comprehension gains: CodeBridge AI vs. no-feedback condition
+- [ ] Pre/post study: student writing improvement using Science Writing feedback vs. control
+- [ ] Coding comprehension gains: Coding Helper vs. no-feedback condition
 - [ ] Qualitative: teacher-reported integration experiences in Title I settings
 - [ ] Target venue: a peer-reviewed computing-education journal or conference such as CSTA
 
@@ -194,7 +191,7 @@ STEM-Bridge-AI/
 │   └── Code.gs             # Gemini proxy (hides the default API key) + usage-tracking backend
 ├── LICENSE                 # MIT License
 ├── CHANGELOG.md            # Version history and development milestones
-└── research.md             # Research background, citations, national importance
+└── research.md             # Research background and citations
 ```
 
 ---
@@ -246,13 +243,13 @@ Priority areas: Spanish localization, offline mode, LMS integrations.
 
 **MIT License** — free for use by schools, nonprofits, researchers, and educators. See [LICENSE](LICENSE).
 
-This is intentional: the national-scope mission requires that any school in the United States can deploy this tool at zero cost and with no licensing friction.
+This is intentional: any school in the United States should be able to use this tool at no cost and with no licensing friction.
 
 ---
 
 ## 👤 Author & Research Contact
 
-Developed as part of independent AI-in-education research focused on STEM equity for rural and underserved U.S. students.
+Developed by a K–12 computer science teacher at a Title I school in Texas.
 
 **Research inquiries, collaboration, and educational deployment:** dastanramazan@gmail.com
 
@@ -261,10 +258,8 @@ Developed as part of independent AI-in-education research focused on STEM equity
 ## 📚 References
 
 1. Hattie, J., & Timperley, H. (2007). The power of feedback. *Review of Educational Research*, 77(1), 81–112.
-2. NSF. (2023). *Women, Minorities, and Persons with Disabilities in Science and Engineering*.
-3. Code.org. (2024). *State of Computer Science Education Annual Report*.
-4. U.S. Bureau of Labor Statistics. (2023). *Occupational Outlook Handbook: Computer and Information Technology Occupations*.
-5. U.S. Department of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
-6. Executive Order, *Advancing Artificial Intelligence Education for American Youth*. (Apr. 23, 2025). The White House.
-7. NSF Dear Colleague Letter 25-036, *Supplemental Funding Requests to Support K-12 AI Teams for the Presidential AI Challenge*. (Aug. 25, 2025).
-8. Next Generation Science Standards (NGSS). (2013). *Next Generation Science Standards: For States, By States*.
+2. Code.org and CSforALL. (2025). *2025 State of AI + CS Education*. advocacy.code.org/stateofcs
+3. U.S. Department of Education. (2023). *Artificial Intelligence and the Future of Teaching and Learning*.
+4. Executive Order, *Advancing Artificial Intelligence Education for American Youth*. (Apr. 23, 2025). The White House.
+5. NSF Dear Colleague Letter 25-036, *Supplemental Funding Requests to Support K-12 AI Teams for the Presidential AI Challenge*. (Aug. 25, 2025).
+6. Next Generation Science Standards (NGSS). (2013). *Next Generation Science Standards: For States, By States*.
