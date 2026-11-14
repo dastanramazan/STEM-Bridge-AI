@@ -84,6 +84,13 @@
     .hello-main{min-width:0;flex:1;}
     .hello h1{font-size:1.6rem;letter-spacing:-.01em;line-height:1.25;}
     .hello-sub{color:var(--mut);margin-top:3px;font-size:.98rem;}
+    .rate-strip{align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:14px;padding:10px 14px;border:1px solid var(--border2);border-radius:14px;background:var(--surf);}
+    .rate-strip:not([hidden]){display:flex;}
+    .rate-strip p{flex:1;min-width:14ch;line-height:1.45;}
+    .rate-strip .x{background:none;border:0;color:var(--mut);font:inherit;font-size:1.2rem;min-width:40px;min-height:40px;cursor:pointer;border-radius:10px;}
+    .sample-note{border-left:6px solid var(--a1);background:var(--tip-bg);border-radius:0 12px 12px 0;padding:10px 14px;margin:0 0 12px;line-height:1.5;display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;}
+    .sample-note span{flex:1;min-width:18ch;}
+    .sample-btn{max-width:320px;}
     .name-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px 0 4px;}
     .name-row input{
       flex:1 1 240px;max-width:380px;min-height:48px;padding:10px 14px;border-radius:12px;
@@ -481,6 +488,7 @@
   <nav class="topnav" aria-label="Main">
     <button class="chip dim" type="button" onclick="openAbout()">About</button>
     <button class="chip dim" type="button" onclick="openSettings()">⚙️ Settings</button>
+    <button class="chip dim" type="button" onclick="openFeedback()">💬 Rate this tool</button>
     <button class="chip" type="button" onclick="openDashboard()">📊 Teacher</button>
   </nav>
 </header>
@@ -507,6 +515,11 @@
       <h1>Hi, <span id="helloName"></span>! 👋 What would you like help with?</h1>
       <p class="hello-sub"><span id="helloMode"></span> · <a href="#" onclick="event.preventDefault(); resetStudentName();">Not you?</a></p>
     </div>
+  </div>
+  <div class="rate-strip" id="rateStrip" hidden>
+    <p><b>Teacher, parent, or school leader?</b> Tell us what you think of this tool. It takes about a minute.</p>
+    <button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool</button>
+    <button type="button" class="x" aria-label="Hide this message" onclick="hideRateStrip()">✕</button>
   </div>
 </section>
 
@@ -762,6 +775,7 @@
       <div class="empty-state">
         <div class="empty-icon">🌟</div>
         <p>Your feedback will show up here. You'll see what's working and one next step.</p>
+        <button type="button" class="btn-ghost sample-btn" onclick="showSampleResult()">👀 See a sample result</button>
       </div>
     </div>
   </div>
@@ -770,7 +784,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.13.2</span>
+  <span>Free and open source · MIT License · v0.14.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -886,7 +900,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.13.2 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.14.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1462,6 +1476,7 @@
       }, 20000);
       if (data && data.ok === true && data.feedback === true) {
         safeSet('local', FEEDBACK_SENT_STORAGE, String(Date.now()));
+        document.getElementById('rateStrip').hidden = true;
         document.getElementById('feedbackBody').innerHTML = '<p style="font-size:1.1rem;"><b>Thank you! 💙</b></p><p>Your answers were sent to the STEM Bridge AI team. They help us decide what to improve next.</p><button type="button" class="apikey-btn" onclick="closeFeedback()">Close</button>';
         return;
       }
@@ -2046,7 +2061,77 @@
       <div class="empty-state">
         <div class="empty-icon">${v.emptyIcon}</div>
         <p>${v.emptyText}</p>
+        ${m === 'photo' ? '' : SAMPLE_BTN_HTML}
       </div>`;
+  }
+
+  /* ── Sample result: shows what feedback looks like without calling the AI.
+     Nothing is sent, logged, or saved as a "last attempt". ── */
+  const SAMPLE_BTN_HTML = '<button type="button" class="btn-ghost sample-btn" onclick="showSampleResult()">👀 See a sample result</button>';
+  let showingSample = false;
+  const SAMPLE_WRITING = {
+    scores: [
+      { dimension: 'Scientific Accuracy', score: 82 }, { dimension: 'Evidence Use', score: 88 },
+      { dimension: 'Clarity', score: 80 }, { dimension: 'Structure', score: 68 }, { dimension: 'Reasoning', score: 76 }
+    ],
+    overallSummary: 'You ran a fair test and reported exact times for all three temperatures, which makes your result easy to trust. Your explanation about faster-moving water molecules is on the right track.',
+    strengths: [
+      'You changed only one thing (the water temperature) and kept the sugar amount and stirring the same.',
+      'You gave real measurements: 45 seconds, 2 minutes 10 seconds, and 4 minutes 30 seconds.',
+      'You connected the result to a cause: heat makes the molecules move faster.'
+    ],
+    improvements: [
+      'The last paragraph mixes your reasoning with ideas for next time.',
+      'You ran each temperature once, so one unusual trial could change the result.',
+      'The report does not state your prediction before the results.'
+    ],
+    suggestions: [
+      'Try splitting your final paragraph into two parts: one for your scientific reasoning and one for what you would change next time.',
+      'Think about how repeating each temperature a few times would make your evidence stronger, and say so.',
+      'Add one sentence near the start that says what you expected to happen and why.'
+    ],
+    checkYourself: ['Look up "dissolving" and "particle motion" in your notes or textbook and check that your explanation matches.']
+  };
+  const SAMPLE_CODING = {
+    quality: 78, correctness: 60, gradeReadiness: 85,
+    explanation: 'Your loop works, and it does exactly what range(10) asks for. Look closely at where range starts counting and where it stops. What is the first number it gives you, and is the last number you wanted included?',
+    whatIsGood: ['Your loop is short and easy to read.', 'You described clearly what you expected and what happened instead.'],
+    issues: ['range can take two numbers: where to start and where to stop. Which two would give you 1 through 10?', 'Remember that the stop number itself is not printed.'],
+    correctedCode: 'for i in range(1, 11):\n    print(i)',
+    nextStep: ['Try range with two numbers and predict the output before you run it.', 'Try a third number, like range(0, 10, 2), and see what changes.', 'Explain to a partner why range(1, 11) prints 10 but not 11.'],
+    checkYourself: ['Run your new loop and count the lines it prints. Is the first one 1 and the last one 10?']
+  };
+
+  function showSampleResult() {
+    const coding = currentMode === 'coding';
+    // Put the example work in the box if it is empty, so the feedback has something to point at.
+    const box = document.getElementById(coding ? 'codingText' : 'writingText');
+    if (!box.value.trim()) {
+      if (coding) loadCodingSample();
+      else { if (document.getElementById('gradeW').value === 'K-1') { document.getElementById('gradeW').value = '6-8'; onGradeWChange(); } loadWritingSample(); }
+    }
+    stopReadAloud();
+    showingSample = true;
+    try {
+      if (coding) renderCodingFeedback(JSON.parse(JSON.stringify(SAMPLE_CODING)));
+      else renderWritingFeedback(JSON.parse(JSON.stringify(SAMPLE_WRITING)));
+    } finally { showingSample = false; }
+    lastFeedback = null; // a sample is not the student's work, so there is nothing to save as Word
+    const out = document.getElementById('output-body');
+    const save = out.querySelector('.res-save'); if (save) save.remove();
+    out.insertAdjacentHTML('afterbegin', `<div class="sample-note" role="note"><span>👀 <b>This is a sample.</b> It was written in advance for our example ${coding ? 'question' : 'lab report'} to show what feedback looks like. It did not use the AI, and nothing was sent or saved.</span><button type="button" class="apikey-btn" onclick="setMode(currentMode)">Close sample</button></div>`);
+    if (window.matchMedia && window.matchMedia('(max-width:900px)').matches) document.getElementById('output-panel').scrollIntoView({ block: 'start' });
+  }
+
+  /* ── "Rate this tool" strip under the greeting (for adults; hidden once dismissed or after sending). ── */
+  const RATE_STRIP_STORAGE = 'stemBridgeRateStripHidden';
+  function initRateStrip() {
+    const sentAt = Number(safeGet('local', FEEDBACK_SENT_STORAGE) || 0);
+    document.getElementById('rateStrip').hidden = !!safeGet('local', RATE_STRIP_STORAGE) || !!sentAt;
+  }
+  function hideRateStrip() {
+    safeSet('local', RATE_STRIP_STORAGE, '1');
+    document.getElementById('rateStrip').hidden = true;
   }
 
   function setLang(el, lang) {
@@ -2717,10 +2802,11 @@ Also give "checkYourself": one or two specific facts, claims, or steps (in the s
   }
 
   function cheerFor(avg, name) {
-    if (avg >= 85) return ['🎉', `Awesome work, ${name}!`];
-    if (avg >= 70) return ['🌟', `Nice work, ${name}!`];
-    if (avg >= 55) return ['💪', `Good start, ${name}!`];
-    return ['🌱', `Keep going, ${name}!`];
+    name = name ? `, ${name}` : ''; // no name yet (a visitor looking at the sample)
+    if (avg >= 85) return ['🎉', `Awesome work${name}!`];
+    if (avg >= 70) return ['🌟', `Nice work${name}!`];
+    if (avg >= 55) return ['💪', `Good start${name}!`];
+    return ['🌱', `Keep going${name}!`];
   }
 
   const SHOW_SCORES_TOGGLE = `<label class="toggle"><input type="checkbox" onchange="document.getElementById('resWrap').classList.toggle('show-nums', this.checked)"> Show scores</label>`;
@@ -2762,9 +2848,9 @@ Also give "checkYourself": one or two specific facts, claims, or steps (in the s
     setSpeechContent(speechParts.join('. '), grade === 'K-1' || grade === '2' || grade === '3-5');
 
     const currentScoreList = d.scores.map(s => ({ label: s.dimension, score: safeScore(s.score) }));
-    const prevAttempt = getPrevAttempt('writing', `${atype}::${grade}`);
+    const prevAttempt = showingSample ? null : getPrevAttempt('writing', `${atype}::${grade}`);
     const progressHtml = prevAttempt ? renderProgressPanel(buildComparisonRows(prevAttempt.scores, currentScoreList)) : '';
-    savePrevAttempt('writing', `${atype}::${grade}`, currentScoreList);
+    if (!showingSample) savePrevAttempt('writing', `${atype}::${grade}`, currentScoreList);
 
     lastFeedback = writingFeedbackModel(d, getStudentName(), 'Science Writing',
       [['Assignment', selText('assignType')], ['Grade', selText('gradeW')]],
@@ -2873,9 +2959,9 @@ Return ONLY valid JSON (no markdown, no preamble):
       correctness > 0 ? { label: 'Correctness', score: correctness } : null,
       { label: 'Grade Readiness', score: gradeReadiness }
     ].filter(Boolean);
-    const prevAttempt = getPrevAttempt('coding', matchDetail);
+    const prevAttempt = showingSample ? null : getPrevAttempt('coding', matchDetail);
     const progressHtml = prevAttempt ? renderProgressPanel(buildComparisonRows(prevAttempt.scores, currentScoreList)) : '';
-    savePrevAttempt('coding', matchDetail, currentScoreList);
+    if (!showingSample) savePrevAttempt('coding', matchDetail, currentScoreList);
 
     lastFeedback = codingFeedbackModel(d, getStudentName());
     document.getElementById('output-body').innerHTML = `
@@ -4074,7 +4160,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     const fix = arg && arg.code === 'OWN_KEY'
       ? '<button type="button" class="btn-main writing-btn err-fix" onclick="useFreeAccessAndRetry()">Use free access instead</button>'
       : arg && arg.code === 'RETRY'
-        ? '<button type="button" class="btn-main writing-btn err-fix" onclick="retryCurrent()">Try again</button>'
+        ? '<button type="button" class="btn-main writing-btn err-fix" onclick="retryCurrent()">Try again</button>' + (currentMode === 'photo' ? '' : SAMPLE_BTN_HTML)
         : '';
     document.getElementById('output-body').innerHTML = `
       <div class="empty-state">
@@ -4118,6 +4204,7 @@ Return ONLY valid JSON (no markdown, no preamble):
   initPhotoMode();
   updateSetupUI();
   initTheme();
+  initRateStrip();
   handleSchoolLink();
 </script>
 </body>

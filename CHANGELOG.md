@@ -8,6 +8,12 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.14.0] — 2026-11 — See a Sample, and an Easier Way to Rate the Tool
+
+- **"See a sample result."** A button in the empty feedback box (Science Writing and Coding Helper) shows what feedback looks like for the built-in example, without calling the AI. It is clearly marked as a sample written in advance; nothing is sent, logged, or saved, and there is no Word button for it. It works before a name is typed, and it is also offered when the AI service is busy, so a first-time visitor can always see what the tool does.
+- **"Rate this tool" is easier to find.** A button in the top bar and a short strip under the greeting invite teachers, parents, and school leaders to give feedback. The strip can be hidden and stays hidden; it also disappears after feedback is sent.
+- The greeting above a result no longer shows a stray comma when no name has been typed.
+
 ## [0.13.2] — 2026-11 — Sturdier When Google's AI Is Busy
 
 - **Three models, longer retries.** When Gemini is overloaded, the school script now tries the main model, then the lighter fallback, then a third model (two attempts each), and keeps retrying for up to 30 seconds instead of 20. A model name Google no longer serves is skipped instead of ending the request.
