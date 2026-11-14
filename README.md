@@ -45,7 +45,7 @@ Delivers instant, personalized feedback on student scientific writing calibrated
 | Feature | Detail |
 |---|---|
 | **Scoring** | 5 dimensions (Scientific Accuracy, Evidence Use, Clarity, Structure, Reasoning) for grade 2 and up; a simplified 2-dimension rubric for Kindergarten–1st Grade dictated observations |
-| **Assignment types** | Lab Report, Research Essay, Hypothesis, Data Analysis, Scientific Explanation |
+| **Assignment types** | Lab Report, Research Essay, Hypothesis, Data Analysis, Scientific Explanation, Engineering Notebook Entry (robotics) |
 | **Grade levels** | K–1, 2, 3–5, 6–8, 9–10, 11–12 |
 | **Input options** | Type, or speak ("Speak Instead of Type") for Kindergarten–1st Grade |
 | **Output** | Overall score, strengths, improvements, specific next steps — with Read Aloud, progress-since-last-attempt comparison, and **Save as Word** |
@@ -57,7 +57,7 @@ Provides grade-calibrated coding assistance for text-based programming languages
 | Feature | Detail |
 |---|---|
 | **Feedback modes** | Code Feedback, Concept Q&A, Debug Help |
-| **Languages** | Python, JavaScript, Java, Scratch, C++, SQL |
+| **Languages** | Python, JavaScript, Java, Scratch, C++, SQL, VEXcode Blocks, VEXcode Python |
 | **Grade calibration** | Strict language complexity matching (grades 6-8 to 11-12) |
 | **Teaching style** | Guidance-first — explanations lead with hints; the corrected code stays hidden behind a "try it yourself first" reveal |
 | **Output** | Quality metrics, explanation, corrected code, learning next steps — with Read Aloud and progress-since-last-attempt comparison |
