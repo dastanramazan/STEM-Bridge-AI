@@ -807,7 +807,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.15.0</span>
+  <span>Free and open source · MIT License · v0.16.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -934,7 +934,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.15.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.16.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1751,6 +1751,7 @@
   let teacherMe = null;
   let teacherData = null;
   let teacherTab = 'classes';
+  let teacherResults = null; // { classId, entries | null, error } while a class's results are open
   let teacherNotice = '';
   let gsiPromise = null;
 
@@ -1858,6 +1859,7 @@
 
   function setTeacherTab(tab) {
     teacherTab = tab;
+    teacherResults = null;
     renderTeacherSignedIn();
   }
 
@@ -1876,7 +1878,8 @@
     const me = teacherMe;
     const tabs = [['classes', 'Classes'], ['assignments', 'Assignments']];
     if (me.role === 'admin') tabs.push(['teachers', 'Teachers']);
-    const panel = teacherTab === 'assignments' ? assignmentsPanelHtml()
+    const panel = teacherTab === 'classes' && teacherResults ? classResultsHtml()
+      : teacherTab === 'assignments' ? assignmentsPanelHtml()
       : teacherTab === 'teachers' && me.role === 'admin' ? teachersPanelHtml()
       : classesPanelHtml();
     document.getElementById('teacherBody').innerHTML = `
@@ -1889,6 +1892,91 @@
       <div id="tMsg" class="photo-msg" role="status"></div>
       <div id="tPanel">${panel}</div>
       ${feedbackLinkHtml()}`;
+  }
+
+  /* ── Results for one class, grouped by assignment. Built from the usage log only
+     (names, times, scores); student work is never stored, so it is never shown here. ── */
+  async function showClassResults(classId) {
+    teacherResults = { classId, entries: null, error: '' };
+    renderTeacherSignedIn();
+    try {
+      const r = await teacherCall('t_results', { classId });
+      if (!teacherResults || teacherResults.classId !== classId) return;
+      teacherResults.entries = Array.isArray(r.results) ? r.results : [];
+    } catch (e) {
+      if (e.code === 'auth' || !teacherResults || teacherResults.classId !== classId) return;
+      teacherResults.error = /Unknown request/.test(e.message)
+        ? "Your school's script is older than this page. Update it to see results: replace the code with the latest Code.gs, then Deploy → Manage deployments → New version."
+        : e.message;
+    }
+    renderTeacherSignedIn();
+  }
+
+  function closeClassResults() { teacherResults = null; renderTeacherSignedIn(); }
+
+  function entryAverage(e) {
+    const nums = (Array.isArray(e.scores) ? e.scores : []).map(Number).filter(Number.isFinite);
+    return nums.length ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
+  }
+
+  // One row per student (by name, ignoring case) for a set of log entries.
+  function studentRowsFor(entries) {
+    const by = {};
+    entries.forEach(e => {
+      const name = String(e.name || '').trim() || '(no name)';
+      const key = name.toLowerCase();
+      const t = new Date(e.timestamp).getTime();
+      const avg = entryAverage(e);
+      const s = by[key] || (by[key] = { name, tries: 0, last: -Infinity, latest: null, best: null });
+      s.tries++;
+      if (Number.isFinite(t) && t >= s.last) { s.last = t; if (avg !== null) s.latest = avg; }
+      if (avg !== null && (s.best === null || avg > s.best)) s.best = avg;
+    });
+    return Object.values(by).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  function resultsGroupHtml(title, sub, entries) {
+    const rows = studentRowsFor(entries);
+    const latest = rows.map(r => r.latest).filter(v => v !== null);
+    const classAvg = latest.length ? Math.round(latest.reduce((a, b) => a + b, 0) / latest.length) : null;
+    const when = ms => Number.isFinite(ms) ? new Date(ms).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) : '—';
+    const pct = v => v === null ? '—' : Math.round(v) + '%';
+    const body = rows.length
+      ? `<div style="overflow-x:auto;"><table class="dash-table"><thead><tr><th>Student</th><th>Tries</th><th>Latest</th><th>Best</th><th>Last time</th></tr></thead><tbody>${rows.map(r =>
+          `<tr><td>${escHtml(r.name)}</td><td>${r.tries}</td><td>${pct(r.latest)}</td><td>${pct(r.best)}</td><td>${escHtml(when(r.last))}</td></tr>`).join('')}</tbody></table></div>`
+      : '<p class="dash-note" style="margin:6px 0 0;">No one has done this yet.</p>';
+    return `
+      <div class="t-card">
+        <div class="t-row"><div><b>${escHtml(title)}</b>${sub ? `<div class="dash-note" style="margin:0;">${sub}</div>` : ''}</div>
+          <div class="dash-note" style="margin:0;white-space:nowrap;">${rows.length} student${rows.length === 1 ? '' : 's'}${classAvg === null ? '' : ` · average ${classAvg}%`}</div></div>
+        ${body}
+      </div>`;
+  }
+
+  function classResultsHtml() {
+    const tr = teacherResults;
+    const cls = teacherData.classes.find(c => c.id === tr.classId);
+    const head = `
+      <div class="t-row" style="margin-bottom:12px;">
+        <div><b>Results: ${escHtml(cls ? cls.name : 'class')}</b><div class="dash-note" style="margin:0;">Names, tries and scores only. Students' writing and code are never saved.</div></div>
+        <div class="photo-actions" style="margin:0;">
+          <button type="button" class="apikey-btn" data-id="${escHtml(tr.classId)}" onclick="showClassResults(this.dataset.id)">Refresh</button>
+          <button type="button" class="apikey-btn" onclick="closeClassResults()">← Back to classes</button>
+        </div>
+      </div>`;
+    if (tr.error) return `${head}<p class="dash-note">${escHtml(tr.error)}</p>`;
+    if (tr.entries === null) return `${head}<p class="dash-note">Loading results…</p>`;
+    const asgs = teacherData.assignments.filter(a => a.classId === tr.classId);
+    const known = {};
+    asgs.forEach(a => { known[a.id] = true; });
+    const groups = asgs.map(a => resultsGroupHtml(a.title,
+      `${escHtml(TOOL_LABELS[a.tool] || a.tool)}${a.due ? ` · due ${formatDue(a.due)}` : ''}`,
+      tr.entries.filter(e => e.assignmentId === a.id)));
+    const archived = tr.entries.filter(e => e.assignmentId && !known[e.assignmentId]);
+    if (archived.length) groups.push(resultsGroupHtml('Archived assignments', 'Work logged for assignments you have archived', archived));
+    const other = tr.entries.filter(e => !e.assignmentId);
+    groups.push(resultsGroupHtml('Other work in this class', 'Done by students in this class without starting an assignment', other));
+    return head + groups.join('');
   }
 
   function classesPanelHtml() {
@@ -1905,6 +1993,7 @@
         <div class="t-link">
           <input class="t-input" readonly value="${escHtml(classLink(c.code))}" aria-label="Student link for ${escHtml(c.name)}" />
           <button type="button" class="apikey-btn" data-code="${escHtml(c.code)}" onclick="copyClassLink(this)">Copy link</button>
+          <button type="button" class="apikey-btn" data-id="${escHtml(c.id)}" onclick="showClassResults(this.dataset.id)">📊 Results</button>
           <button type="button" class="apikey-btn" data-id="${escHtml(c.id)}" onclick="archiveClassBtn(this)">Archive</button>
         </div>
       </div>`;

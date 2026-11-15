@@ -2,12 +2,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.15.0-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.16.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A free, open-source AI tool designed to give K–12 students feedback on science writing, code, and handwritten work. Built for schools with limited resources: students need only a web browser, and a school needs only a Google account to run its own copy.**
 
-**Status (v0.15.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+**Status (v0.16.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
 ---
 
