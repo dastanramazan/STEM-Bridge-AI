@@ -10,6 +10,10 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [Unreleased] — Feedback in Spanish
+
+- **"Feedback in: English / Español."** A small menu in the feedback box lets a student or teacher ask for the feedback in Spanish. It applies to Science Writing, Coding Helper, and Photo Check feedback. The page itself, the skill names, the student's own words, and any code stay as they are; only the AI's feedback text changes. A student may write in English or Spanish, and the AI is told not to lower a score because of the language. Read Aloud uses a Spanish voice when Spanish is chosen. The choice is remembered on the device. English requests are unchanged. Paper-test grading against an answer key is not affected. The Spanish wording comes from the AI and has not yet been reviewed by a Spanish-speaking teacher.
+
 ## [0.14.0] — 2026-11 — See a Sample, and an Easier Way to Rate the Tool
 
 - **"See a sample result."** A button in the empty feedback box (Science Writing and Coding Helper) shows what feedback looks like for the built-in example, without calling the AI. It is clearly marked as a sample written in advance; nothing is sent, logged, or saved, and there is no Word button for it. It works before a name is typed, and it is also offered when the AI service is busy, so a first-time visitor can always see what the tool does.
