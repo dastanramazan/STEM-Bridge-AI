@@ -10,6 +10,12 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.16.0] — 2026-11 — Class Results for Teachers
+
+- **Results by assignment.** In the Teacher area, each class has a "Results" button. It shows, for every assignment, one row per student: number of tries, latest and best average score, and the last time, with the class average. Work done in the class without starting an assignment, and work for archived assignments, is listed separately.
+- It is built from the usage log only (names, times, tools, scores). Students' writing, code and photos are never stored, so they are never shown.
+- **School script 0.16.0** adds the signed-in teacher request `t_results`, which returns the log rows of the teacher's own class and nothing else. With an older script the page says the script needs updating.
+
 ## [0.15.0] — 2026-11 — Classes for Students, Robotics, and Feedback in Spanish
 
 ### Students join a class with a code

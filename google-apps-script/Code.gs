@@ -450,6 +450,8 @@ function handleTeacher_(data) {
       case 't_assignment_archive':
         withScriptLock_(() => archiveAssignment_(me, data));
         return jsonOutput_({ ok: true });
+      case 't_results':
+        return jsonOutput_({ ok: true, results: classResults_(me, data) });
       case 't_teacher_add':
         return jsonOutput_({ ok: true, teacher: withScriptLock_(() => addTeacher_(me, data)) });
       case 't_teacher_remove':
@@ -653,6 +655,25 @@ function archiveAssignment_(me, data) {
   setCell_('Assignments', a._row, 'Archived', 'yes');
 }
 
+// What a teacher sees for one of their own classes: the usage rows logged with that class's
+// code (names, times, tools, scores, assignment ids). Never student work, which is not stored.
+const MAX_RESULT_ROWS = 3000;
+function classResults_(me, data) {
+  const cls = ownedClass_(me, data.classId);
+  const rows = getLogSheet_().getDataRange().getValues()
+    .filter(r => r[0] && r[0] !== 'Timestamp' && String(r[11] || '') === cls.Code);
+  return rows.slice(-MAX_RESULT_ROWS).map(r => ({
+    timestamp: r[0],
+    name: String(r[1] || ''),
+    tool: String(r[2] || ''),
+    detail: String(r[3] || ''),
+    grade: String(r[4] || ''),
+    scores: [r[5], r[6], r[7], r[8], r[9]].filter(v => v !== '' && v !== undefined && v !== null),
+    device: String(r[10] || ''),
+    assignmentId: String(r[12] || '')
+  }));
+}
+
 function requireAdmin_(me) {
   if (me.role !== 'admin') throw teacherError_('forbidden', 'Only an administrator can do that.');
 }
@@ -690,7 +711,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.15.0';
+const SCRIPT_VERSION = '0.16.0';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
