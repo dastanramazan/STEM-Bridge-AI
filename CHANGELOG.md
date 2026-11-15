@@ -10,6 +10,11 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [Unreleased] — Robotics
+
+- **Engineering Notebook Entry (robotics)** is a new kind of writing in Science Writing and Photo Check. It is treated as a record of the design process, not a lab report, with its own five skills: saying the goal, comparing ideas, explaining the choice, testing and results, and planning what to change. These are the project's own good-practice criteria, not an official competition rubric, and the AI is told never to say what score a judge would give or which design to build.
+- **VEXcode Blocks and VEXcode Python** are new choices in Coding Helper. The tutor is told the program is for a VEX robot, to consider robot causes (ports, motor direction, units, waiting for sensors), that it cannot see the robot, and to name only blocks or functions it is sure exist. Other languages are unchanged. Coding Helper still starts at grade 6.
+
 ## [Unreleased] — Feedback in Spanish
 
 - **"Feedback in: English / Español."** A small menu in the feedback box lets a student or teacher ask for the feedback in Spanish. It applies to Science Writing, Coding Helper, and Photo Check feedback. The page itself, the skill names, the student's own words, and any code stay as they are; only the AI's feedback text changes. A student may write in English or Spanish, and the AI is told not to lower a score because of the language. Read Aloud uses a Spanish voice when Spanish is chosen. The choice is remembered on the device. English requests are unchanged. Paper-test grading against an answer key is not affected. The Spanish wording comes from the AI and has not yet been reviewed by a Spanish-speaking teacher.
