@@ -1,0 +1,3 @@
+# Screenshots from local test runs must never be committed
+undefined/
+*.png
