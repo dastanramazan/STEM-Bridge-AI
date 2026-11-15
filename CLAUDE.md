@@ -97,6 +97,14 @@ how student data is handled, `PRIVACY.md`.
   supplied, and must not state classroom-usage numbers, student counts, or
   learning outcomes without documentation. The project has not had a
   classroom pilot yet, and the docs say so.
+- The only access figures in public docs are the ones from the Code.org and
+  CSforALL *2025 State of AI + CS Education* report that the owner has verified
+  (60% of high schools offer CS; 6.1% of students take it). Do not bring back
+  "667,000 jobs", "26% / 8%", or "3x less likely".
+- The first public release is v0.3.0 (July 2026). Never add change-log entries
+  for earlier versions, and never describe the project as "ongoing research"
+  or the feedback as "expert-level"; the rubric is not validated yet.
+- Public names of the tools: Science Writing, Coding Helper, Photo Check.
 - Do not use the "48 states" teacher-shortage figure (removed from the About
   panel, README, and research.md); don't reintroduce it without a source the
   owner has verified.
