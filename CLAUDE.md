@@ -54,8 +54,9 @@ how student data is handled, `PRIVACY.md`.
   which win over the constants in `Code.gs`. Never echo secrets back to the form
   or the page. A placeholder or empty PIN/key counts as not set: never accept the
   public example PIN.
-- `doGet?action=info` is the one public, secret-free reply (version, school name,
-  what is set up). Keep it that way.
+- `doGet?action=info` is the public, secret-free reply about the school (version,
+  school name, what is set up). The only other reply that needs no PIN or sign-in
+  is the students' `class_info` (see Teacher accounts). Keep it that way.
 - The page's `LOG_ENDPOINT` is a `let`: the shared demo by default, or a school's
   Web app address saved in `localStorage` after the user pasted it or confirmed a
   `?s=` link. Only addresses matching `SCRIPT_URL_RE` (script.google.com Web app
