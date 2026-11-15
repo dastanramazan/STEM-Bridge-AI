@@ -73,6 +73,11 @@ function doPost(e) {
     return handleFeedback_(data);
   }
 
+  // A student with a class code asks which class it is and what its assignments are.
+  if (data.action === 'class_info') {
+    return handleClassInfo_(data);
+  }
+
   // Teacher accounts: classes and assignments (every request is checked against a Google sign-in).
   if (typeof data.action === 'string' && data.action.indexOf('t_') === 0) {
     return handleTeacher_(data);
@@ -254,7 +259,9 @@ function handleLog_(data) {
     scores[2] ?? '',
     scores[3] ?? '',
     scores[4] ?? '',
-    cleanDeviceCode_(data.device)
+    cleanDeviceCode_(data.device),
+    cleanClassCode_(data.classCode),
+    cleanId_(data.assignmentId)
   ]);
 
   return ContentService.createTextOutput(JSON.stringify({ ok: true }))
@@ -265,6 +272,45 @@ function handleLog_(data) {
 // letters and digits so a made-up value can't put odd content into the Sheet.
 function cleanDeviceCode_(value) {
   return String(value || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase().slice(0, 8);
+}
+
+// A class code is exactly four characters from the class-code alphabet; anything else becomes ''.
+function cleanClassCode_(value) {
+  const code = String(value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (code.length !== 4) return '';
+  for (let i = 0; i < 4; i++) if (CLASS_CODE_ALPHABET.indexOf(code.charAt(i)) === -1) return '';
+  return code;
+}
+
+// Ids made by this script are short hex strings; keep only that.
+function cleanId_(value) {
+  return String(value || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12);
+}
+
+/* ── A student joins a class with its code ──
+   Public on purpose (students have no accounts), so it gives out as little as possible:
+   the class name and its open assignments. Never a teacher's email or name, never other
+   students. Wrong guesses are counted so codes can't be found by trying them all. */
+const MAX_CLASS_CODE_MISSES = 200;   // wrong codes allowed, across everyone, per 10 minutes
+function handleClassInfo_(data) {
+  if (!getClientId_()) {
+    return jsonOutput_({ error: "This school hasn't switched on classes yet. Ask your teacher.", code: 'not_configured' });
+  }
+  const cache = CacheService.getScriptCache();
+  const misses = Number(cache.get('cls_miss') || 0);
+  if (misses >= MAX_CLASS_CODE_MISSES) {
+    return jsonOutput_({ error: 'Too many wrong class codes were tried. Please wait a few minutes and try again.', code: 'locked' });
+  }
+  const code = cleanClassCode_(data.code);
+  const cls = code ? tabRows_('Classes').find(c => c.Code === code && c.Archived !== 'yes') : null;
+  if (!cls) {
+    cache.put('cls_miss', String(misses + 1), 600);
+    return jsonOutput_({ error: "That class code wasn't found. Check it with your teacher.", code: 'not_found' });
+  }
+  const assignments = tabRows_('Assignments')
+    .filter(a => a.ClassId === cls.ClassId && a.Archived !== 'yes')
+    .map(a => ({ id: a.AssignmentId, title: a.Title, instructions: a.Instructions, tool: a.Tool, helpLevel: a.HelpLevel, due: a.Due }));
+  return jsonOutput_({ ok: true, class: { code: cls.Code, name: cls.Name, year: cls.Year }, assignments: assignments });
 }
 
 function doGet(e) {
@@ -301,7 +347,9 @@ function doGet(e) {
       detail: r[3],
       grade: r[4],
       scores: [r[5], r[6], r[7], r[8], r[9]].filter(v => v !== ''),
-      device: String(r[10] || '')
+      device: String(r[10] || ''),
+      classCode: String(r[11] || ''),
+      assignmentId: String(r[12] || '')
     }));
 
   return ContentService.createTextOutput(JSON.stringify({ entries }))
@@ -337,13 +385,16 @@ function getLogSheet_() {
   // literal "Timestamp" value rather than assuming it's always row 1,
   // so this only guards readability, not correctness.
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5', 'Device']);
+    sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5', 'Device', 'Class', 'Assignment']);
+  } else if (sheet.getRange(1, 1).getValue() === 'Timestamp' && sheet.getRange(1, 12).getValue() === '') {
+    // An older Log tab: name the two columns added for classes.
+    sheet.getRange(1, 12, 1, 2).setValues([['Class', 'Assignment']]);
   }
   // Force the text columns to plain text. Without this, Sheets' automatic
   // formatting silently reinterprets values like "6-8" or "9-10" as dates
   // (e.g. "September 10"), corrupting the grade level on every write.
   sheet.getRange('B:E').setNumberFormat('@');
-  sheet.getRange('K:K').setNumberFormat('@'); // device codes like 2345 must stay text
+  sheet.getRange('K:M').setNumberFormat('@'); // device codes like 2345, class codes and assignment ids must stay text
   return sheet;
 }
 
@@ -639,7 +690,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.13.2';
+const SCRIPT_VERSION = '0.14.0';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
@@ -687,7 +738,7 @@ function schoolInfo_() {
     app: 'stem-bridge-ai',
     version: SCRIPT_VERSION,
     school: getSchoolName_(),
-    features: ['feedback'],
+    features: ['feedback'].concat(getClientId_() ? ['classes'] : []), // 'classes' = students can join a class with a code
     setup: { pin: !!getPin_(), aiKey: !!getGeminiKey_(), teacherSignIn: !!getClientId_() }
   };
 }

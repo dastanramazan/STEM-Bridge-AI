@@ -26,8 +26,9 @@ how student data is handled, `PRIVACY.md`.
 
 ## Privacy rules
 
-- Log only names, timestamps, tool, scores, and the random device code (a
-  pseudonymous hint, never an IP address or device details). Never log student writing,
+- Log only names, timestamps, tool, scores, the random device code (a
+  pseudonymous hint, never an IP address or device details), and, for a student
+  who joined a class, the class code and assignment id. Never log student writing,
   code, test answers, or photos, and don't add raw-submission logging
   without an explicit, separate ask.
 - Photos, live-camera frames, and answer keys stay in the browser (page memory / the teacher's
@@ -80,6 +81,12 @@ how student data is handled, `PRIVACY.md`.
   teacher opens the Teacher area. Students must never trigger it.
 - `GOOGLE_CLIENT_ID` is public (not a secret) and empty by default, which keeps
   the feature off.
+- Students join a class with its 4-character code (`class_info`, no sign-in). That
+  reply holds only the class name and its open assignments: never a teacher's
+  email or name. Wrong codes are rate-limited. The page asks only servers whose
+  `?action=info` lists `classes`, and shows the class name for the student to
+  confirm before saving anything. Teacher-written text (titles, instructions) is
+  shown escaped and is not sent to the AI.
 
 ## Feedback contract
 

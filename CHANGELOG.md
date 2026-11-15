@@ -8,6 +8,14 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [Unreleased] — Students Join a Class with a Code
+
+- **Join a class.** A student opens the teacher's class link or types the 4-character class code ("Have a class code?"). The page shows the class name and asks the student to confirm before joining. There is still no student account or password; the class is remembered in that browser.
+- **Assignments.** After joining, the student sees the class's open assignments. "Start" opens the right tool and shows the teacher's instructions and the chosen level of AI help. The instructions are shown to the student only; they are not sent to the AI, and the help level does not yet change the AI's behavior.
+- **Log.** Results are logged with the class code and, when the tool matches the started assignment, the assignment's id (two new columns in the Log tab: Class and Assignment). An older Log tab gets the two column names automatically.
+- **School script 0.14.0** adds the student request `class_info`. It returns only the class name and its open assignments, never a teacher's email or name, and wrong codes are counted so codes cannot be guessed by trying them all. The website asks only servers that list `classes` in their public info, which requires teacher sign-in to be set up. Update the school script to use this.
+- Showing a teacher the results by class and by assignment comes in the next step.
+
 ## [0.13.2] — 2026-11 — Sturdier When Google's AI Is Busy
 
 - **Three models, longer retries.** When Gemini is overloaded, the school script now tries the main model, then the lighter fallback, then a third model (two attempts each), and keeps retrying for up to 30 seconds instead of 20. A model name Google no longer serves is skipped instead of ending the request.
