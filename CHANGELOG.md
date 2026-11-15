@@ -10,13 +10,20 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
-## [Unreleased] — Robotics
+## [0.15.0] — 2026-11 — Classes for Students, Robotics, and Feedback in Spanish
 
+### Students join a class with a code
+- **Join a class.** A student opens the teacher's class link or types the 4-character class code ("Have a class code?"). The page shows the class name and asks the student to confirm before joining. There is still no student account or password; the class is remembered in that browser.
+- **Assignments.** After joining, the student sees the class's open assignments. "Start" opens the right tool and shows the teacher's instructions and the chosen level of AI help. The instructions are shown to the student only; they are not sent to the AI, and the help level does not yet change the AI's behavior.
+- **Log.** Results are logged with the class code and, when the tool matches the started assignment, the assignment's id (two new columns in the Log tab: Class and Assignment). An older Log tab gets the two column names automatically.
+- **School script 0.15.0** adds the student request `class_info`. It returns only the class name and its open assignments, never a teacher's email or name, and wrong codes are counted so codes cannot be guessed by trying them all. The website asks only servers that list `classes` in their public info, which requires teacher sign-in to be set up. Update the school script to use this.
+- Showing a teacher the results by class and by assignment comes in the next step.
+
+### Robotics
 - **Engineering Notebook Entry (robotics)** is a new kind of writing in Science Writing and Photo Check. It is treated as a record of the design process, not a lab report, with its own five skills: saying the goal, comparing ideas, explaining the choice, testing and results, and planning what to change. These are the project's own good-practice criteria, not an official competition rubric, and the AI is told never to say what score a judge would give or which design to build.
 - **VEXcode Blocks and VEXcode Python** are new choices in Coding Helper. The tutor is told the program is for a VEX robot, to consider robot causes (ports, motor direction, units, waiting for sensors), that it cannot see the robot, and to name only blocks or functions it is sure exist. Other languages are unchanged. Coding Helper still starts at grade 6.
 
-## [Unreleased] — Feedback in Spanish
-
+### Feedback in Spanish
 - **"Feedback in: English / Español."** A small menu in the feedback box lets a student or teacher ask for the feedback in Spanish. It applies to Science Writing, Coding Helper, and Photo Check feedback. The page itself, the skill names, the student's own words, and any code stay as they are; only the AI's feedback text changes. A student may write in English or Spanish, and the AI is told not to lower a score because of the language. Read Aloud uses a Spanish voice when Spanish is chosen. The choice is remembered on the device. English requests are unchanged. Paper-test grading against an answer key is not affected. The Spanish wording comes from the AI and has not yet been reviewed by a Spanish-speaking teacher.
 
 ## [0.14.0] — 2026-11 — See a Sample, and an Easier Way to Rate the Tool

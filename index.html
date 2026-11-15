@@ -390,6 +390,17 @@
     .t-link{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
     .t-link .t-input{flex:1 1 240px;width:auto;}
     .t-instr{margin-top:6px;white-space:pre-wrap;line-height:1.5;}
+    .class-box{margin-top:14px;border:2px solid var(--border2);border-radius:16px;background:var(--surf);padding:14px 16px;}
+    .class-head{display:flex;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-bottom:6px;}
+    .class-head .nm{flex:1;min-width:12ch;font-size:1.05rem;}
+    .asg-list{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));margin-top:10px;}
+    .asg-card{border:2px solid var(--border);border-radius:14px;padding:12px 14px;background:var(--faint);display:flex;flex-direction:column;gap:6px;min-width:0;}
+    .asg-card.on{border-color:var(--a1);background:var(--a1-bg);}
+    .asg-card h3{font-size:1.02rem;overflow-wrap:anywhere;}
+    .asg-card .meta{font-size:.9rem;color:var(--mut);}
+    .asg-card .ins{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.5;border-top:1px solid var(--border2);padding-top:6px;}
+    .asg-card .apikey-btn{align-self:flex-start;margin-top:auto;}
+    #classCodeInput{font-family:var(--mono);font-size:1.5rem;letter-spacing:.2em;text-transform:uppercase;text-align:center;max-width:9ch;}
     .code-chip{font-family:var(--mono);font-weight:800;font-size:1.35rem;letter-spacing:.14em;background:var(--a1-bg);color:var(--a1-ink);border-radius:10px;padding:4px 12px;white-space:nowrap;}
     .t-ok{color:var(--a3);font-weight:700;margin:0 0 10px;line-height:1.5;}
     .err-fix{max-width:320px;margin-top:6px;}
@@ -515,9 +526,10 @@
     <div class="avatar" aria-hidden="true">🙂</div>
     <div class="hello-main">
       <h1>Hi, <span id="helloName"></span>! 👋 What would you like help with?</h1>
-      <p class="hello-sub"><span id="helloMode"></span> · <a href="#" onclick="event.preventDefault(); resetStudentName();">Not you?</a></p>
+      <p class="hello-sub"><span id="helloMode"></span> · <a href="#" onclick="event.preventDefault(); resetStudentName();">Not you?</a><span id="joinClassWrap"> · <a href="#" onclick="event.preventDefault(); openJoinClass();">Have a class code?</a></span></p>
     </div>
   </div>
+  <div class="class-box" id="classBox" hidden></div>
   <div class="rate-strip" id="rateStrip" hidden>
     <p><b>Teacher, parent, or school leader?</b> Tell us what you think of this tool. It takes about a minute.</p>
     <button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool</button>
@@ -795,7 +807,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.14.0</span>
+  <span>Free and open source · MIT License · v0.15.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -807,6 +819,17 @@
   <div class="dash-modal" style="max-width:520px;" role="dialog" aria-modal="true" aria-labelledby="schoolConfirmTitle">
     <div class="dash-head"><span id="schoolConfirmTitle">🏫 Connect to a school?</span></div>
     <div class="dash-body" id="schoolConfirmBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ JOIN A CLASS ══ -->
+<div class="dash-overlay" id="classOverlay" hidden>
+  <div class="dash-modal" style="max-width:520px;" role="dialog" aria-modal="true" aria-labelledby="classJoinTitle">
+    <div class="dash-head">
+      <span id="classJoinTitle">📚 Join your class</span>
+      <button class="dash-close" type="button" onclick="closeJoinClass()" aria-label="Close">✕</button>
+    </div>
+    <div class="dash-body" id="classJoinBody"></div>
   </div>
 </div>
 
@@ -894,8 +917,8 @@
       <h3>Free, friendly feedback on STEM work</h3>
       <p>STEM Bridge AI gives students quick, personalized feedback on science writing and code, and helps teachers check handwritten work and paper tests. It is free and open source, and it runs in any web browser with nothing to install.</p>
       <ul class="about-list">
-        <li><b>Science Writing</b> (SciWrite AI): feedback on lab reports and explanations, for students in Kindergarten through 12th grade.</li>
-        <li><b>Coding Helper</b> (CodeBridge AI): hints that lead students to fix their own code, from grade 6 up.</li>
+        <li><b>Science Writing</b>: feedback on lab reports and explanations, for students in Kindergarten through 12th grade.</li>
+        <li><b>Coding Helper</b>: hints that lead students to fix their own code, from grade 6 up.</li>
         <li><b>Photo Check</b>: read handwritten work from a photo, or mark a paper test against an answer key.</li>
       </ul>
       <div class="about-stats">
@@ -911,7 +934,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.14.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.15.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1155,7 +1178,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    ['settingsOverlay', 'aboutOverlay', 'dashOverlay', 'teacherOverlay', 'feedbackOverlay'].forEach(id => {
+    ['settingsOverlay', 'aboutOverlay', 'dashOverlay', 'teacherOverlay', 'feedbackOverlay', 'classOverlay'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.hidden) el.hidden = true;
     });
@@ -1184,7 +1207,7 @@
     fetch(LOG_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
-      body: JSON.stringify({ action: 'log', device: getDeviceCode(), ...payload })
+      body: JSON.stringify({ action: 'log', device: getDeviceCode(), ...classLogFields(payload.tool), ...payload })
     }).catch(() => { /* logging is best-effort; never interrupt the student's feedback */ });
   }
 
@@ -1243,6 +1266,7 @@
     LOG_ENDPOINT = url;
     if (url === DEFAULT_LOG_ENDPOINT) safeRemove('local', SCHOOL_URL_STORAGE);
     else safeSet('local', SCHOOL_URL_STORAGE, url);
+    if (joinedClass && joinedClass.url !== url) leaveClass(); // a class belongs to one school's server
     updateSetupUI();
   }
 
@@ -1363,11 +1387,229 @@
     saveSchoolUrl(schoolLinkUrl);
     schoolLinkClean();
     document.getElementById('schoolOverlay').hidden = true;
+    processPendingClass(); // the same link may also carry a class code
   }
 
   function declineSchoolLink() {
+    pendingClassCode = '';
     schoolLinkClean();
     document.getElementById('schoolOverlay').hidden = true;
+  }
+
+  /* ════════════════════════════════════════
+     CLASSES FOR STUDENTS: a student types the class code (or opens the teacher's
+     class link), confirms the class by its name, and then sees that class's
+     assignments. No account: the class is remembered in this browser only. The
+     school's server is asked only if it says it supports classes, and each result
+     the student gets is logged with the class code and the assignment's id.
+  ════════════════════════════════════════ */
+  const CLASS_STORAGE = 'stemBridgeClass';
+  const CLASS_CODE_RE = /^[A-HJ-NP-Z2-9]{4}$/;
+  let joinedClass = null;        // { code, name, url }
+  let classAssignments = null;   // null = not loaded yet
+  let classLoadError = '';
+  let activeAssignment = null;   // the one the student pressed "Start" on
+  let pendingClassCode = '';
+  let classFound = null;         // what the join window is asking the student to confirm
+  const schoolFeatureCache = {};
+
+  function normalizeClassCode(raw) {
+    const code = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    return CLASS_CODE_RE.test(code) ? code : '';
+  }
+
+  async function fetchClassInfo(code) {
+    const url = LOG_ENDPOINT;
+    if (!url) throw new Error('This page is not connected to a school.');
+    if (!schoolFeatureCache[url]) {
+      let info;
+      try { info = await fetchSchoolInfo(url); }
+      catch (e) { throw new Error("Couldn't reach your school's server. Check your internet connection and try again."); }
+      schoolFeatureCache[url] = Array.isArray(info.features) ? info.features : [];
+    }
+    // An older school script would log an unknown request as a junk row, so never ask it.
+    if (!schoolFeatureCache[url].includes('classes')) {
+      throw new Error(url === DEFAULT_LOG_ENDPOINT
+        ? "Classes work after your teacher gives you your school's link. Ask your teacher for the class link."
+        : "This school hasn't switched on classes yet. Ask your teacher.");
+    }
+    const d = await fetchJsonWithTimeout(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'class_info', code })
+    }, 20000);
+    if (!d || d.ok !== true || !d.class || typeof d.class.name !== 'string') {
+      const err = new Error(d && typeof d.error === 'string' ? d.error : "Couldn't load the class. Please try again.");
+      err.classCode = d && d.code;
+      throw err;
+    }
+    return { name: d.class.name, code: normalizeClassCode(d.class.code) || code, assignments: cleanAssignments(d.assignments) };
+  }
+
+  function cleanAssignments(list) {
+    return (Array.isArray(list) ? list : []).slice(0, 100).map(a => ({
+      id: String(a.id || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 12),
+      title: String(a.title || '').slice(0, 100),
+      instructions: String(a.instructions || '').slice(0, 2000),
+      tool: a.tool === 'coding' ? 'coding' : 'writing',
+      helpLevel: String(a.helpLevel || ''),
+      due: /^\d{4}-\d{2}-\d{2}$/.test(String(a.due || '')) ? String(a.due) : ''
+    })).filter(a => a.id && a.title);
+  }
+
+  function classLogFields(tool) {
+    if (!joinedClass) return {};
+    const out = { classCode: joinedClass.code };
+    if (activeAssignment && activeAssignment.tool === tool) out.assignmentId = activeAssignment.id;
+    return out;
+  }
+
+  function initClass() {
+    try {
+      const saved = JSON.parse(safeGet('local', CLASS_STORAGE) || 'null');
+      if (saved && normalizeClassCode(saved.code) === saved.code && saved.url === LOG_ENDPOINT && typeof saved.name === 'string') {
+        joinedClass = { code: saved.code, name: saved.name.slice(0, 80), url: saved.url };
+      }
+    } catch (e) { /* a damaged value just means "not in a class" */ }
+    renderClassBox();
+    if (joinedClass) refreshClass();
+
+    // A class link: ?class=CODE, optionally with ?s= for the school. The school is confirmed first.
+    const params = new URLSearchParams(location.search);
+    if (!params.has('class')) return;
+    pendingClassCode = normalizeClassCode(params.get('class'));
+    params.delete('class');
+    const q = params.toString();
+    history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
+    const schoolUrl = params.has('s') ? schoolUrlFromParam(params.get('s')) : '';
+    if (!schoolUrl || schoolUrl === LOG_ENDPOINT) processPendingClass();
+  }
+
+  function processPendingClass() {
+    const code = pendingClassCode;
+    pendingClassCode = '';
+    if (!code || (joinedClass && joinedClass.code === code)) return;
+    openJoinClass(code);
+    lookupClass();
+  }
+
+  function openJoinClass(prefill) {
+    classFound = null;
+    document.getElementById('classJoinBody').innerHTML = `
+      <p>Type the 4-character class code your teacher gave you.</p>
+      <div class="name-row">
+        <input type="text" id="classCodeInput" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Class code" value="${escHtml(prefill || '')}" onkeydown="if(event.key==='Enter')lookupClass()" />
+        <button type="button" class="btn-main writing-btn" id="classFindBtn" onclick="lookupClass()">Find my class</button>
+      </div>
+      <p class="dash-note" id="classJoinMsg" role="status" aria-live="polite"></p>`;
+    document.getElementById('classOverlay').hidden = false;
+    document.getElementById('classCodeInput').focus();
+  }
+
+  function closeJoinClass() { document.getElementById('classOverlay').hidden = true; }
+
+  async function lookupClass() {
+    const msg = document.getElementById('classJoinMsg');
+    const code = normalizeClassCode(document.getElementById('classCodeInput').value);
+    if (!code) { msg.textContent = 'A class code has 4 letters or numbers, like K7M2. Check it and try again.'; return; }
+    const btn = document.getElementById('classFindBtn');
+    btn.disabled = true; msg.textContent = 'Looking for your class…';
+    try {
+      classFound = await fetchClassInfo(code);
+    } catch (e) {
+      if (document.getElementById('classFindBtn')) { btn.disabled = false; msg.textContent = e.message; }
+      return;
+    }
+    const n = classFound.assignments.length;
+    document.getElementById('classJoinBody').innerHTML = `
+      <p>Join <b>${escHtml(classFound.name)}</b>?</p>
+      <p class="dash-note">It has ${n} assignment${n === 1 ? '' : 's'} right now. Your teacher will see your name and scores for this class. Only join if this is your class.</p>
+      <div class="photo-actions">
+        <button type="button" class="btn-main writing-btn" onclick="confirmJoinClass()">Yes, join</button>
+        <button type="button" class="apikey-btn" onclick="closeJoinClass()">No, thanks</button>
+      </div>`;
+  }
+
+  function confirmJoinClass() {
+    if (!classFound) return;
+    joinedClass = { code: classFound.code, name: classFound.name.slice(0, 80), url: LOG_ENDPOINT };
+    classAssignments = classFound.assignments;
+    classLoadError = '';
+    activeAssignment = null;
+    classFound = null;
+    safeSet('local', CLASS_STORAGE, JSON.stringify(joinedClass));
+    closeJoinClass();
+    renderClassBox();
+  }
+
+  function leaveClass() {
+    joinedClass = null; classAssignments = null; classLoadError = ''; activeAssignment = null;
+    safeRemove('local', CLASS_STORAGE);
+    renderClassBox();
+  }
+
+  async function refreshClass() {
+    if (!joinedClass) return;
+    const code = joinedClass.code;
+    classLoadError = '';
+    try {
+      const found = await fetchClassInfo(code);
+      if (!joinedClass || joinedClass.code !== code) return; // the student left meanwhile
+      classAssignments = found.assignments;
+      if (found.name !== joinedClass.name) { joinedClass.name = found.name.slice(0, 80); safeSet('local', CLASS_STORAGE, JSON.stringify(joinedClass)); }
+      if (activeAssignment) activeAssignment = classAssignments.find(a => a.id === activeAssignment.id) || null;
+    } catch (e) {
+      if (!joinedClass || joinedClass.code !== code) return;
+      if (e.classCode === 'not_found') { leaveClass(); return; } // the class was closed by the teacher
+      classLoadError = e.message;
+    }
+    renderClassBox();
+  }
+
+  function renderClassBox() {
+    const box = document.getElementById('classBox');
+    document.getElementById('joinClassWrap').hidden = !!joinedClass;
+    box.hidden = !joinedClass;
+    if (!joinedClass) { box.innerHTML = ''; return; }
+    let body;
+    if (classLoadError) {
+      body = `<p class="dash-note" style="margin:0 0 8px;">${escHtml(classLoadError)}</p><button type="button" class="apikey-btn" onclick="classAssignments=null;renderClassBox();refreshClass()">Try again</button>`;
+    } else if (classAssignments === null) {
+      body = '<p class="dash-note" style="margin:0;">Loading your assignments…</p>';
+    } else if (!classAssignments.length) {
+      body = '<p class="dash-note" style="margin:0;">No assignments yet. You can still use any tool below.</p>';
+    } else {
+      body = `<div class="asg-list">${classAssignments.map(a => {
+        const on = activeAssignment && activeAssignment.id === a.id;
+        const meta = [TOOL_LABELS[a.tool] || a.tool, a.due ? 'due ' + formatDue(a.due) : ''].filter(Boolean).join(' · ');
+        return `<div class="asg-card${on ? ' on' : ''}">
+          <h3>${on ? '📌 ' : ''}${escHtml(a.title)}</h3>
+          <div class="meta">${meta}</div>
+          ${on && a.instructions ? `<div class="ins">${escHtml(a.instructions)}</div>` : ''}
+          ${on && HELP_LABELS[a.helpLevel] ? `<div class="meta">Help from the AI: ${escHtml(HELP_LABELS[a.helpLevel])}</div>` : ''}
+          <button type="button" class="apikey-btn" data-id="${escHtml(a.id)}" onclick="${on ? 'stopAssignment()' : 'startAssignment(this.dataset.id)'}">${on ? 'Stop working on this' : 'Start'}</button>
+        </div>`;
+      }).join('')}</div>`;
+    }
+    box.innerHTML = `
+      <div class="class-head">
+        <div class="nm">📚 Your class: <b>${escHtml(joinedClass.name)}</b></div>
+        <button type="button" class="apikey-btn" onclick="leaveClass()">Leave class</button>
+      </div>
+      ${body}`;
+  }
+
+  function startAssignment(id) {
+    const a = (classAssignments || []).find(x => x.id === id);
+    if (!a) return;
+    activeAssignment = a;
+    setMode(a.tool);
+    renderClassBox();
+  }
+
+  function stopAssignment() {
+    activeAssignment = null;
+    renderClassBox();
   }
 
   /* ════════════════════════════════════════
@@ -4266,6 +4508,7 @@ Return ONLY valid JSON (no markdown, no preamble):
   initPhotoMode();
   updateSetupUI();
   initTheme();
+  initClass();
   initFeedbackLang();
   initRateStrip();
   handleSchoolLink();
