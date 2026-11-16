@@ -10,6 +10,13 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.17.0] — 2026-11 — Feedback That Can Be Checked
+
+- **The "Rate this tool" form now says who is answering.** Name, role, school or organization, state, and email are required, and so is what the person tried (Science Writing, Coding Helper, Photo Check, or only looked at the site). Ratings and the comment are as before. Two optional permissions were added: quote the comment with the person's name and organization, and email them to ask whether they would write a short letter about the tool. The form tells people that their email is never shown publicly.
+- A page only shows the fuller form when the project's script lists `feedback_v2` in its public info; an older script gets the short form, so no answer is ever sent to a script that would drop the new fields.
+- **Project script 0.17.0** adds six columns to the Feedback tab (Name, Organization, State, Tried, QuoteWithName, MayAskForLetter), refuses incomplete answers from the fuller form with a message naming what is missing, and names the new columns in an older Feedback tab without touching old rows.
+- No responses are counted or shown anywhere in the repository. Real answers are the only kind that are used.
+
 ## [0.16.0] — 2026-11 — Class Results for Teachers
 
 - **Results by assignment.** In the Teacher area, each class has a "Results" button. It shows, for every assignment, one row per student: number of tries, latest and best average score, and the last time, with the class average. Work done in the class without starting an assignment, and work for archived assignments, is listed separately.

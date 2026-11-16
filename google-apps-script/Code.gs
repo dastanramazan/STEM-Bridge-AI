@@ -711,7 +711,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.16.0';
+const SCRIPT_VERSION = '0.17.0';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
@@ -759,7 +759,7 @@ function schoolInfo_() {
     app: 'stem-bridge-ai',
     version: SCRIPT_VERSION,
     school: getSchoolName_(),
-    features: ['feedback'].concat(getClientId_() ? ['classes'] : []), // 'classes' = students can join a class with a code
+    features: ['feedback', 'feedback_v2'].concat(getClientId_() ? ['classes'] : []), // 'classes' = students can join a class with a code
     setup: { pin: !!getPin_(), aiKey: !!getGeminiKey_(), teacherSignIn: !!getClientId_() }
   };
 }
@@ -893,7 +893,9 @@ function setupDialogHtml_() {
    ═══════════════════════════════════════════════════════════════════ */
 const FEEDBACK_ROLES = ['teacher', 'leader', 'university', 'parent', 'other'];
 const FEEDBACK_INTENT = ['yes', 'maybe', 'no'];
-const FEEDBACK_HEADERS = ['Timestamp', 'Role', 'Useful', 'Easy', 'AIQuality', 'WouldUse', 'Comment', 'MayQuote', 'Contact', 'Device', 'PageVersion'];
+const FEEDBACK_HEADERS = ['Timestamp', 'Role', 'Useful', 'Easy', 'AIQuality', 'WouldUse', 'Comment', 'MayQuote', 'Contact', 'Device', 'PageVersion',
+  'Name', 'Organization', 'State', 'Tried', 'QuoteWithName', 'MayAskForLetter'];
+const FEEDBACK_TRIED = ['writing', 'coding', 'photo', 'looked']; // what the person tried (looked = only looked at the site)
 const MAX_FEEDBACK_PER_DEVICE = 3;   // per 6 hours (the longest a script cache entry can last)
 const MAX_FEEDBACK_PER_HOUR = 60;    // across everyone, so a flood can't fill the Sheet
 
@@ -905,7 +907,11 @@ function getFeedbackTab_() {
     sheet.appendRow(FEEDBACK_HEADERS);
     // Text columns stay plain text so nothing typed in can become a formula. The three rating
     // columns (C to E) stay numbers so the Sheet can average them.
-    ['B:B', 'F:K'].forEach(range => sheet.getRange(range).setNumberFormat('@'));
+    ['B:B', 'F:Q'].forEach(range => sheet.getRange(range).setNumberFormat('@'));
+  } else if (sheet.getRange(1, 12).getValue() === '') {
+    // A Feedback tab from before the identifying questions: name the new columns, keep old rows as they are.
+    sheet.getRange(1, 12, 1, 6).setValues([FEEDBACK_HEADERS.slice(11)]);
+    sheet.getRange('L:Q').setNumberFormat('@');
   }
   return sheet;
 }
@@ -930,8 +936,25 @@ function handleFeedback_(data) {
     mayQuote: data.mayQuote === true || data.mayQuote === 'yes' ? 'yes' : 'no',
     contact: cleanLine_(data.contact, 120),
     device: cleanDeviceCode_(data.device),
-    version: cleanLine_(data.page, 12)
+    version: cleanLine_(data.page, 12),
+    // The newer form asks who is answering, so the feedback can be checked and, with permission, quoted.
+    name: cleanLine_(data.name, 80),
+    org: cleanLine_(data.org, 120),
+    state: cleanLine_(data.state, 40),
+    tried: FEEDBACK_TRIED.indexOf(data.tried) !== -1 ? data.tried : '',
+    quoteNamed: data.quoteNamed === true || data.quoteNamed === 'yes' ? 'yes' : 'no',
+    askLetter: data.askLetter === true || data.askLetter === 'yes' ? 'yes' : 'no'
   };
+  if (Number(data.v) >= 2) {
+    const missing = [];
+    if (!entry.name) missing.push('your name');
+    if (!entry.role) missing.push('who you are');
+    if (!entry.org) missing.push('your school or organization');
+    if (!entry.state) missing.push('your state');
+    if (!/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(entry.contact)) missing.push('a valid email address');
+    if (!entry.tried) missing.push('what you tried');
+    if (missing.length) return jsonOutput_({ error: 'Please add ' + missing.join(', ') + '.', code: 'missing' });
+  }
   if (!entry.role && entry.useful === '' && entry.easy === '' && entry.quality === '' && !entry.wouldUse && !entry.comment) {
     return jsonOutput_({ error: 'Please answer at least one question.', code: 'empty' });
   }
@@ -948,7 +971,8 @@ function handleFeedback_(data) {
 
   withScriptLock_(() => {
     getFeedbackTab_().appendRow([new Date(), entry.role, entry.useful, entry.easy, entry.quality, entry.wouldUse,
-      entry.comment, entry.mayQuote, entry.contact, entry.device, entry.version]);
+      entry.comment, entry.mayQuote, entry.contact, entry.device, entry.version,
+      entry.name, entry.org, entry.state, entry.tried, entry.quoteNamed, entry.askLetter]);
   });
   cache.put(hourKey, String(Number(cache.get(hourKey) || 0) + 1), 3600);
   cache.put(deviceKey, String(Number(cache.get(deviceKey) || 0) + 1), 21600);
