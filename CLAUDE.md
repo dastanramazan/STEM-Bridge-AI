@@ -38,7 +38,11 @@ how student data is handled, `PRIVACY.md`.
 
 ## Feedback form
 
-- The "Rate this tool" form is for adults and collects no student information. It
+- The "Rate this tool" form is for adults and collects no student information. Its fuller version
+  (`feedback_v2`) requires name, role, organization, state, email and what they tried, with optional
+  permissions to quote with a name and to ask for a letter; show it only when the project script lists
+  `feedback_v2`, and never describe its purpose in public text beyond "so the project can check that
+  feedback is real". It
   posts to `DEFAULT_LOG_ENDPOINT` (the project's own script), never to a school's
   script. The page only shows the form when `?action=info` lists the `feedback`
   feature, and only says "Thank you" when the reply has `feedback: true`, so an

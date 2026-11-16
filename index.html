@@ -421,6 +421,7 @@
     .fb-star:focus-within{outline:3px solid var(--a1);}
     .fb-ends{display:flex;justify-content:space-between;max-width:300px;color:var(--mut);}
     .fb-ends small{font-size:.875rem;}
+    .req{font-weight:400;color:var(--mut);font-size:.9rem;}
     .fb-check{display:flex;gap:10px;align-items:center;min-height:44px;margin:8px 0;cursor:pointer;}
     .fb-check input{width:22px;height:22px;flex:none;}
     .fb-trap{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;}
@@ -807,7 +808,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.16.0</span>
+  <span>Free and open source · MIT License · v0.17.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -934,7 +935,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.16.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.17.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1623,6 +1624,7 @@
   const FEEDBACK_ROLES = [['teacher', 'Teacher'], ['leader', 'School or district leader'], ['university', 'University or after-school program'], ['parent', 'Parent'], ['other', 'Other']];
   const FEEDBACK_INTENT = [['yes', 'Yes'], ['maybe', 'Maybe'], ['no', 'No']];
   let feedbackAvail = null; // null = not checked yet
+  let feedbackV2 = false;   // the project's script understands the identifying questions
 
   function feedbackLinkHtml() {
     return `<p class="dash-note" style="margin-top:14px;">Tried it? <a href="#" onclick="event.preventDefault();openFeedback()">Tell us what you think (about a minute)</a></p>`;
@@ -1634,6 +1636,8 @@
     if (feedbackAvail !== null) return feedbackAvail;
     const info = await fetchJsonWithTimeout(`${DEFAULT_LOG_ENDPOINT}?action=info`, { method: 'GET' }, 15000);
     feedbackAvail = !!(info && info.ok === true && Array.isArray(info.features) && info.features.includes('feedback'));
+    // A script that lists feedback_v2 can take the identifying questions; an older one gets the short form.
+    feedbackV2 = feedbackAvail && info.features.includes('feedback_v2');
     return feedbackAvail;
   }
 
@@ -1677,7 +1681,10 @@
     });
   }
 
+  const FEEDBACK_TRIED = [['writing', 'Science Writing'], ['coding', 'Coding Helper'], ['photo', 'Photo Check'], ['looked', 'I only looked at the site']];
+
   function renderFeedbackForm() {
+    if (feedbackV2) { renderFeedbackFormV2(); return; }
     document.getElementById('feedbackBody').innerHTML = `
       <form id="feedbackForm" onsubmit="submitFeedback(event)" novalidate>
         <p class="dash-note">For teachers and other adults (students: please ask your teacher). It takes about a minute. Please don't write student names or student work.</p>
@@ -1691,6 +1698,38 @@
         <label class="fb-check"><input type="checkbox" id="fbQuote"> You may quote my comment (without my name)</label>
         <label class="fl" for="fbContact">Email, only if you'd like a reply (optional)</label>
         <input type="email" id="fbContact" class="t-input" maxlength="120" autocomplete="email" />
+        <div class="fb-trap" aria-hidden="true"><label>Website <input type="text" id="fbWebsite" tabindex="-1" autocomplete="off" /></label></div>
+        <button type="submit" class="btn-main writing-btn" id="fbSend" style="margin-top:14px;">Send feedback</button>
+        <div id="fbMsg" class="photo-msg" role="status"></div>
+        <p class="dash-note">Your answers go to the STEM Bridge AI project team. We never ask for or store student information here.</p>
+      </form>`;
+  }
+
+  // The fuller form: says who is answering, so the feedback can be checked and, with permission, quoted.
+  function renderFeedbackFormV2() {
+    document.getElementById('feedbackBody').innerHTML = `
+      <form id="feedbackForm" onsubmit="submitFeedback(event)" novalidate>
+        <p class="dash-note">For teachers and other adults (students: please ask your teacher). It takes about two minutes. Please don't write student names or student work. Honest answers help most, and low scores are as useful as high ones.</p>
+        <label class="fl" for="fbName">Your name <span class="req">(required)</span></label>
+        <input type="text" id="fbName" class="t-input" maxlength="80" autocomplete="name" />
+        ${pillQuestionHtml('role', 'I am a… (required)', FEEDBACK_ROLES)}
+        <label class="fl" for="fbOrg">School, district, or organization <span class="req">(required)</span></label>
+        <input type="text" id="fbOrg" class="t-input" maxlength="120" autocomplete="organization" />
+        <label class="fl" for="fbState">State (or country) <span class="req">(required)</span></label>
+        <input type="text" id="fbState" class="t-input" maxlength="40" autocomplete="address-level1" />
+        <label class="fl" for="fbContact">Email <span class="req">(required)</span></label>
+        <input type="email" id="fbContact" class="t-input" maxlength="120" autocomplete="email" />
+        <p class="dash-note" style="margin-top:4px;">Your name, organization, and email let the project check that feedback is real. Your email is never shown publicly.</p>
+        ${pillQuestionHtml('tried', 'What did you try? (required)', FEEDBACK_TRIED)}
+        ${starQuestionHtml('useful', 'How useful would STEM Bridge AI be for your students?')}
+        ${starQuestionHtml('easy', 'How easy was it to use?')}
+        ${starQuestionHtml('quality', 'How good was the AI feedback?')}
+        ${pillQuestionHtml('wouldUse', 'Would you use it with your students?', FEEDBACK_INTENT)}
+        <label class="fl" for="fbComment">Anything else? What would make it more useful? (optional)</label>
+        <textarea id="fbComment" class="t-input" maxlength="1500" rows="4"></textarea>
+        <label class="fb-check"><input type="checkbox" id="fbQuote"> You may quote my comment without my name</label>
+        <label class="fb-check"><input type="checkbox" id="fbQuoteNamed"> You may quote my comment with my name and organization</label>
+        <label class="fb-check"><input type="checkbox" id="fbAskLetter"> You may email me to ask whether I'd write a short letter about the tool (no obligation)</label>
         <div class="fb-trap" aria-hidden="true"><label>Website <input type="text" id="fbWebsite" tabindex="-1" autocomplete="off" /></label></div>
         <button type="submit" class="btn-main writing-btn" id="fbSend" style="margin-top:14px;">Send feedback</button>
         <div id="fbMsg" class="photo-msg" role="status"></div>
@@ -1712,6 +1751,30 @@
       page: APP_VERSION
     };
     const msg = document.getElementById('fbMsg');
+    if (document.getElementById('fbName')) {
+      Object.assign(payload, {
+        v: 2,
+        name: document.getElementById('fbName').value.trim(),
+        org: document.getElementById('fbOrg').value.trim(),
+        state: document.getElementById('fbState').value.trim(),
+        tried: val('tried'),
+        quoteNamed: document.getElementById('fbQuoteNamed').checked,
+        askLetter: document.getElementById('fbAskLetter').checked
+      });
+      const missing = [];
+      if (!payload.name) missing.push('your name');
+      if (!payload.role) missing.push('who you are');
+      if (!payload.org) missing.push('your school or organization');
+      if (!payload.state) missing.push('your state');
+      if (!/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(payload.contact)) missing.push('a valid email address');
+      if (!payload.tried) missing.push('what you tried');
+      if (!payload.useful && !payload.easy && !payload.quality && !payload.wouldUse && !payload.comment) missing.push('at least one rating or a comment');
+      if (missing.length) {
+        msg.className = 'photo-msg';
+        msg.textContent = 'Please add ' + missing.join(', ') + '.';
+        return;
+      }
+    }
     if (!payload.role && !payload.useful && !payload.easy && !payload.quality && !payload.wouldUse && !payload.comment) {
       msg.className = 'photo-msg';
       msg.textContent = 'Please answer at least one question.';
