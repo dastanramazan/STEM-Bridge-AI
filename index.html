@@ -1709,7 +1709,7 @@
   function renderFeedbackFormV2() {
     document.getElementById('feedbackBody').innerHTML = `
       <form id="feedbackForm" onsubmit="submitFeedback(event)" novalidate>
-        <p class="dash-note">For teachers and other adults (students: please ask your teacher). It takes about two minutes. Please don't write student names or student work. Honest answers help most, and low scores are as useful as high ones.</p>
+        <p class="dash-note">For teachers and other adults (students: please ask your teacher). It takes about two minutes. Please don't write student names or student work.</p>
         <label class="fl" for="fbName">Your name <span class="req">(required)</span></label>
         <input type="text" id="fbName" class="t-input" maxlength="80" autocomplete="name" />
         ${pillQuestionHtml('role', 'I am a… (required)', FEEDBACK_ROLES)}
