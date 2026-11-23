@@ -21,10 +21,10 @@
       --a1:#0ea5e9;  --a1-ink:#0369a1; --a1-bg:#e0f4ff;   /* writing */
       --a2:#8b5cf6;  --a2-ink:#6d28d9; --a2-bg:#f0eaff;   /* coding  */
       --photo:#f97316; --photo-ink:#c2410c; --photo-bg:#fff0e3;
-      --a3:#16a34a;  --a3-bg:#e6f8ec;                     /* good    */
+      --a3:#16a34a;  --ok-ink:#15803d; --a3-bg:#e6f8ec;                     /* good    */
       --warn:#d97706; --warn-bg:#fff5df; --err:#dc2626; --err-bg:#fdecec; --tip-bg:#e8f1ff;
       --lv-great:#16a34a; --lv-good:#0284c7; --lv-ok:#d97706; --lv-low:#dc2626;
-      --star:#f5b301; --star-off:#d5dcec;
+      --star:#f5b301; --star-off:#6f7d9f;
       --shadow:0 6px 20px rgba(40,70,140,.10);
       --code-bg:#f3f6fc;
       --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
@@ -38,10 +38,10 @@
       --a1-ink:#7dd3fc; --a1-bg:#0d2e45;
       --a2-ink:#c4b5fd; --a2-bg:#2a2252;
       --photo-ink:#fdba74; --photo-bg:#43260f;
-      --a3:#4ade80; --a3-bg:#103323;
+      --a3:#4ade80; --ok-ink:#4ade80; --a3-bg:#103323;
       --warn:#fbbf24; --warn-bg:#3d2c0c; --err:#f87171; --err-bg:#3b1a22; --tip-bg:#1b2c55;
       --lv-great:#4ade80; --lv-good:#38bdf8; --lv-ok:#fbbf24; --lv-low:#f87171;
-      --star-off:#3a4670; --shadow:0 6px 20px rgba(0,0,0,.35);
+      --star-off:#8494c0; --shadow:0 6px 20px rgba(0,0,0,.35);
       --code-bg:#111a35;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
@@ -153,9 +153,9 @@
       display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .15s,box-shadow .15s;
       box-shadow:0 8px 18px rgba(14,165,233,.25);
     }
-    .btn-main.writing-btn{background:linear-gradient(135deg,#0ea5e9,#6366f1);}
-    .btn-main.coding-btn{background:linear-gradient(135deg,#8b5cf6,#6366f1);box-shadow:0 8px 18px rgba(139,92,246,.28);}
-    .btn-main.photo-btn{background:linear-gradient(135deg,#f97316,#f59e0b);color:#fff;box-shadow:0 8px 18px rgba(249,115,22,.28);}
+    .btn-main.writing-btn{background:linear-gradient(135deg,#0369a1,#4f46e5);}
+    .btn-main.coding-btn{background:linear-gradient(135deg,#7c3aed,#4f46e5);box-shadow:0 8px 18px rgba(124,58,237,.28);}
+    .btn-main.photo-btn{background:linear-gradient(135deg,#c2410c,#b45309);color:#fff;box-shadow:0 8px 18px rgba(194,65,12,.28);}
     .btn-main:hover:not(:disabled){transform:translateY(-1px);}
     .btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none;}
     .name-row .btn-main{width:auto;padding:12px 26px;}
@@ -212,7 +212,7 @@
     .res-save .read-aloud-btn{margin-bottom:8px;}
     .export-msg{font-weight:700;color:var(--a3);font-size:.95rem;margin-bottom:8px;}
     .verify{border:2px solid var(--a3);background:var(--a3-bg);border-radius:14px;padding:12px 14px;margin:8px 0 12px;}
-    .verify .lab{font-weight:800;font-size:.85rem;letter-spacing:.07em;text-transform:uppercase;color:var(--a3);}
+    .verify .lab{font-weight:800;font-size:.85rem;letter-spacing:.07em;text-transform:uppercase;color:var(--ok-ink);}
     .verify ul{margin:6px 0 0 1.1rem;}
     .verify li{margin:3px 0;}
     .ai-note{border-left:6px solid var(--warn);background:var(--warn-bg);border-radius:0 12px 12px 0;padding:10px 14px;margin:0 0 6px;color:var(--txt);line-height:1.5;}
@@ -419,8 +419,15 @@
     .fb-star.on{color:var(--star);}
     .fb-star:hover{transform:scale(1.1);}
     .fb-star:focus-within{outline:3px solid var(--a1);}
-    .fb-ends{display:flex;justify-content:space-between;max-width:300px;color:var(--mut);}
+    .fb-rate{display:inline-block;max-width:100%;}
+    .fb-ends{display:flex;justify-content:space-between;color:var(--mut);}
     .fb-ends small{font-size:.875rem;}
+    .fb-progress{margin:12px 0 0;font-weight:700;color:var(--mut);}
+    .fb-progress.ok{color:var(--ok-ink);}
+    .skip-link{position:absolute;left:8px;top:-60px;z-index:1000;background:var(--surf);color:var(--a1-ink);font-weight:700;padding:10px 16px;border:2px solid var(--a1);border-radius:10px;}
+    .skip-link:focus{top:8px;}
+    main:focus{outline:none;}
+    .dash-modal:focus{outline:none;}
     .req{font-weight:400;color:var(--mut);font-size:.9rem;}
     .fb-check{display:flex;gap:10px;align-items:center;min-height:44px;margin:8px 0;cursor:pointer;}
     .fb-check input{width:22px;height:22px;flex:none;}
@@ -451,7 +458,7 @@
       border-top:2px solid var(--border);background:var(--surf);padding:16px 24px;
       display:flex;justify-content:center;align-items:center;gap:8px 18px;flex-wrap:wrap;color:var(--mut);font-size:.92rem;
     }
-    .mission a,.mission button{color:var(--a1-ink);font-weight:600;background:none;border:none;text-decoration:underline;font-size:inherit;min-height:32px;}
+    .mission a,.mission button{color:var(--a1-ink);font-weight:600;background:none;border:none;text-decoration:underline;font-size:inherit;min-height:44px;display:inline-flex;align-items:center;padding:0 6px;}
 
     /* ── RESPONSIVE ──────────────────────── */
     @media(max-width:900px){
@@ -493,6 +500,7 @@
   </defs>
 </svg>
 
+<a class="skip-link" href="#main">Skip to the tools</a>
 <!-- ═══════════════════════════════ TOP BAR ══ -->
 <header class="topbar">
   <div class="logo">
@@ -507,6 +515,7 @@
   </nav>
 </header>
 
+<main id="main" tabindex="-1">
 <!-- ═══════════════════════════════ GREETING ══ -->
 <section class="hello page" id="hello">
   <div class="hello-ask" id="helloAsk">
@@ -575,7 +584,7 @@
     <div class="panel-head">
       <div class="ph-icon cy" id="ph-icon-in">🔬</div>
       <div>
-        <div class="ph-title" id="ph-title-in">Your Writing</div>
+        <div class="ph-title" id="ph-title-in" role="heading" aria-level="2">Your Writing</div>
         <div class="ph-sub" id="ph-sub-in">Paste your science writing</div>
       </div>
     </div>
@@ -785,7 +794,7 @@
     <div class="panel-head">
       <div class="ph-icon cy" id="ph-icon-out">📊</div>
       <div>
-        <div class="ph-title" id="ph-title-out">Your Feedback</div>
+        <div class="ph-title" id="ph-title-out" role="heading" aria-level="2">Your Feedback</div>
         <div class="ph-sub" id="ph-sub-out">What's working and what to try next</div>
       </div>
       <label class="fb-lang"><span>🌐 Feedback in</span>
@@ -805,10 +814,11 @@
   </div>
 
 </div>
+</main>
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.17.0</span>
+  <span>Free and open source · MIT License · v0.17.1</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -935,7 +945,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.17.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.17.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1176,6 +1186,44 @@
   function closeSettings() { document.getElementById('settingsOverlay').hidden = true; updateSetupUI(); }
   function openAbout() { document.getElementById('aboutOverlay').hidden = false; }
   function closeAbout() { document.getElementById('aboutOverlay').hidden = true; }
+
+  /* ── Windows (dialogs): when one opens, keyboard focus moves into it and stays there
+     while it is open (Tab wraps around); when it closes, focus goes back to the button
+     that opened it. Works for every .dash-overlay window without changing each one. ── */
+  const FOCUSABLE = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+  const dialogOpener = new WeakMap();
+  const overlayObserver = new MutationObserver(muts => {
+    muts.forEach(m => {
+      const o = m.target;
+      if (!o.classList || !o.classList.contains('dash-overlay')) return;
+      if (!o.hidden) {
+        if (!dialogOpener.has(o)) dialogOpener.set(o, document.activeElement);
+        setTimeout(() => {
+          const dlg = o.querySelector('[role="dialog"]');
+          if (!dlg || o.hidden || dlg.contains(document.activeElement)) return; // something inside already took focus
+          dlg.setAttribute('tabindex', '-1');
+          dlg.focus({ preventScroll: true });
+        }, 0);
+      } else if (dialogOpener.has(o)) {
+        const back = dialogOpener.get(o); dialogOpener.delete(o);
+        if (back && document.contains(back) && !back.hidden && typeof back.focus === 'function') back.focus({ preventScroll: true });
+      }
+    });
+  });
+  document.querySelectorAll('.dash-overlay').forEach(o => overlayObserver.observe(o, { attributes: true, attributeFilter: ['hidden'] }));
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Tab') return;
+    const o = [...document.querySelectorAll('.dash-overlay')].find(x => !x.hidden);
+    if (!o) return;
+    const dlg = o.querySelector('[role="dialog"]');
+    if (!dlg) return;
+    const items = [...dlg.querySelectorAll(FOCUSABLE)].filter(el => el.offsetParent !== null);
+    if (!items.length) { e.preventDefault(); dlg.focus(); return; }
+    const first = items[0], last = items[items.length - 1];
+    if (!dlg.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    else if (e.shiftKey && (document.activeElement === first || document.activeElement === dlg)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
@@ -1665,7 +1713,7 @@
   function starQuestionHtml(name, label) {
     const stars = [1, 2, 3, 4, 5].map(n =>
       `<label class="fb-star"><input type="radio" name="${name}" value="${n}" onchange="paintStars('${name}')"><span aria-hidden="true">★</span><span class="sr-only">${n} out of 5</span></label>`).join('');
-    return `<fieldset class="fb-q"><legend>${label}</legend><div class="fb-stars">${stars}</div><div class="fb-ends"><small>Not at all</small><small>Very</small></div></fieldset>`;
+    return `<fieldset class="fb-q"><legend>${label}</legend><div class="fb-rate"><div class="fb-stars">${stars}</div><div class="fb-ends"><small>Not at all</small><small>Very</small></div></div></fieldset>`;
   }
 
   function pillQuestionHtml(name, label, options) {
@@ -1708,7 +1756,7 @@
   // The fuller form: says who is answering, so the feedback can be checked and, with permission, quoted.
   function renderFeedbackFormV2() {
     document.getElementById('feedbackBody').innerHTML = `
-      <form id="feedbackForm" onsubmit="submitFeedback(event)" novalidate>
+      <form id="feedbackForm" onsubmit="submitFeedback(event)" oninput="updateFeedbackProgress()" onchange="updateFeedbackProgress()" novalidate>
         <p class="dash-note">For teachers and other adults (students: please ask your teacher). It takes about two minutes. Please don't write student names or student work.</p>
         <label class="fl" for="fbName">Your name <span class="req">(required)</span></label>
         <input type="text" id="fbName" class="t-input" maxlength="80" autocomplete="name" />
@@ -1731,10 +1779,24 @@
         <label class="fb-check"><input type="checkbox" id="fbQuoteNamed"> You may quote my comment with my name and organization</label>
         <label class="fb-check"><input type="checkbox" id="fbAskLetter"> You may email me to ask whether I'd write a short letter about the tool (no obligation)</label>
         <div class="fb-trap" aria-hidden="true"><label>Website <input type="text" id="fbWebsite" tabindex="-1" autocomplete="off" /></label></div>
-        <button type="submit" class="btn-main writing-btn" id="fbSend" style="margin-top:14px;">Send feedback</button>
+        <p class="fb-progress" id="fbProgress" role="status" aria-live="polite"></p>
+        <button type="submit" class="btn-main writing-btn" id="fbSend" style="margin-top:6px;">Send feedback</button>
         <div id="fbMsg" class="photo-msg" role="status"></div>
         <p class="dash-note">Your answers go to the STEM Bridge AI project team. We never ask for or store student information here.</p>
       </form>`;
+    updateFeedbackProgress();
+  }
+
+  // "3 of 6 required answers done" so a long form shows how much is left.
+  function updateFeedbackProgress() {
+    const el = document.getElementById('fbProgress');
+    if (!el || !document.getElementById('fbName')) return;
+    const checked = n => !!document.querySelector(`#feedbackForm input[name="${n}"]:checked`);
+    const filled = id => document.getElementById(id).value.trim() !== '';
+    const done = [filled('fbName'), checked('role'), filled('fbOrg'), filled('fbState'),
+      /^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(document.getElementById('fbContact').value.trim()), checked('tried')].filter(Boolean).length;
+    el.textContent = done === 6 ? 'All required answers are done. You can send.' : `${done} of 6 required answers done`;
+    el.classList.toggle('ok', done === 6);
   }
 
   async function submitFeedback(event) {

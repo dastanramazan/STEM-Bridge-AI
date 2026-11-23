@@ -10,6 +10,14 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.17.1] — 2026-11 — Easier to Read and Use with a Keyboard
+
+- **Colour contrast.** The main buttons (blue, purple and orange) now have white text that meets the WCAG AA contrast ratio; the green "Check this yourself" label and the empty rating stars are darker so they can be read.
+- **Keyboard and screen readers.** A "Skip to the tools" link is the first Tab stop; the page now has a main area; the two panel titles are headings. When a window (Settings, About, Rate this tool, Join a class, Teacher, Dashboard) opens, keyboard focus moves into it and stays inside until it closes, then returns to the button that opened it.
+- **Touch targets.** The footer links are 44 px tall, so they are easier to tap on a phone.
+- **Feedback form.** "Not at all" and "Very" now sit under the two ends of the star row, and the fuller form shows "n of 6 required answers done".
+- Not changed: the filled amber stars in the results are decorative (the level is also written in words next to them), so their colour stays as it is.
+
 ## [0.17.0] — 2026-11 — Feedback That Can Be Checked
 
 - **The "Rate this tool" form now says who is answering.** Name, role, school or organization, state, and email are required, and so is what the person tried (Science Writing, Coding Helper, Photo Check, or only looked at the site). Ratings and the comment are as before. Two optional permissions were added: quote the comment with the person's name and organization, and email them to ask whether they would write a short letter about the tool. The form tells people that their email is never shown publicly.
