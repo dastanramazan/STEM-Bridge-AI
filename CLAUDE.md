@@ -101,7 +101,10 @@ how student data is handled, `PRIVACY.md`.
   to verify in a textbook, notes, or with the teacher). Every student result
   shows the "Check this yourself" box and the "AI can make mistakes" note.
 - The Word file is built in the browser and never sent anywhere. The coding
-  tool's corrected code goes into it only after the student has revealed it.
+  tool gives no corrected code by default: `codeHelpPlan()` allows an example or a fix only for
+  an assignment whose teacher chose that help level (and never in "Explain an idea"). Code in a
+  reply the level does not allow is dropped before it reaches the page. A fix that is allowed goes
+  into the Word file only after the student has revealed it.
 
 ## Documentation rules
 
