@@ -2,12 +2,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.17.1-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.18.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A free, open-source AI tool designed to give K–12 students feedback on science writing, code, and handwritten work. Built for schools with limited resources: students need only a web browser, and a school needs only a Google account to run its own copy.**
 
-**Status (v0.17.1):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+**Status (v0.18.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
 ---
 
@@ -57,8 +57,8 @@ Provides grade-calibrated coding assistance for text-based programming languages
 | **Feedback modes** | Code Feedback, Concept Q&A, Debug Help |
 | **Languages** | Python, JavaScript, Java, Scratch, C++, SQL, VEXcode Blocks, VEXcode Python |
 | **Grade calibration** | Strict language complexity matching (grades 6-8 to 11-12) |
-| **Teaching style** | Guidance-first — explanations lead with hints; the corrected code stays hidden behind a "try it yourself first" reveal |
-| **Output** | Quality metrics, explanation, corrected code, learning next steps — with Read Aloud and progress-since-last-attempt comparison |
+| **Teaching style** | Guidance-first: hints, not finished code. By default the AI is not asked for corrected code at all. A teacher can set an assignment to "hints and an example of a similar problem" or "show the fix after 2 tries". "Explain an idea" never produces a fix |
+| **Output** | Quality metrics, explanation, hints, learning next steps (and, only if the teacher allows it, an example or the fix) — with Read Aloud and progress-since-last-attempt comparison |
 | **Population focus** | Rural and low-income students without CS specialist access |
 
 K-5 students are better served by block-based tools (Scratch, CodeMonkey) and are directed to Science Writing instead, which covers the full K-12 range.

@@ -10,6 +10,13 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.18.0] — 2026-11 — Hints by Default, Help Levels That Work
+
+- **Coding Helper no longer asks the AI for the answer by default.** Before, the AI always wrote a complete fix and the page only hid it behind a button (the code was still in the page). Now, in free practice and in "Explain an idea", no corrected code is requested, and if a reply contains code anyway it is dropped before it reaches the page.
+- **The teacher's help level for an assignment now changes what the AI does.** "Hints only": no code. "Hints and an example of a similar problem": a short example of a *different* problem, clearly labelled, never the student's fix. "Show the fix after 2 tries": no code for two checks, then the fix behind the reveal button; the student sees how many tries are counted, and the count is kept in that browser.
+- The sample result for Coding Helper shows no code, like a real answer.
+- Not yet checked: how closely the live model follows the "no code" instruction. The page does not depend on it, because it drops code the level does not allow.
+
 ## [0.17.1] — 2026-11 — Easier to Read and Use with a Keyboard
 
 - **Colour contrast.** The main buttons (blue, purple and orange) now have white text that meets the WCAG AA contrast ratio; the green "Check this yourself" label and the empty rating stars are darker so they can be read.
