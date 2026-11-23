@@ -10,6 +10,12 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.18.1] — 2026-11 — A Progress Panel You Can Trust
+
+- **"Progress Since Last Attempt" only compares a revision of the same work.** Before, it compared any two checks of the same kind, so a different essay, or the same text checked twice, could show "2 of 5 areas went down". Now the page keeps a fingerprint of the last text in the browser: the smallest 300 hash numbers of its three-word groups, from which the text cannot be read back. It is never sent anywhere or logged. Same text: a note that there is nothing new to compare. A revision: the comparison. A different piece of work: no comparison, and it becomes the new starting point.
+- **Small changes are "about the same".** The AI's scores move a little even on identical text, so a change of up to 10 points is shown as "about the same", and only larger changes are called an improvement or a drop.
+- A progress record saved by an older version is not used for a comparison. Photo Check has no progress panel, as before.
+
 ## [0.18.0] — 2026-11 — Hints by Default, Help Levels That Work
 
 - **Coding Helper no longer asks the AI for the answer by default.** Before, the AI always wrote a complete fix and the page only hid it behind a button (the code was still in the page). Now, in free practice and in "Explain an idea", no corrected code is requested, and if a reply contains code anyway it is dropped before it reaches the page.

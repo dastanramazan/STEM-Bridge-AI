@@ -818,7 +818,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.18.0</span>
+  <span>Free and open source · MIT License · v0.18.1</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -945,7 +945,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.18.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.18.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -2828,8 +2828,54 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     try { return JSON.parse(raw); } catch (e) { return null; }
   }
 
-  function savePrevAttempt(tool, matchDetail, scores) {
-    safeSet('local', prevAttemptKey(tool, matchDetail), JSON.stringify({ scores }));
+  function savePrevAttempt(tool, matchDetail, scores, fp) {
+    safeSet('local', prevAttemptKey(tool, matchDetail), JSON.stringify({ scores, fp: fp || [] }));
+  }
+
+  /* ── Is this a revision of the same work? ──
+     After each check the page keeps a "fingerprint" of the text in this browser only: the
+     smallest 300 hash numbers of its three-word groups. The text cannot be read back from it,
+     and it is never sent anywhere. Two fingerprints are compared to tell "the same text",
+     "a revision" (enough in common) and "a different piece of work". */
+  const FP_SIZE = 300;
+  function workFingerprint(text) {
+    const words = String(text || '').toLowerCase().normalize('NFKD').replace(/[^\p{L}\p{N}_]+/gu, ' ').trim().split(/\s+/).filter(Boolean);
+    if (words.length < 3) return [];
+    const set = new Set();
+    for (let i = 0; i + 2 < words.length; i++) {
+      const g = words[i] + ' ' + words[i + 1] + ' ' + words[i + 2];
+      let h = 2166136261;
+      for (let j = 0; j < g.length; j++) { h ^= g.charCodeAt(j); h = Math.imul(h, 16777619) >>> 0; }
+      set.add(h);
+    }
+    return [...set].sort((a, b) => a - b).slice(0, FP_SIZE);
+  }
+
+  function fingerprintSimilarity(a, b) {
+    if (!a.length || !b.length) return 0;
+    const A = new Set(a), B = new Set(b);
+    const union = [...new Set([...a, ...b])].sort((x, y) => x - y).slice(0, FP_SIZE);
+    let both = 0;
+    union.forEach(h => { if (A.has(h) && B.has(h)) both++; });
+    return both / union.length;
+  }
+
+  const SAME_WORK = 0.98;   // practically the same text
+  const REVISION = 0.3;     // enough in common to count as a revision of the same work
+  const NOISE = 10;         // the AI's scores move a little on the same text, so up to +/-10 is "about the same"
+
+  // Returns the progress panel (or a short note) for this check and remembers it for next time.
+  function progressFor(tool, matchDetail, text, currentScoreList) {
+    if (showingSample) return '';
+    const fp = workFingerprint(text);
+    const prev = getPrevAttempt(tool, matchDetail);
+    const sim = prev && Array.isArray(prev.fp) ? fingerprintSimilarity(prev.fp, fp) : 0;
+    if (prev && prev.fp && prev.fp.length && sim >= SAME_WORK) {
+      return '<div class="progress-panel"><div class="progress-summary">This is the same text you checked last time, so there is nothing new to compare. Change your work, then check it again to see your progress.</div></div>';
+    }
+    savePrevAttempt(tool, matchDetail, currentScoreList, fp);
+    if (!prev || !prev.fp || sim < REVISION) return ''; // first check, an older saved record, or a different piece of work
+    return renderProgressPanel(buildComparisonRows(prev.scores, currentScoreList));
   }
 
   function buildComparisonRows(prevScores, currentScores) {
@@ -2844,12 +2890,15 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
 
   function renderProgressPanel(rows) {
     if (!rows.length) return '';
-    const improved = rows.filter(r => r.delta > 0).length;
-    const declined = rows.filter(r => r.delta < 0).length;
+    const improved = rows.filter(r => r.delta > NOISE).length;
+    const declined = rows.filter(r => r.delta < -NOISE).length;
 
     const items = rows.map(r => {
-      const color = r.delta > 0 ? 'var(--a3)' : r.delta < 0 ? 'var(--err)' : 'var(--mut)';
-      const arrow = r.delta > 0 ? '▲' : r.delta < 0 ? '▼' : '‒';
+      if (Math.abs(r.delta) <= NOISE) {
+        return `<li><span>${escHtml(r.label)}</span><span>${r.prevScore} → ${r.currScore} <span class="progress-delta" style="color:var(--mut)">‒ about the same</span></span></li>`;
+      }
+      const color = r.delta > 0 ? 'var(--a3)' : 'var(--err)';
+      const arrow = r.delta > 0 ? '▲' : '▼';
       const sign = r.delta > 0 ? '+' : '';
       return `<li><span>${escHtml(r.label)}</span><span>${r.prevScore} → ${r.currScore} <span class="progress-delta" style="color:${color}">${arrow} ${sign}${r.delta}</span></span></li>`;
     }).join('');
@@ -2857,6 +2906,7 @@ I only want it to print 1 through 10 but it prints 0 through 9. Why does range s
     let summary;
     if (improved > declined) summary = `You improved in ${improved} of ${rows.length} area${rows.length === 1 ? '' : 's'} since your last attempt! 🎉`;
     else if (declined > improved) summary = `${declined} of ${rows.length} area${rows.length === 1 ? '' : 's'} went down compared to your last attempt — that can happen with a harder attempt or a different focus.`;
+    else if (improved > 0) summary = 'Some areas went up and some went down compared to your last attempt.';
     else summary = `Your scores are about the same as your last attempt.`;
 
     return `
@@ -3366,9 +3416,7 @@ Also give "checkYourself": one or two specific facts, claims, or steps (in the s
     setSpeechContent(speechParts.join('. '), grade === 'K-1' || grade === '2' || grade === '3-5');
 
     const currentScoreList = d.scores.map(s => ({ label: s.dimension, score: safeScore(s.score) }));
-    const prevAttempt = showingSample ? null : getPrevAttempt('writing', `${atype}::${grade}`);
-    const progressHtml = prevAttempt ? renderProgressPanel(buildComparisonRows(prevAttempt.scores, currentScoreList)) : '';
-    if (!showingSample) savePrevAttempt('writing', `${atype}::${grade}`, currentScoreList);
+    const progressHtml = progressFor('writing', `${atype}::${grade}`, document.getElementById('writingText').value, currentScoreList);
 
     lastFeedback = writingFeedbackModel(d, getStudentName(), 'Science Writing',
       [['Assignment', selText('assignType')], ['Grade', selText('gradeW')]],
@@ -3525,9 +3573,7 @@ ${codeSchemaLine(plan)}  "nextStep": ["<concrete learning next step 1>","<concre
       correctness > 0 ? { label: 'Correctness', score: correctness } : null,
       { label: 'Grade Readiness', score: gradeReadiness }
     ].filter(Boolean);
-    const prevAttempt = showingSample ? null : getPrevAttempt('coding', matchDetail);
-    const progressHtml = prevAttempt ? renderProgressPanel(buildComparisonRows(prevAttempt.scores, currentScoreList)) : '';
-    if (!showingSample) savePrevAttempt('coding', matchDetail, currentScoreList);
+    const progressHtml = progressFor('coding', matchDetail, document.getElementById('codingText').value, currentScoreList);
 
     lastFeedback = codingFeedbackModel(d, getStudentName());
     document.getElementById('output-body').innerHTML = `
