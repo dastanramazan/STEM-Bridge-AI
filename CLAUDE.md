@@ -31,6 +31,8 @@ how student data is handled, `PRIVACY.md`.
   who joined a class, the class code and assignment id. Never log student writing,
   code, test answers, or photos, and don't add raw-submission logging
   without an explicit, separate ask.
+- The progress panel keeps only numbers in the browser (scores and a hash fingerprint of the last
+  text); never store or send the text itself for it.
 - Photos, live-camera frames, and answer keys stay in the browser (page memory / the teacher's
   `localStorage`); never persist photos or send keys to a server or Sheet.
 - Test results log only a percent in the score column; points and the test
