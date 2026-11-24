@@ -818,7 +818,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.18.1</span>
+  <span>Free and open source · MIT License · v0.18.2</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -945,7 +945,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.18.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.18.2 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
     </div>
   </div>
 </div>
@@ -1251,12 +1251,16 @@
     return saved && /^https:\/\/script\.google\.com\/(?:a\/macros\/[A-Za-z0-9.\-]+\/|macros\/)s\/[A-Za-z0-9_\-]{20,}\/exec$/.test(saved) ? saved : DEFAULT_LOG_ENDPOINT;
   })();
 
+  // The model that answered the last request, written to the log next to the scores so a score can be traced to a model.
+  let lastModelUsed = '';
+  function modelNameForLog(name) { return String(name || '').replace(/[^A-Za-z0-9._\-]/g, '').slice(0, 40); }
+
   function logUsage(payload) {
     if (!LOG_ENDPOINT) return;
     fetch(LOG_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
-      body: JSON.stringify({ action: 'log', device: getDeviceCode(), ...classLogFields(payload.tool), ...payload })
+      body: JSON.stringify({ action: 'log', device: getDeviceCode(), ...classLogFields(payload.tool), ...(lastModelUsed ? { model: lastModelUsed } : {}), ...payload })
     }).catch(() => { /* logging is best-effort; never interrupt the student's feedback */ });
   }
 
@@ -4691,6 +4695,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     if (!data.content?.[0]?.text) {
       throw new Error(friendlyError(ANTHROPIC_FRIENDLY_ERRORS, data?.error?.type, data?.error?.message));
     }
+    lastModelUsed = modelNameForLog(data.model || ANTHROPIC_MODEL);
     return data.content[0].text;
   }
 
@@ -4717,6 +4722,7 @@ Return ONLY valid JSON (no markdown, no preamble):
     if (!text) {
       throw geminiError(data);
     }
+    lastModelUsed = modelNameForLog(data.modelVersion || GEMINI_MODEL);
     return text;
   }
 
@@ -4740,6 +4746,7 @@ Return ONLY valid JSON (no markdown, no preamble):
       if (data?.error?.status === 'DAILY_LIMIT' || data?.error?.status === 'NOT_CONFIGURED') throw new Error(data.error.message);
       throw geminiError(data);
     }
+    lastModelUsed = modelNameForLog(data._stemModel); // the school script says which model answered
     return text;
   }
 

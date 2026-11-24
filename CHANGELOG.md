@@ -10,6 +10,13 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.18.2] — 2026-11 — Which Model Gave That Score
+
+- **The usage log now says which AI model answered.** The school script adds the name of the model that actually answered (Gemini's own `modelVersion`, or the model it asked for, including a fallback when the main one was busy) to the reply, the page sends it with the usage record, and the Log tab gets a new **Model** column next to the scores. Before, `gemini-flash-latest` could change under the school without any sign in the Sheet.
+- The model name is not personal information and no text of the student's work is logged. Records from an older script simply have no model. An older Log tab gets the header name for the new column automatically.
+- Not changed: the main model is still the `gemini-flash-latest` alias, so it can still change on Google's side; the log now shows when it does.
+- **School script 0.18.2.** Update it (new `Code.gs`, then Deploy → New version) to get the Model column.
+
 ## [0.18.1] — 2026-11 — A Progress Panel You Can Trust
 
 - **"Progress Since Last Attempt" only compares a revision of the same work.** Before, it compared any two checks of the same kind, so a different essay, or the same text checked twice, could show "2 of 5 areas went down". Now the page keeps a fingerprint of the last text in the browser: the smallest 300 hash numbers of its three-word groups, from which the text cannot be read back. It is never sent anywhere or logged. Same text: a note that there is nothing new to compare. A revision: the comparison. A different piece of work: no comparison, and it becomes the new starting point.

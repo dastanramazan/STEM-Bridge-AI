@@ -11,7 +11,7 @@ how student data is handled, `PRIVACY.md`.
 - **Default AI access goes through the teacher's own Apps Script proxy**
   (`LOG_ENDPOINT`, script at `google-apps-script/Code.gs`), which holds the
   Gemini key and calls Gemini itself, passing the response through
-  unchanged. With "Use our own AI key" in Settings the browser calls
+  unchanged except for one added field, `_stemModel` (the model that answered). With "Use our own AI key" in Settings the browser calls
   Anthropic or Gemini directly with the visitor's own key, kept only in
   `sessionStorage`.
 - **Never put a real secret in `index.html`** or any committed file. The
@@ -28,7 +28,7 @@ how student data is handled, `PRIVACY.md`.
 
 - Log only names, timestamps, tool, scores, the random device code (a
   pseudonymous hint, never an IP address or device details), and, for a student
-  who joined a class, the class code and assignment id. Never log student writing,
+  who joined a class, the class code and assignment id, plus the name of the AI model that answered. Never log student writing,
   code, test answers, or photos, and don't add raw-submission logging
   without an explicit, separate ask.
 - The progress panel keeps only numbers in the browser (scores and a hash fingerprint of the last
