@@ -141,9 +141,20 @@ function handleGenerate_(data) {
   // on failure), so no client-side parsing changes needed. If we never got
   // any response at all (network-level failure), fake the same error shape
   // so the app shows its friendly "busy" message instead of a generic one.
-  const text = response
+  let text = response
     ? response.getContentText()
     : JSON.stringify({ error: { code: 503, status: 'UNAVAILABLE', message: 'Could not reach the AI service.' } });
+  // On success, say which model answered (Gemini's own modelVersion, or the name we asked for), so the page can
+  // log it next to the scores. Everything else in the reply is left exactly as Gemini sent it.
+  if (response && response.getResponseCode() === 200 && trace.length) {
+    try {
+      const parsed = JSON.parse(text);
+      if (parsed && typeof parsed === 'object') {
+        parsed._stemModel = cleanModelName_(parsed.modelVersion) || cleanModelName_(trace[trace.length - 1].model);
+        text = JSON.stringify(parsed);
+      }
+    } catch (e) { /* not JSON: pass it through untouched */ }
+  }
   if (!response || response.getResponseCode() !== 200) {
     releaseAnalysis_(data.name); // a failed attempt shouldn't use up the student's allowance
   }
@@ -261,7 +272,8 @@ function handleLog_(data) {
     scores[4] ?? '',
     cleanDeviceCode_(data.device),
     cleanClassCode_(data.classCode),
-    cleanId_(data.assignmentId)
+    cleanId_(data.assignmentId),
+    cleanModelName_(data.model)
   ]);
 
   return ContentService.createTextOutput(JSON.stringify({ ok: true }))
@@ -280,6 +292,11 @@ function cleanClassCode_(value) {
   if (code.length !== 4) return '';
   for (let i = 0; i < 4; i++) if (CLASS_CODE_ALPHABET.indexOf(code.charAt(i)) === -1) return '';
   return code;
+}
+
+// A model name such as gemini-2.5-flash or claude-sonnet-5-5: letters, digits and . - _ only.
+function cleanModelName_(value) {
+  return String(value || '').replace(/[^A-Za-z0-9._\-]/g, '').slice(0, 40);
 }
 
 // Ids made by this script are short hex strings; keep only that.
@@ -349,7 +366,8 @@ function doGet(e) {
       scores: [r[5], r[6], r[7], r[8], r[9]].filter(v => v !== ''),
       device: String(r[10] || ''),
       classCode: String(r[11] || ''),
-      assignmentId: String(r[12] || '')
+      assignmentId: String(r[12] || ''),
+      model: String(r[13] || '')
     }));
 
   return ContentService.createTextOutput(JSON.stringify({ entries }))
@@ -385,16 +403,18 @@ function getLogSheet_() {
   // literal "Timestamp" value rather than assuming it's always row 1,
   // so this only guards readability, not correctness.
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5', 'Device', 'Class', 'Assignment']);
-  } else if (sheet.getRange(1, 1).getValue() === 'Timestamp' && sheet.getRange(1, 12).getValue() === '') {
-    // An older Log tab: name the two columns added for classes.
-    sheet.getRange(1, 12, 1, 2).setValues([['Class', 'Assignment']]);
+    sheet.appendRow(['Timestamp', 'Student', 'Tool', 'Detail', 'Grade', 'Score 1', 'Score 2', 'Score 3', 'Score 4', 'Score 5', 'Device', 'Class', 'Assignment', 'Model']);
+  } else if (sheet.getRange(1, 1).getValue() === 'Timestamp' && sheet.getRange(1, 14).getValue() === '') {
+    // An older Log tab: name the columns added later (class, assignment, model) that are still missing.
+    const names = ['Class', 'Assignment', 'Model'];
+    const first = sheet.getRange(1, 12).getValue() === '' ? 0 : (sheet.getRange(1, 13).getValue() === '' ? 1 : 2);
+    sheet.getRange(1, 12 + first, 1, 3 - first).setValues([names.slice(first)]);
   }
   // Force the text columns to plain text. Without this, Sheets' automatic
   // formatting silently reinterprets values like "6-8" or "9-10" as dates
   // (e.g. "September 10"), corrupting the grade level on every write.
   sheet.getRange('B:E').setNumberFormat('@');
-  sheet.getRange('K:M').setNumberFormat('@'); // device codes like 2345, class codes and assignment ids must stay text
+  sheet.getRange('K:N').setNumberFormat('@'); // device codes like 2345, class codes, assignment ids and model names must stay text
   return sheet;
 }
 
@@ -711,7 +731,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.17.0';
+const SCRIPT_VERSION = '0.18.2';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
