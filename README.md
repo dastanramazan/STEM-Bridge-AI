@@ -2,12 +2,12 @@
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Active-brightgreen)](https://dastanramazan.github.io/STEM-Bridge-AI/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.18.3-cyan)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.19.0-cyan)](CHANGELOG.md)
 [![Open Source](https://img.shields.io/badge/Open%20Source-Free%20for%20Schools-orange)](LICENSE)
 
 > **A free, open-source AI tool designed to give K–12 students feedback on science writing, code, and handwritten work. Built for schools with limited resources: students need only a web browser, and a school needs only a Google account to run its own copy.**
 
-**Status (v0.18.3):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
+**Status (v0.19.0):** working and publicly deployed. It has been built and tested by its developer, but it has not yet had a classroom pilot, so there is no data yet on learning outcomes. See the [Roadmap](#️-roadmap) for what comes next and [PRIVACY.md](PRIVACY.md) for how student data is handled.
 
 ---
 
@@ -29,7 +29,7 @@ STEM Bridge AI is designed to help with both in a single, free, open-source tool
 
 No signup and no account. Free to use, on any device with a browser.
 
-Good to know: the shared free AI connection has daily limits (10 analyses per student and 100 per class per day), and Google's free Gemini tier is sometimes busy, so a request can occasionally need a retry. Teachers who photograph student work should use a paid Gemini key — see [TEACHER_SETUP.md](TEACHER_SETUP.md) and [PRIVACY.md](PRIVACY.md).
+Good to know: the shared free AI connection has daily limits (by default 10 checks per student, 50 per computer, 100 per class, and 100 for the whole school each day; a school can change these numbers), and Google's free Gemini tier is sometimes busy, so a request can occasionally need a retry. Teachers who photograph student work should use a paid Gemini key — see [TEACHER_SETUP.md](TEACHER_SETUP.md) and [PRIVACY.md](PRIVACY.md).
 
 ---
 

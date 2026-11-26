@@ -829,7 +829,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.18.3</span>
+  <span>Free and open source · MIT License · v0.19.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();openPrivacy()">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -994,7 +994,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.18.3 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();closeAbout();openPrivacy()">Privacy at a glance</a></p>
+      <p>Version 0.19.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();closeAbout();openPrivacy()">Privacy at a glance</a></p>
     </div>
   </div>
 </div>
@@ -4796,7 +4796,9 @@ Return ONLY valid JSON (no markdown, no preamble):
       headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoids a CORS preflight Apps Script can't answer
       body: JSON.stringify({
         action: 'generate',
-        name: opts.limitName || getStudentName(), // the daily limit is counted per this name
+        name: opts.limitName || getStudentName(), // the daily limit is counted per this name...
+        device: getDeviceCode(),                   // ...and per this browser's random device code...
+        ...(joinedClass ? { classCode: joinedClass.code } : {}), // ...and for the class the student joined
         system, userContent,
         ...(images.length ? { images } : {})
       })

@@ -46,8 +46,19 @@ const MAX_RETRY_WINDOW_MS = 30000; // don't START a new attempt after this; the 
 // Daily limits on the default (shared-key) connection, counted per calendar
 // day in the script's time zone. Only analyses that actually succeed use up
 // the allowance. Students who bring their own API key never touch this.
+// A check counts against: the student (name + device code), the device, the class (when the student joined
+// one), and the whole school. The first limit reached stops the request. A school can change the numbers in
+// the Sheet menu form (STEM Bridge AI > Set up); these are the standard ones.
 const DAILY_LIMIT_PER_STUDENT = 10;
-const DAILY_LIMIT_TOTAL = 100;
+const DAILY_LIMIT_PER_DEVICE = 50;   // room for a shared cart device that several students use in a day
+const DAILY_LIMIT_PER_CLASS = 100;
+const DAILY_LIMIT_TOTAL = 100;       // the whole school, all classes together
+const LIMIT_SETTINGS = {             // kind: [setting name, standard value, lowest allowed, highest allowed]
+  student: ['LIMIT_STUDENT', DAILY_LIMIT_PER_STUDENT, 1, 200],
+  device: ['LIMIT_DEVICE', DAILY_LIMIT_PER_DEVICE, 1, 1000],
+  class: ['LIMIT_CLASS', DAILY_LIMIT_PER_CLASS, 1, 2000],
+  school: ['LIMIT_SCHOOL', DAILY_LIMIT_TOTAL, 1, 10000]
+};
 // Photo Check: how many page photos one request may carry, and how big each
 // (base64 text) may be. The app already shrinks photos well below this.
 const MAX_IMAGES = 4;
@@ -99,7 +110,8 @@ function handleGenerate_(data) {
     return jsonOutput_({ error: { code: 400, status: 'NOT_CONFIGURED', message: "This school's AI key isn't set up yet. Please ask your administrator to finish the setup (Google Sheet menu: STEM Bridge AI > Set up)." } });
   }
 
-  const limitError = reserveAnalysis_(data.name);
+  const who = { name: data.name, device: cleanDeviceCode_(data.device), classCode: cleanClassCode_(data.classCode) };
+  const limitError = reserveAnalysis_(who);
   if (limitError) {
     return jsonOutput_({ error: { code: 429, status: 'DAILY_LIMIT', message: limitError } });
   }
@@ -156,7 +168,7 @@ function handleGenerate_(data) {
     } catch (e) { /* not JSON: pass it through untouched */ }
   }
   if (!response || response.getResponseCode() !== 200) {
-    releaseAnalysis_(data.name); // a failed attempt shouldn't use up the student's allowance
+    releaseAnalysis_(who); // a failed attempt shouldn't use up anyone's allowance
   }
   return ContentService.createTextOutput(text)
     .setMimeType(ContentService.MimeType.JSON);
@@ -187,38 +199,50 @@ function jsonOutput_(obj) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// Checks the daily limits and, if there is room, counts this analysis
-// straight away. Returns an error message when a limit is hit, else null.
-function reserveAnalysis_(name) {
+// The limit for one kind of counter: the school's own number if it saved one, else the standard one.
+function getLimit_(kind) {
+  const spec = LIMIT_SETTINGS[kind];
+  const v = parseInt(getSetting_(spec[0], ''), 10);
+  return v >= spec[2] && v <= spec[3] ? v : spec[1];
+}
+
+// Checks the daily limits and, if there is room, counts this analysis straight away
+// against the student, the device, the class and the school. Returns an error message
+// when a limit is hit, else null. "who" is { name, device, classCode }; a plain name
+// (from an older page) still works and is then counted per name and for the school only.
+function reserveAnalysis_(who) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
     const props = PropertiesService.getScriptProperties();
-    const keys = limitKeys_(name);
+    const keys = limitKeys_(who);
     pruneOldCounters_(props, keys.day);
-    const total = Number(props.getProperty(keys.total) || 0);
-    const mine = Number(props.getProperty(keys.student) || 0);
-    if (mine >= DAILY_LIMIT_PER_STUDENT) {
-      return `You've used all ${DAILY_LIMIT_PER_STUDENT} analyses for today. Come back tomorrow!`;
+    const used = k => Number(props.getProperty(k) || 0);
+    if (used(keys.student) >= getLimit_('student')) {
+      return `You've used all ${getLimit_('student')} analyses for today. Come back tomorrow!`;
     }
-    if (total >= DAILY_LIMIT_TOTAL) {
-      return 'The class has reached today\'s limit for the free AI connection. Please try again tomorrow.';
+    if (keys.device && used(keys.device) >= getLimit_('device')) {
+      return "This computer has reached today's limit for the free AI connection. Please try again tomorrow.";
     }
-    props.setProperty(keys.student, String(mine + 1));
-    props.setProperty(keys.total, String(total + 1));
+    if (keys.classKey && used(keys.classKey) >= getLimit_('class')) {
+      return "Your class has used all of today's checks for the free AI connection. Please ask your teacher.";
+    }
+    if (used(keys.total) >= getLimit_('school')) {
+      return "Your school has reached today's limit for the free AI connection. Please try again tomorrow.";
+    }
+    keys.all.forEach(k => props.setProperty(k, String(used(k) + 1)));
     return null;
   } finally {
     lock.releaseLock();
   }
 }
 
-function releaseAnalysis_(name) {
+function releaseAnalysis_(who) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
     const props = PropertiesService.getScriptProperties();
-    const keys = limitKeys_(name);
-    [keys.student, keys.total].forEach(k => {
+    limitKeys_(who).all.forEach(k => {
       const n = Number(props.getProperty(k) || 0);
       if (n > 0) props.setProperty(k, String(n - 1));
     });
@@ -227,10 +251,36 @@ function releaseAnalysis_(name) {
   }
 }
 
-function limitKeys_(name) {
+// True when this code belongs to a class in the Classes tab. Only a real class gets its own counter, so
+// made-up codes can't be used to start a fresh allowance. Never creates the tab.
+function classIsReal_(code) {
+  if (!code) return false;
+  try {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Classes');
+    if (!sheet) return false;
+    const rows = sheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (String(rows[i][1]) === code && String(rows[i][6]) !== 'yes') return true;
+    }
+  } catch (e) { /* no classes: no class counter */ }
+  return false;
+}
+
+function limitKeys_(who) {
+  const w = typeof who === 'string' || who === undefined || who === null ? { name: who } : who;
   const day = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
-  const who = String(name || '(unknown)').trim().toLowerCase().slice(0, 60) || '(unknown)';
-  return { day: day, total: `count|${day}|*total*`, student: `count|${day}|${who}` };
+  const name = String(w.name || '(unknown)').trim().toLowerCase().slice(0, 60) || '(unknown)';
+  const device = cleanDeviceCode_(w.device);
+  const classCode = cleanClassCode_(w.classCode);
+  const keys = {
+    day: day,
+    total: `count|${day}|*total*`,
+    student: device ? `count|${day}|${name}|${device}` : `count|${day}|${name}`,
+    device: device ? `count|${day}|*device*|${device}` : '',
+    classKey: classIsReal_(classCode) ? `count|${day}|*class*|${classCode}` : ''
+  };
+  keys.all = [keys.student, keys.device, keys.classKey, keys.total].filter(Boolean);
+  return keys;
 }
 
 // Drops counters from earlier days so the script's property store stays small.
@@ -731,7 +781,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.18.2';
+const SCRIPT_VERSION = '0.19.0';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
@@ -814,7 +864,8 @@ function checkGeminiKey_(key) {
 function getSetupStatus() {
   return Object.assign(schoolInfo_(), {
     domains: getAllowedDomains_().join(', '),
-    webAppUrl: webAppUrl_()
+    webAppUrl: webAppUrl_(),
+    limits: { student: getLimit_('student'), device: getLimit_('device'), class: getLimit_('class'), school: getLimit_('school') }
   });
 }
 
@@ -856,6 +907,19 @@ function saveSetup(form) {
     setSetting_('ALLOWED_TEACHER_DOMAINS', domains.join(','));
   }
 
+  // Daily limits: an empty box keeps the saved number, 0 goes back to the standard one.
+  if (form.limits && typeof form.limits === 'object') {
+    Object.keys(LIMIT_SETTINGS).forEach(kind => {
+      const raw = String(form.limits[kind] === undefined || form.limits[kind] === null ? '' : form.limits[kind]).trim();
+      if (raw === '') return;
+      const spec = LIMIT_SETTINGS[kind];
+      const n = /^\d{1,6}$/.test(raw) ? parseInt(raw, 10) : NaN;
+      if (n === 0) { setSetting_(spec[0], ''); notes.push(`The ${kind} limit is back to the standard ${spec[1]}.`); }
+      else if (n >= spec[2] && n <= spec[3]) { setSetting_(spec[0], String(n)); notes.push(`The ${kind} limit is now ${n} a day.`); }
+      else problems.push(`The ${kind} limit must be a whole number from ${spec[2]} to ${spec[3]} (or 0 for the standard ${spec[1]}).`);
+    });
+  }
+
   return Object.assign(getSetupStatus(), { problems: problems, notes: notes });
 }
 
@@ -884,6 +948,11 @@ function setupDialogHtml_() {
     + '<label for="pin">Teacher PIN</label><input id="pin" type="password" autocomplete="off" placeholder="Leave empty to keep the current PIN"><small>4 or more characters, no spaces. Only you should know it.</small>'
     + '<label for="key">AI key (Google Gemini)</label><input id="key" type="password" autocomplete="off" placeholder="Leave empty to keep the current key"><small>Free: get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> (sign in, click Create API key).</small>'
     + '<label for="domains">School email domains (optional)</label><input id="domains" placeholder="myschool.org"><small>Anyone with a Google account on these domains may sign in as a teacher. Leave empty to add teachers one by one.</small>'
+    + '<h3>Daily limits (optional)</h3><small>How many AI checks the free shared connection allows each day. Leave a box alone to keep it. Enter 0 for the standard number. Your AI key has its own spending limit at Google, which still applies.</small>'
+    + '<label for="lim_student">Per student</label><input id="lim_student" inputmode="numeric" maxlength="6">'
+    + '<label for="lim_device">Per computer</label><input id="lim_device" inputmode="numeric" maxlength="6">'
+    + '<label for="lim_class">Per class</label><input id="lim_class" inputmode="numeric" maxlength="6">'
+    + '<label for="lim_school">Whole school</label><input id="lim_school" inputmode="numeric" maxlength="6">'
     + '<button id="save">Save</button><div id="result"></div>'
     + '<div id="next" class="box" style="display:none"><b>Last step: publish it</b><ol>'
     + '<li>Close this window. Click <b>Extensions → Apps Script</b>.</li>'
@@ -895,13 +964,13 @@ function setupDialogHtml_() {
     + 'function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}'
     + 'function show(s){var h="<b>Your setup</b>"+line(s.setup.pin,s.setup.pin?"Teacher PIN is set":"Teacher PIN is not set yet")+line(s.setup.aiKey,s.setup.aiKey?"AI key is set":"AI key is not set yet")+line(s.setup.teacherSignIn,s.setup.teacherSignIn?"Teacher sign-in is available":"Teacher sign-in is off (optional)");'
     + 'h+=s.webAppUrl?"<div>Your school address:<br><code>"+esc(s.webAppUrl)+"</code></div>":"<div>Not published yet. See the last step below.</div>";document.getElementById("status").innerHTML=h;'
-    + 'document.getElementById("school").placeholder=s.school||document.getElementById("school").placeholder;document.getElementById("domains").value=s.domains||"";'
+    + 'document.getElementById("school").placeholder=s.school||document.getElementById("school").placeholder;document.getElementById("domains").value=s.domains||"";["student","device","class","school"].forEach(function(k){document.getElementById("lim_"+k).value=s.limits[k];});'
     + 'if(s.setup.pin&&s.setup.aiKey)document.getElementById("next").style.display="block";}'
     + 'google.script.run.withSuccessHandler(show).getSetupStatus();'
     + 'document.getElementById("save").onclick=function(){var b=this;b.disabled=true;document.getElementById("result").innerHTML="Saving…";'
     + 'google.script.run.withSuccessHandler(function(s){b.disabled=false;var h="";(s.notes||[]).forEach(function(n){h+=line(true,esc(n));});(s.problems||[]).forEach(function(p){h+=line(false,esc(p));});document.getElementById("result").innerHTML=h;document.getElementById("pin").value="";document.getElementById("key").value="";show(s);})'
     + '.withFailureHandler(function(e){b.disabled=false;document.getElementById("result").innerHTML=line(false,esc(e.message||e));})'
-    + '.saveSetup({school:document.getElementById("school").value,pin:document.getElementById("pin").value,key:document.getElementById("key").value,domains:document.getElementById("domains").value});};'
+    + '.saveSetup({school:document.getElementById("school").value,pin:document.getElementById("pin").value,key:document.getElementById("key").value,domains:document.getElementById("domains").value,limits:{student:document.getElementById("lim_student").value,device:document.getElementById("lim_device").value,class:document.getElementById("lim_class").value,school:document.getElementById("lim_school").value}});};'
     + '</script></body></html>';
 }
 
