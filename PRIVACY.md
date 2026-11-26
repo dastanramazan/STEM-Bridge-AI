@@ -9,6 +9,25 @@ review and for any parental consent they require.
 
 The app has no accounts and no passwords. It collects as little as it can.
 
+## At a glance
+
+*The same summary is shown on the site under **Privacy** in the footer, where it can be printed.*
+
+**For teachers and school administrators.** This is not legal advice and not a FERPA or COPPA certification. Each school decides whether this tool fits its rules.
+
+- **What students enter.** A first name (saved only in their own browser) and their writing, code, or a photo of paper work.
+- **Where it goes.** Through your school's own Google Apps Script to Google's Gemini AI, which writes the feedback. This app does not save it. If someone chooses "Use our own AI key", their browser sends it straight to Anthropic or Google.
+- **What your school's Google Sheet records.** Name, date and time, tool, grade band, scores, the class code and assignment (if the student joined a class), a random device code, and the name of the AI model. Never the writing, code, photos, or answer keys.
+- **What stays on the device.** The name, last scores, a number-only fingerprint used for the progress panel, and a teacher's answer keys and class list. Photos exist only in memory while in use.
+- **Accounts.** None for students. Teachers may sign in with Google; their email, name, classes, and assignments are kept in your school's Sheet.
+- **The AI provider matters most.** As far as we know, Google's free Gemini tier may use submitted content to improve its products, while paid tiers do not. Check Google's current terms. For real student work, especially photos, use a paid or district-approved key.
+- **No ads, analytics, or trackers.** GitHub, which hosts the page, sees ordinary visit logs such as IP addresses.
+- **Before using it with students.** Use a paid or district-approved AI key. Get any consent your school requires, especially for students under 13. Photograph only the page: no faces, and cover names. Delete Sheet rows when you no longer need them.
+- **Deleting data.** Delete the rows in your Sheet. Clear the browser's site data. For anything an AI provider received, follow that provider's deletion process.
+
+The details follow.
+
+
 ## What is collected and where it goes
 
 | What | Where it goes | Kept? |

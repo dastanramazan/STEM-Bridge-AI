@@ -424,6 +424,17 @@
     .fb-ends small{font-size:.875rem;}
     .fb-progress{margin:12px 0 0;font-weight:700;color:var(--mut);}
     .fb-progress.ok{color:var(--ok-ink);}
+    .privacy-sheet h3{font-size:1rem;margin:14px 0 2px;}
+    .privacy-sheet p{margin:0 0 6px;line-height:1.55;}
+    .privacy-checks{list-style:none;margin:4px 0 0;padding:0;line-height:1.7;}
+    @media print{
+      .print-privacy > *:not(#privacyOverlay){display:none !important;}
+      .print-privacy #privacyOverlay{position:static;display:block;background:none;padding:0;overflow:visible;}
+      .print-privacy #privacyOverlay .dash-modal{max-width:none;border:0;box-shadow:none;border-radius:0;overflow:visible;}
+      .print-privacy .no-print{display:none !important;}
+      .print-privacy,.print-privacy .dash-modal,.print-privacy .dash-head{background:#fff;color:#000;}
+      .print-privacy .dash-head{border-bottom:2px solid #000;}
+    }
     .skip-link{position:absolute;left:8px;top:-60px;z-index:1000;background:var(--surf);color:var(--a1-ink);font-weight:700;padding:10px 16px;border:2px solid var(--a1);border-radius:10px;}
     .skip-link:focus{top:8px;}
     main:focus{outline:none;}
@@ -818,9 +829,9 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.18.2</span>
+  <span>Free and open source · MIT License · v0.18.3</span>
   <button type="button" onclick="openAbout()">About</button>
-  <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a>
+  <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();openPrivacy()">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
   <button type="button" onclick="openFeedback()">💬 Rate this tool</button>
 </footer>
@@ -841,6 +852,44 @@
       <button class="dash-close" type="button" onclick="closeJoinClass()" aria-label="Close">✕</button>
     </div>
     <div class="dash-body" id="classJoinBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ PRIVACY AT A GLANCE ══ -->
+<div class="dash-overlay" id="privacyOverlay" hidden>
+  <div class="dash-modal" role="dialog" aria-modal="true" aria-labelledby="privacyTitle">
+    <div class="dash-head">
+      <span id="privacyTitle">Privacy at a glance</span>
+      <button class="dash-close no-print" type="button" onclick="closePrivacy()" aria-label="Close privacy summary">✕</button>
+    </div>
+    <div class="dash-body privacy-sheet">
+      <p class="dash-note"><b>For teachers and school administrators.</b> This is not legal advice and not a FERPA or COPPA certification. Each school decides whether this tool fits its rules.</p>
+      <h3>What students enter</h3>
+      <p>A first name (saved only in their own browser) and their writing, code, or a photo of paper work.</p>
+      <h3>Where it goes</h3>
+      <p>Through your school's own Google Apps Script to Google's Gemini AI, which writes the feedback. This app does not save it. If someone chooses "Use our own AI key", their browser sends it straight to Anthropic or Google.</p>
+      <h3>What your school's Google Sheet records</h3>
+      <p>Name, date and time, tool, grade band, scores, the class code and assignment (if the student joined a class), a random device code, and the name of the AI model. Never the writing, code, photos, or answer keys.</p>
+      <h3>What stays on the device</h3>
+      <p>The name, last scores, a number-only fingerprint used for the progress panel, and a teacher's answer keys and class list. Photos exist only in memory while in use.</p>
+      <h3>Accounts</h3>
+      <p>None for students. Teachers may sign in with Google; their email, name, classes, and assignments are kept in your school's Sheet.</p>
+      <h3>The AI provider matters most</h3>
+      <p>As far as we know, Google's free Gemini tier may use submitted content to improve its products, while paid tiers do not. Check Google's current terms. For real student work, especially photos, use a paid or district-approved key.</p>
+      <h3>No ads, analytics, or trackers</h3>
+      <p>GitHub, which hosts the page, sees ordinary visit logs such as IP addresses.</p>
+      <h3>Before using it with students</h3>
+      <ul class="privacy-checks">
+        <li>☐ Use a paid or district-approved AI key.</li>
+        <li>☐ Get any consent your school requires, especially for students under 13.</li>
+        <li>☐ Photograph only the page: no faces, and cover names.</li>
+        <li>☐ Delete Sheet rows when you no longer need them.</li>
+      </ul>
+      <h3>Deleting data</h3>
+      <p>Delete the rows in your Sheet. Clear the browser's site data. For anything an AI provider received, follow that provider's deletion process.</p>
+      <p>Full policy: <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">PRIVACY.md on GitHub</a>. Questions: dastanramazan@gmail.com</p>
+      <div class="photo-actions no-print"><button type="button" class="apikey-btn" onclick="printPrivacy()">🖨️ Print / Save as PDF</button></div>
+    </div>
   </div>
 </div>
 
@@ -945,7 +994,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.18.2 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy</a></p>
+      <p>Version 0.18.3 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();closeAbout();openPrivacy()">Privacy at a glance</a></p>
     </div>
   </div>
 </div>
@@ -1184,6 +1233,17 @@
     document.getElementById('useOwnKeyToggle').focus();
   }
   function closeSettings() { document.getElementById('settingsOverlay').hidden = true; updateSetupUI(); }
+  function openPrivacy() { document.getElementById('privacyOverlay').hidden = false; }
+  function closePrivacy() { document.getElementById('privacyOverlay').hidden = true; }
+  // Prints only the privacy sheet (the rest of the page is hidden by a print style while this runs).
+  function printPrivacy() {
+    document.body.classList.add('print-privacy');
+    const done = () => { document.body.classList.remove('print-privacy'); window.removeEventListener('afterprint', done); };
+    window.addEventListener('afterprint', done);
+    window.print();
+    setTimeout(done, 1500); // in case the browser never reports afterprint
+  }
+
   function openAbout() { document.getElementById('aboutOverlay').hidden = false; }
   function closeAbout() { document.getElementById('aboutOverlay').hidden = true; }
 
@@ -1227,7 +1287,7 @@
 
   document.addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
-    ['settingsOverlay', 'aboutOverlay', 'dashOverlay', 'teacherOverlay', 'feedbackOverlay', 'classOverlay'].forEach(id => {
+    ['settingsOverlay', 'aboutOverlay', 'dashOverlay', 'teacherOverlay', 'feedbackOverlay', 'classOverlay', 'privacyOverlay'].forEach(id => {
       const el = document.getElementById(id);
       if (el && !el.hidden) el.hidden = true;
     });

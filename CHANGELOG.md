@@ -10,6 +10,11 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.18.3] — 2026-11 — Privacy at a Glance
+
+- **A one-page privacy summary on the site.** The **Privacy** link in the footer (and in About) now opens a "Privacy at a glance" window written for teachers and administrators: what students enter, where it goes, what the school's Sheet records and never records, what stays on the device, the AI provider's terms, and a short checklist before using the tool with students. It has a Print / Save as PDF button and a link to the full policy. The same summary now opens `PRIVACY.md`.
+- It states plainly that it is not legal advice and not a FERPA or COPPA certification, and that the free Gemini tier may use submitted content.
+
 ## [0.18.2] — 2026-11 — Which Model Gave That Score
 
 - **The usage log now says which AI model answered.** The school script adds the name of the model that actually answered (Gemini's own `modelVersion`, or the model it asked for, including a fallback when the main one was busy) to the reply, the page sends it with the usage record, and the Log tab gets a new **Model** column next to the scores. Before, `gemini-flash-latest` could change under the school without any sign in the Sheet.
