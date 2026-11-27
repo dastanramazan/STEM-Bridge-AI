@@ -10,6 +10,12 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.19.1] — 2026-11 — Plainer Feedback
+
+- **One plain-language rule for every student-facing prompt.** Science Writing, Photo Check and Coding Helper now tell the AI to write for the student's grade with short sentences (about 15 words or fewer) and everyday words, to explain the first use of any science or computing term right away in about five words, in parentheses, to avoid terms the student did not use, and to avoid idioms. Grades 2 to 8 get the full rule; grades 9 to 12 a lighter one (explain a new term in a few words); Kindergarten to grade 1 keep their own simpler guidance. Before, Science Writing and Photo Check had no instruction about language level apart from K to 1.
+- **Spanish** adds: common school words used across Latin America, and, for a technical term, the Spanish word first and once the English word in parentheses ("hipótesis (hypothesis)").
+- Not checked: how closely the live AI follows the rule. The prompts are tested; the wording of real answers needs a look on the live site.
+
 ## [0.19.0] — 2026-11 — Daily Limits That Fit a School
 
 - **Limits by student, computer, class, and school.** Before, the free shared connection allowed 10 checks per student name and 100 in total, so a second class was refused the same day, two students with the same name shared one allowance, and a student could get a new one by typing a different name. Now a check counts against the student (name plus the browser's random device code), the computer (50 a day, for shared carts), the class (100, only for a real class made in the teacher area; a made-up code gets no allowance of its own), and the school (100). The first limit reached stops the request and the message says which one.

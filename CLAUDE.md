@@ -102,6 +102,8 @@ how student data is handled, `PRIVACY.md`.
   supply a finished answer, and to return `checkYourself` (one or two things
   to verify in a textbook, notes, or with the teacher). Every student result
   shows the "Check this yourself" box and the "AI can make mistakes" note.
+- Student-facing prompts also carry `plainLanguageRule(grade)` (short sentences, a new term explained in
+  about five words; full for grades 2-8, lighter for 9-12, none for K-1); keep it in every new prompt.
 - The Word file is built in the browser and never sent anywhere. The coding
   tool gives no corrected code by default: `codeHelpPlan()` allows an example or a fix only for
   an assignment whose teacher chose that help level (and never in "Explain an idea"). Code in a
