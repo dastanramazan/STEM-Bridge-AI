@@ -84,6 +84,11 @@ function doPost(e) {
     return handleFeedback_(data);
   }
 
+  // A teacher or coordinator tells the project which school set the tools up (optional, adults only).
+  if (data.action === 'registerSchool') {
+    return handleRegisterSchool_(data);
+  }
+
   // A student with a class code asks which class it is and what its assignments are.
   if (data.action === 'class_info') {
     return handleClassInfo_(data);
@@ -781,7 +786,7 @@ function removeTeacher_(me, data) {
    ═══════════════════════════════════════════════════════════════════ */
 
 // Shown to the web page so it can tell whether this script is up to date.
-const SCRIPT_VERSION = '0.19.0';
+const SCRIPT_VERSION = '0.20.0';
 const SETTINGS_PREFIX = 'setting_';
 const PLACEHOLDER_PIN = 'change-me-1234';
 const PLACEHOLDER_KEY = 'paste-your-gemini-api-key-here';
@@ -829,7 +834,7 @@ function schoolInfo_() {
     app: 'stem-bridge-ai',
     version: SCRIPT_VERSION,
     school: getSchoolName_(),
-    features: ['feedback', 'feedback_v2'].concat(getClientId_() ? ['classes'] : []), // 'classes' = students can join a class with a code
+    features: ['feedback', 'feedback_v2', 'register_school'].concat(getClientId_() ? ['classes'] : []), // 'classes' = students can join a class with a code
     setup: { pin: !!getPin_(), aiKey: !!getGeminiKey_(), teacherSignIn: !!getClientId_() }
   };
 }
@@ -1066,4 +1071,89 @@ function handleFeedback_(data) {
   cache.put(hourKey, String(Number(cache.get(hourKey) || 0) + 1), 3600);
   cache.put(deviceKey, String(Number(cache.get(deviceKey) || 0) + 1), 21600);
   return jsonOutput_({ ok: true, feedback: true });
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   OPTIONAL SCHOOL REGISTRATION
+   After setting up, a teacher may tell the project which school uses the tools
+   (school, city, state, how many teachers, grade bands, tools, role, optional
+   email, and whether the name and state may be named publicly). The website sends
+   it to the project owner's own script only, never to a school's script. Rows go
+   into the "Schools" tab. Nothing about students, keys, PINs, or the school's
+   Web app address is ever sent or stored here.
+   ═══════════════════════════════════════════════════════════════════ */
+const SCHOOL_HEADERS = ['Timestamp', 'SchoolName', 'City', 'State', 'Teachers', 'Grades', 'Tools', 'Role', 'ContactEmail', 'PublicOK', 'RegistrationId', 'PageVersion'];
+const SCHOOL_STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'American Samoa', 'Guam', 'Northern Mariana Islands', 'Puerto Rico', 'U.S. Virgin Islands', 'Outside the U.S.'];
+const SCHOOL_GRADES = ['K-2', '3-5', '6-8', '9-12'];
+const SCHOOL_TOOLS = ['Science Writing', 'Coding Helper', 'Photo Check'];
+const SCHOOL_ROLES = ['Teacher', 'Coach/Coordinator', 'Administrator', 'Other'];
+const MAX_SCHOOL_REGISTRATIONS_PER_DAY = 200; // across everyone, so a flood can't fill the Sheet
+
+function getSchoolsTab_() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Schools');
+  if (!sheet) {
+    sheet = ss.insertSheet('Schools');
+    sheet.appendRow(SCHOOL_HEADERS);
+    // Text columns stay plain text so nothing typed in can become a formula; Teachers (E) stays a number.
+    ['B:D', 'F:L'].forEach(range => sheet.getRange(range).setNumberFormat('@'));
+  }
+  return sheet;
+}
+
+function pickAllowed_(values, allowed) {
+  const list = Array.isArray(values) ? values : [];
+  return allowed.filter(a => list.indexOf(a) !== -1);
+}
+
+function handleRegisterSchool_(data) {
+  // A hidden "website" field that people never see: bots fill it in. Pretend it worked, store nothing.
+  if (String(data.website === undefined || data.website === null ? '' : data.website).trim() !== '') {
+    return jsonOutput_({ ok: true, registered: true });
+  }
+  const teachers = /^\d{1,3}$/.test(String(data.teachers === undefined || data.teachers === null ? '' : data.teachers).trim()) ? parseInt(data.teachers, 10) : NaN;
+  const entry = {
+    school: cleanLine_(data.school, 120),
+    city: cleanLine_(data.city, 80),
+    state: SCHOOL_STATES.indexOf(data.state) !== -1 ? data.state : '',
+    teachers: teachers >= 1 && teachers <= 500 ? teachers : '',
+    grades: pickAllowed_(data.grades, SCHOOL_GRADES).join(', '),
+    tools: pickAllowed_(data.tools, SCHOOL_TOOLS).join(', '),
+    role: SCHOOL_ROLES.indexOf(data.role) !== -1 ? data.role : '',
+    contact: cleanLine_(data.contact, 120),
+    publicOK: data.publicOK === 'yes' || data.publicOK === true ? 'yes' : (data.publicOK === 'no' || data.publicOK === false ? 'no' : ''),
+    id: /^[a-f0-9]{16,40}$/.test(String(data.id || '')) ? String(data.id) : '',
+    version: cleanLine_(data.page, 12)
+  };
+  const missing = [];
+  if (!entry.school) missing.push('the school name');
+  if (!entry.state) missing.push('the state');
+  if (entry.teachers === '') missing.push('how many teachers (1 to 500)');
+  if (!entry.role) missing.push('your role');
+  if (!entry.publicOK) missing.push('whether the name and state may be shared');
+  if (entry.contact && !/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(entry.contact)) missing.push('a valid email address (or leave it empty)');
+  if (!entry.id) missing.push('a registration code');
+  if (missing.length) return jsonOutput_({ error: 'Please check ' + missing.join(', ') + '.', code: 'missing' });
+
+  return withScriptLock_(() => {
+    const props = PropertiesService.getScriptProperties();
+    const day = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd');
+    pruneOldCounters_(props, day);
+    const key = `count|${day}|*register*`;
+    const used = Number(props.getProperty(key) || 0);
+    if (used >= MAX_SCHOOL_REGISTRATIONS_PER_DAY) {
+      return jsonOutput_({ error: 'Lots of registrations are arriving right now. Please try again tomorrow.', code: 'busy' });
+    }
+    const sheet = getSchoolsTab_();
+    const row = [new Date(), entry.school, entry.city, entry.state, entry.teachers, entry.grades, entry.tools, entry.role, entry.contact, entry.publicOK, entry.id, entry.version];
+    // The same device registering again updates its row instead of adding a second one.
+    const rows = sheet.getDataRange().getValues();
+    let found = 0;
+    for (let i = 1; i < rows.length; i++) { if (String(rows[i][10]) === entry.id) { found = i + 1; break; } }
+    if (found) sheet.getRange(found, 1, 1, row.length).setValues([row]);
+    else sheet.appendRow(row);
+    props.setProperty(key, String(used + 1));
+    return jsonOutput_({ ok: true, registered: true, updated: !!found });
+  });
 }

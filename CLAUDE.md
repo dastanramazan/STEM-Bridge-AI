@@ -95,6 +95,15 @@ how student data is handled, `PRIVACY.md`.
   confirm before saving anything. Teacher-written text (titles, instructions) is
   shown escaped and is not sent to the AI.
 
+## School registration (optional)
+
+- After a teacher connects a school the page may offer a small optional card; it posts
+  `registerSchool` to `DEFAULT_LOG_ENDPOINT` (the project's own script), never a school's script,
+  only when `?action=info` lists `register_school`. It appears only on a device where a teacher has
+  connected a school, never to students. Never send or store keys, PINs, the school's Web app
+  address, or any student data with it; a failure must never affect setup or the tools. Registrations
+  are evidence of use only if they are real: never create or seed rows.
+
 ## Feedback contract
 
 - The tool gives feedback, not solutions. Prompts for student-facing feedback

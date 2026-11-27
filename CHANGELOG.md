@@ -10,6 +10,14 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.20.0] — 2026-11 — Optional School Registration
+
+- **Teachers can tell the project which school uses the tools (optional).** After a successful **Check and connect** in Settings, a small card asks for the school name (filled in from the connected school), city, state, number of teachers, grade bands, tools planned, role, an optional contact email, and an explicit Yes/No choice about whether the school's name and state may be named in public reports. It never blocks setup, never affects the tools, and never includes student data, keys, PINs, or the school's Web app address.
+- **Where it appears.** Only on a device where a teacher just connected a school, so students never see it. **No thanks** or a submission hides it for good on that device; a **Register my school** link in Settings stays for later (and, once registered, reopens the form filled in to update it).
+- **Where it goes.** To the project's own script only (not the school's), into a **Schools** tab. A random registration code kept in the browser makes a second submission from the same device update its row instead of adding another. Fields are trimmed, capped, and validated, and at most 200 registrations are accepted per day.
+- The page shows the card only when the project's script lists `register_school` in its public info, so an older script never receives a registration it would store as a junk usage row. If sending fails, a short message says so and everything else carries on.
+- **Project script 0.20.0.** The project owner must paste the new `Code.gs` into the default script and deploy a New version (see TEACHER_SETUP.md).
+
 ## [0.19.1] — 2026-11 — Plainer Feedback
 
 - **One plain-language rule for every student-facing prompt.** Science Writing, Photo Check and Coding Helper now tell the AI to write for the student's grade with short sentences (about 15 words or fewer) and everyday words, to explain the first use of any science or computing term right away in about five words, in parentheses, to avoid terms the student did not use, and to avoid idioms. Grades 2 to 8 get the full rule; grades 9 to 12 a lighter one (explain a new term in a few words); Kindergarten to grade 1 keep their own simpler guidance. Before, Science Writing and Photo Check had no instruction about language level apart from K to 1.
