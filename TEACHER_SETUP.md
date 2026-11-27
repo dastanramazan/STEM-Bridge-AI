@@ -43,6 +43,8 @@ copy the **Web app URL** (it ends in `/exec`).
 **⚙️ Settings → 🏫 For teachers: set up my school**, paste the Web app URL, and click
 **Check and connect**. It confirms your school's name and checks that everything is set up.
 
+**Optional: tell the project you are using it.** After **Check and connect**, a small card asks if you want to register your school (school, city, state, how many teachers, grades, tools, your role, an optional email, and whether the school's name and state may be named in project reports). It is optional, it never affects how the tools work, and it never includes student information. Click **No thanks** and it will not come back by itself; you can still use **Register my school** in Settings later.
+
 **5. Give students the link.** After connecting, the same place shows a **link for
 your students**. Copy it and share it (on the board, by email, or in Google Classroom).
 When a student opens it, they are asked once to confirm they are connecting to your
@@ -64,6 +66,8 @@ That's it. Later updates: if the website says your script is out of date, open
 5. Put the same `/copy` link in `index.html` as `TEMPLATE_COPY_URL` so the website
    can show a "Make your own copy" button.
 6. Whenever `Code.gs` changes, paste the new version into the template too.
+
+**Reading the school registrations (project owner).** Schools that register send their answers to *your own* default script (the one the website uses when no school is connected), not to the school's script. For this to work, paste the newest `Code.gs` into that script and deploy a **New version** (Extensions → Apps Script → Deploy → Manage deployments → ✏️ → New version). Until you do, the website does not show the registration card at all, because your script has to say it can take registrations. Registrations appear in a tab called **Schools** in that Sheet (it is created on the first one) with the columns Timestamp, SchoolName, City, State, Teachers, Grades, Tools, Role, ContactEmail, PublicOK, RegistrationId, PageVersion. The same device registering again updates its row (same RegistrationId) instead of adding another. Name a school or state publicly only where **PublicOK** is `yes`. At most 200 registrations are accepted per day. Only real registrations are evidence of use: never add rows yourself to make the list look longer.
 
 ## Manual setup (the older method, still works)
 

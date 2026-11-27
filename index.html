@@ -435,6 +435,14 @@
       .print-privacy,.print-privacy .dash-modal,.print-privacy .dash-head{background:#fff;color:#000;}
       .print-privacy .dash-head{border-bottom:2px solid #000;}
     }
+    .reg-card{margin-top:12px;border:2px solid var(--border2);border-radius:14px;background:var(--surf);padding:12px 14px;}
+    .reg-card h3{font-size:1rem;margin:0 0 4px;}
+    .reg-card fieldset{border:0;margin:10px 0 0;padding:0;min-width:0;}
+    .reg-card legend{font-weight:700;padding:0;margin-bottom:2px;}
+    .reg-card select{width:100%;}
+    .reg-checks{display:flex;flex-wrap:wrap;gap:4px 16px;}
+    .reg-checks label{display:flex;align-items:center;gap:8px;min-height:44px;cursor:pointer;}
+    .reg-checks input{width:22px;height:22px;flex:none;}
     .skip-link{position:absolute;left:8px;top:-60px;z-index:1000;background:var(--surf);color:var(--a1-ink);font-weight:700;padding:10px 16px;border:2px solid var(--a1);border-radius:10px;}
     .skip-link:focus{top:8px;}
     main:focus{outline:none;}
@@ -829,7 +837,7 @@
 
 <!-- ═══════════════════════════════ FOOTER ══ -->
 <footer class="mission">
-  <span>Free and open source · MIT License · v0.19.1</span>
+  <span>Free and open source · MIT License · v0.20.0</span>
   <button type="button" onclick="openAbout()">About</button>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();openPrivacy()">Privacy</a>
   <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">GitHub</a>
@@ -927,6 +935,8 @@
           <div class="t-link"><input class="t-input" id="studentLinkInput" readonly /><button type="button" class="apikey-btn" onclick="copyStudentLink()">Copy link</button></div>
         </div>
         <div id="schoolMsg" class="photo-msg" role="status"></div>
+        <p class="dash-note" id="regLinkWrap" hidden><a href="#" onclick="event.preventDefault();openRegCard(true)">Register my school (optional)</a></p>
+        <div id="regCard" class="reg-card" hidden></div>
         <p class="dash-note">The full guide is in <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/TEACHER_SETUP.md" target="_blank" rel="noopener noreferrer">TEACHER_SETUP.md</a>.</p>
       </details>
 
@@ -994,7 +1004,7 @@
       </ul>
       <p><b>Why we built it:</b> every student benefits from quick, personalized feedback, but it is hard for one teacher to give it to everyone. This tool is designed to help teachers offer it, especially in schools with limited resources.</p>
       <p><button type="button" class="apikey-btn" onclick="openFeedback()">💬 Rate this tool (about a minute)</button></p>
-      <p>Version 0.19.1 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();closeAbout();openPrivacy()">Privacy at a glance</a></p>
+      <p>Version 0.20.0 · MIT License · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" onclick="event.preventDefault();closeAbout();openPrivacy()">Privacy at a glance</a></p>
     </div>
   </div>
 </div>
@@ -1425,8 +1435,9 @@
   async function refreshSchoolSettings() {
     renderSchoolSettings(null);
     setSchoolMsg('');
+    updateRegLink();
     if (LOG_ENDPOINT === DEFAULT_LOG_ENDPOINT) return;
-    try { renderSchoolSettings(await fetchSchoolInfo(LOG_ENDPOINT)); } catch (e) { /* offline: keep the plain status */ }
+    try { const info = await fetchSchoolInfo(LOG_ENDPOINT); regSchoolName = info.school || regSchoolName; renderSchoolSettings(info); } catch (e) { /* offline: keep the plain status */ }
   }
 
   async function connectSchoolFromInput() {
@@ -1445,6 +1456,10 @@
       document.getElementById('schoolUrlInput').value = '';
       renderSchoolSettings(info);
       setSchoolMsg('Connected ✓ Give your students the link below.', true);
+      regSchoolName = info.school || '';
+      safeSet('local', TEACHER_FLOW_STORAGE, '1'); // a teacher did this on this device
+      updateRegLink();
+      openRegCard(false);
     } catch (e) {
       setSchoolMsg(e.message);
     }
@@ -1461,6 +1476,153 @@
     const done = () => setSchoolMsg('Link copied ✓', true);
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(input.value).then(done, () => setSchoolMsg('Select the link and copy it (Ctrl+C or Cmd+C).'));
     else { input.select(); try { document.execCommand('copy'); done(); } catch (e) { setSchoolMsg('Select the link and copy it (Ctrl+C or Cmd+C).'); } }
+  }
+
+  /* ════════════════════════════════════════
+     OPTIONAL SCHOOL REGISTRATION: after a teacher connects their school, a small card asks
+     whether they want to tell the project where the tools are used. It goes to the project's
+     own script only (never the school's), and only if that script says it can take it. It never
+     touches the tools: if it fails, setup and everything else carry on. Nothing about students,
+     keys, PINs, or the school's address is sent. Students never see it: it appears only on a
+     device where a teacher has just connected a school.
+  ════════════════════════════════════════ */
+  const SCHOOL_REG_STORAGE = 'stemBridgeSchoolReg';       // { id, status: 'done' | 'declined', at, form }
+  const TEACHER_FLOW_STORAGE = 'stemBridgeTeacherFlow';   // set once a school was connected on this device
+  const REG_STATES = ['Alabama', 'Alaska', 'Arizona', 'Arkansas', 'California', 'Colorado', 'Connecticut', 'Delaware', 'District of Columbia', 'Florida', 'Georgia', 'Hawaii', 'Idaho', 'Illinois', 'Indiana', 'Iowa', 'Kansas', 'Kentucky', 'Louisiana', 'Maine', 'Maryland', 'Massachusetts', 'Michigan', 'Minnesota', 'Mississippi', 'Missouri', 'Montana', 'Nebraska', 'Nevada', 'New Hampshire', 'New Jersey', 'New Mexico', 'New York', 'North Carolina', 'North Dakota', 'Ohio', 'Oklahoma', 'Oregon', 'Pennsylvania', 'Rhode Island', 'South Carolina', 'South Dakota', 'Tennessee', 'Texas', 'Utah', 'Vermont', 'Virginia', 'Washington', 'West Virginia', 'Wisconsin', 'Wyoming', 'American Samoa', 'Guam', 'Northern Mariana Islands', 'Puerto Rico', 'U.S. Virgin Islands', 'Outside the U.S.'];
+  const REG_GRADES = [['K-2', 'K–2'], ['3-5', '3–5'], ['6-8', '6–8'], ['9-12', '9–12']];
+  const REG_TOOLS = ['Science Writing', 'Coding Helper', 'Photo Check'];
+  const REG_ROLES = ['Teacher', 'Coach/Coordinator', 'Administrator', 'Other'];
+  let regSchoolName = ''; // the connected school's name, to prefill the form
+
+  function readReg() {
+    try { return JSON.parse(safeGet('local', SCHOOL_REG_STORAGE) || 'null') || null; } catch (e) { return null; }
+  }
+  function writeReg(obj) { safeSet('local', SCHOOL_REG_STORAGE, JSON.stringify(obj)); }
+
+  function newRegistrationId() {
+    const bytes = new Uint8Array(16);
+    if (window.crypto && crypto.getRandomValues) crypto.getRandomValues(bytes);
+    else for (let i = 0; i < 16; i++) bytes[i] = Math.floor(Math.random() * 256);
+    return [...bytes].map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  // Shows or hides the "Register my school" link (teachers only, and only if the project's script can take it).
+  async function updateRegLink() {
+    const wrap = document.getElementById('regLinkWrap');
+    if (!wrap) return;
+    wrap.hidden = true;
+    if (!safeGet('local', TEACHER_FLOW_STORAGE)) return;
+    try {
+      const info = await projectInfo();
+      wrap.hidden = !(info && info.ok === true && Array.isArray(info.features) && info.features.includes('register_school'));
+    } catch (e) { /* offline: no link */ }
+  }
+
+  // automatic = true when it opens by itself after "Check and connect": then it respects an earlier choice.
+  async function openRegCard(manual) {
+    const card = document.getElementById('regCard');
+    const reg = readReg();
+    if (!manual && reg && (reg.status === 'done' || reg.status === 'declined')) { card.hidden = true; return; }
+    try {
+      const info = await projectInfo();
+      if (!(info && info.ok === true && Array.isArray(info.features) && info.features.includes('register_school'))) {
+        if (manual) { card.hidden = false; card.innerHTML = '<p class="dash-note" style="margin:0;">School registration is not available right now. Thank you for your interest!</p>'; }
+        return;
+      }
+    } catch (e) {
+      if (manual) { card.hidden = false; card.innerHTML = '<p class="dash-note" style="margin:0;">We could not reach the project just now. Registration is optional, so you can try again later.</p>'; }
+      return;
+    }
+    renderRegCard(reg && reg.form ? reg.form : null, reg && reg.status === 'done');
+    card.hidden = false;
+  }
+
+  function renderRegCard(saved, already) {
+    const f = saved || {};
+    const checks = (name, list, chosen) => list.map(([v, t]) =>
+      `<label><input type="checkbox" name="${name}" value="${escHtml(v)}"${(chosen || []).includes(v) ? ' checked' : ''}> ${escHtml(t)}</label>`).join('');
+    document.getElementById('regCard').innerHTML = `
+      <form id="regForm" onsubmit="submitReg(event)" novalidate>
+        <h3>Help us see where STEM Bridge AI is used (optional)</h3>
+        <p class="dash-note" style="margin:0 0 6px;">${already ? 'You registered from this device. You can change the details and send them again.' : 'For teachers and school staff. It never affects how the tools work, and it never includes student information.'}</p>
+        <label class="fl" for="regSchool">School name <span class="req">(required)</span></label>
+        <input type="text" id="regSchool" class="t-input" maxlength="120" autocomplete="organization" value="${escHtml(f.school || regSchoolName)}" />
+        <label class="fl" for="regCity">City</label>
+        <input type="text" id="regCity" class="t-input" maxlength="80" autocomplete="address-level2" value="${escHtml(f.city || '')}" />
+        <label class="fl" for="regState">State <span class="req">(required)</span></label>
+        <select id="regState" class="t-input" autocomplete="address-level1"><option value="">Choose…</option>${REG_STATES.map(x => `<option${f.state === x ? ' selected' : ''}>${escHtml(x)}</option>`).join('')}</select>
+        <label class="fl" for="regTeachers">How many teachers will use it? <span class="req">(1 to 500, required)</span></label>
+        <input type="number" id="regTeachers" class="t-input" min="1" max="500" inputmode="numeric" value="${escHtml(f.teachers || '')}" />
+        <fieldset><legend>Grade bands used</legend><div class="reg-checks">${checks('regGrades', REG_GRADES, f.grades)}</div></fieldset>
+        <fieldset><legend>Tools planned</legend><div class="reg-checks">${checks('regTools', REG_TOOLS.map(t => [t, t]), f.tools)}</div></fieldset>
+        <label class="fl" for="regRole">Your role <span class="req">(required)</span></label>
+        <select id="regRole" class="t-input"><option value="">Choose…</option>${REG_ROLES.map(x => `<option${f.role === x ? ' selected' : ''}>${escHtml(x)}</option>`).join('')}</select>
+        <label class="fl" for="regEmail">Contact email</label>
+        <input type="email" id="regEmail" class="t-input" maxlength="120" autocomplete="email" value="${escHtml(f.contact || '')}" />
+        <p class="dash-note" style="margin:2px 0 0;">Used only to follow up about the project. Never shared.</p>
+        <fieldset><legend>May the project name this school and its state in public reports? <span class="req">(required)</span></legend>
+          <div class="reg-checks">
+            <label><input type="radio" name="regPublic" value="yes"${f.publicOK === 'yes' ? ' checked' : ''}> Yes, you may share the school's name and state</label>
+            <label><input type="radio" name="regPublic" value="no"${f.publicOK === 'no' ? ' checked' : ''}> No, keep it private</label>
+          </div></fieldset>
+        <div class="fb-trap" aria-hidden="true"><label>Website <input type="text" id="regWebsite" tabindex="-1" autocomplete="off" /></label></div>
+        <div class="photo-actions" style="margin-top:12px;">
+          <button type="submit" class="btn-main writing-btn" id="regSend" style="width:auto;padding:10px 22px;">${already ? 'Send again' : 'Register'}</button>
+          <button type="button" class="apikey-btn" onclick="declineReg()">No thanks</button>
+        </div>
+        <div id="regMsg" class="photo-msg" role="status" aria-live="polite"></div>
+      </form>`;
+  }
+
+  function declineReg() {
+    const reg = readReg() || {};
+    writeReg({ ...reg, status: reg.status === 'done' ? 'done' : 'declined', at: Date.now() });
+    document.getElementById('regCard').hidden = true;
+  }
+
+  async function submitReg(event) {
+    event.preventDefault();
+    const val = id => document.getElementById(id).value.trim();
+    const checked = name => [...document.querySelectorAll(`#regForm input[name="${name}"]:checked`)].map(i => i.value);
+    const form = {
+      school: val('regSchool'), city: val('regCity'), state: val('regState'), teachers: val('regTeachers'),
+      grades: checked('regGrades'), tools: checked('regTools'), role: val('regRole'), contact: val('regEmail'),
+      publicOK: (document.querySelector('#regForm input[name="regPublic"]:checked') || {}).value || ''
+    };
+    const msg = document.getElementById('regMsg');
+    const missing = [];
+    if (!form.school) missing.push('the school name');
+    if (!form.state) missing.push('the state');
+    const n = Number(form.teachers);
+    if (!/^\d{1,3}$/.test(form.teachers) || n < 1 || n > 500) missing.push('how many teachers (1 to 500)');
+    if (!form.role) missing.push('your role');
+    if (!form.publicOK) missing.push('whether the name and state may be shared');
+    if (form.contact && !/^[^\s@<>"']+@[^\s@<>"']+\.[^\s@<>"']+$/.test(form.contact)) missing.push('a valid email address (or leave it empty)');
+    if (missing.length) { msg.className = 'photo-msg'; msg.textContent = 'Please check ' + missing.join(', ') + '.'; return; }
+    const reg = readReg() || {};
+    const id = reg.id || newRegistrationId();
+    writeReg({ ...reg, id }); // keep the id so a second submit updates the same row
+    const btn = document.getElementById('regSend');
+    btn.disabled = true; msg.className = 't-ok'; msg.textContent = 'Sending…';
+    try {
+      const data = await fetchJsonWithTimeout(DEFAULT_LOG_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ action: 'registerSchool', id, ...form, website: document.getElementById('regWebsite').value, page: APP_VERSION })
+      }, 20000);
+      if (data && data.ok === true && data.registered === true) {
+        writeReg({ id, status: 'done', at: Date.now(), form });
+        document.getElementById('regCard').innerHTML = '<p style="margin:0;"><b>Thank you! 💙</b> Your school is registered. You can change the details later with "Register my school".</p>';
+        return;
+      }
+      throw new Error((data && data.error) || "That didn't go through.");
+    } catch (e) {
+      btn.disabled = false;
+      msg.className = 'photo-msg';
+      msg.textContent = /Could not reach|timed out|unreadable|couldn't be read|could not read/i.test(e.message)
+        ? "We couldn't send this just now. Registration is optional and your setup is not affected. You can try again later."
+        : e.message;
+    }
   }
 
   /* ── a student opens a link like ?s=<school>: ask before connecting ── */
@@ -1744,9 +1906,19 @@
 
   function closeFeedback() { document.getElementById('feedbackOverlay').hidden = true; }
 
+  // The project's own script says what it can take (feedback, school registration...). Asked once per page.
+  let projectInfoPromise = null;
+  function projectInfo() {
+    if (!projectInfoPromise) {
+      projectInfoPromise = fetchJsonWithTimeout(`${DEFAULT_LOG_ENDPOINT}?action=info`, { method: 'GET' }, 15000)
+        .catch(e => { projectInfoPromise = null; throw e; });
+    }
+    return projectInfoPromise;
+  }
+
   async function feedbackAvailable() {
     if (feedbackAvail !== null) return feedbackAvail;
-    const info = await fetchJsonWithTimeout(`${DEFAULT_LOG_ENDPOINT}?action=info`, { method: 'GET' }, 15000);
+    const info = await projectInfo();
     feedbackAvail = !!(info && info.ok === true && Array.isArray(info.features) && info.features.includes('feedback'));
     // A script that lists feedback_v2 can take the identifying questions; an older one gets the short form.
     feedbackV2 = feedbackAvail && info.features.includes('feedback_v2');
