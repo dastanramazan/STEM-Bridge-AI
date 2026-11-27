@@ -10,6 +10,15 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.19.0] — 2026-11 — Daily Limits That Fit a School
+
+- **Limits by student, computer, class, and school.** Before, the free shared connection allowed 10 checks per student name and 100 in total, so a second class was refused the same day, two students with the same name shared one allowance, and a student could get a new one by typing a different name. Now a check counts against the student (name plus the browser's random device code), the computer (50 a day, for shared carts), the class (100, only for a real class made in the teacher area; a made-up code gets no allowance of its own), and the school (100). The first limit reached stops the request and the message says which one.
+- **The school can change the numbers** without editing code: the Sheet menu **STEM Bridge AI → Set up / check my setup** has a *Daily limits* section (an empty box keeps the number, 0 restores the standard one, out-of-range values are refused).
+- A failed AI request gives back every count it took. An older page that sends only a name still works and is limited per name and for the school.
+- The page now sends its random device code and, after joining a class, the class code with each check. No student work is sent or kept for this.
+- **School script 0.19.0.** Update it (new `Code.gs`, then Deploy → New version) to get the new limits.
+- Note: the limits do not replace the spending limit on the AI key at Google. If you raise them, raise that too.
+
 ## [0.18.3] — 2026-11 — Privacy at a Glance
 
 - **A one-page privacy summary on the site.** The **Privacy** link in the footer (and in About) now opens a "Privacy at a glance" window written for teachers and administrators: what students enter, where it goes, what the school's Sheet records and never records, what stays on the device, the AI provider's terms, and a short checklist before using the tool with students. It has a Print / Save as PDF button and a link to the full policy. The same summary now opens `PRIVACY.md`.

@@ -281,13 +281,18 @@ question is faster). It never records what the student wrote.
 - **Photo Check needs the updated script.** After updating the app, paste
   the latest `Code.gs` into Apps Script (keeping your PIN and key) and
   deploy a **New version**, otherwise photos are ignored by the old script.
-- **Daily limits protect your free quota.** By default each student can
-  run 10 analyses per day and the whole class 100 per day on the default
-  connection (change `DAILY_LIMIT_PER_STUDENT` and `DAILY_LIMIT_TOTAL` at
-  the top of the script). Only successful analyses count, and counters
-  reset every midnight in the script's time zone. Students are identified
-  by the name they typed, so the class-wide limit is the hard backstop.
-  Anyone using their own API key is not limited.
+- **Daily limits protect your free quota.** On the default connection, by
+  default, each student can run 10 checks a day (a student is a name on a
+  device, so two students called Maria on different computers do not share
+  one allowance), one computer 50, one class 100 (a class is a code made in
+  the teacher area), and the whole school 100. The first limit reached stops
+  the request, and the message says which one. Change the four numbers in
+  the Sheet menu **STEM Bridge AI → Set up / check my setup**, under *Daily
+  limits* (an empty box keeps the saved number, 0 restores the standard
+  one). Your AI key also has its own spending limit at Google, which still
+  applies: if you raise the numbers, raise that limit too. Only successful
+  checks count, and counters reset every midnight in the script's time
+  zone. Anyone using their own API key is not limited.
 - **The website no longer needs editing.** The older method asked you to change `LOG_ENDPOINT` in `index.html` on GitHub. With the Quick start you paste your Web app URL in ⚙️ Settings instead, and the website remembers it on that device. Students get a link that carries your school's address.
 - If `LOG_ENDPOINT` is left blank, both the default AI connection and
   usage tracking are disabled — students would need to provide their own
