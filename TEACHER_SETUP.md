@@ -43,6 +43,8 @@ copy the **Web app URL** (it ends in `/exec`).
 **⚙️ Settings → 🏫 For teachers: set up my school**, paste the Web app URL, and click
 **Check and connect**. It confirms your school's name and checks that everything is set up.
 
+**Want to try it with a class first?** See the [45-minute lesson page](lesson.html) (on the website: `lesson.html`): a lesson plan, two diagrams, and what to do if something goes wrong.
+
 **Optional: tell the project you are using it.** After **Check and connect**, a small card asks if you want to register your school (school, city, state, how many teachers, grades, tools, your role, an optional email, and whether the school's name and state may be named in project reports). It is optional, it never affects how the tools work, and it never includes student information. Click **No thanks** and it will not come back by itself; you can still use **Register my school** in Settings later.
 
 **5. Give students the link.** After connecting, the same place shows a **link for

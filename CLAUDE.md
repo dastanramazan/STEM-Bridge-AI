@@ -121,6 +121,10 @@ how student data is handled, `PRIVACY.md`.
 
 ## Documentation rules
 
+- `lesson.html` is a static teacher page (plan and two diagrams) beside the app, not part of it: keep it
+  self-contained (no outside requests), accurate to what the tool really does, and free of any claim of
+  results or outcomes. Update it when the tool's screens or messages change.
+
 - Public docs must not contain statistics without a citation the owner has
   supplied, and must not state classroom-usage numbers, student counts, or
   learning outcomes without documentation. The project has not had a

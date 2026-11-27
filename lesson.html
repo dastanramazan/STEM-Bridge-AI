@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Try STEM Bridge AI in one class period (45 minutes)</title>
+<style>
+  :root{
+    --bg:#f4f8ff; --surf:#ffffff; --surf2:#eaf1ff; --border:#d3def3;
+    --txt:#1b2540; --mut:#46526e; --link:#0369a1;
+    --a1:#0369a1; --a1-bg:#e0f4ff; --a2:#6d28d9; --a2-bg:#f0eaff; --a3:#15803d; --a3-bg:#e6f8ec; --warn:#92400e; --warn-bg:#fff5df;
+    --line:#7f93bd;
+    --font:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark){ :root{
+    --bg:#0f1730; --surf:#18223f; --surf2:#1e2a4d; --border:#2e3b63;
+    --txt:#f1f5ff; --mut:#c3cde6; --link:#7dd3fc;
+    --a1:#7dd3fc; --a1-bg:#0d2e45; --a2:#c4b5fd; --a2-bg:#2a1f52; --a3:#86efac; --a3-bg:#11361f; --warn:#fcd34d; --warn-bg:#3a2a0a;
+    --line:#7f93bd; } }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--font);font-size:17px;line-height:1.6}
+  .wrap{max-width:52rem;margin:0 auto;padding:1.5rem max(16px,env(safe-area-inset-left,0px)) 4rem max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:2.2rem}
+  .skip{position:absolute;left:8px;top:-60px;background:var(--surf);color:var(--link);padding:10px 14px;border:2px solid var(--a1);border-radius:10px;font-weight:700;z-index:10}
+  .skip:focus{top:8px}
+  a{color:var(--link)}
+  a:focus-visible,button:focus-visible{outline:3px solid var(--a1);outline-offset:2px;border-radius:4px}
+  h1{font-size:clamp(1.7rem,5vw,2.4rem);line-height:1.15;margin:0;letter-spacing:-.01em;text-wrap:balance}
+  h2{font-size:1.4rem;margin:0 0 .5rem;text-wrap:balance}
+  h3{font-size:1.05rem;margin:0}
+  p{margin:0 0 .7rem}
+  ul,ol{margin:.2rem 0 .7rem;padding-left:1.3rem}
+  li{margin:.25rem 0}
+  .eyebrow{font-size:.78rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--a1);margin-bottom:.4rem}
+  .lede{font-size:1.12rem;color:var(--mut);max-width:42rem;margin-top:.7rem}
+  .top{display:flex;flex-wrap:wrap;gap:.6rem 1rem;align-items:center;margin-top:1rem}
+  .btn{font:inherit;font-weight:700;color:var(--link);background:var(--surf);border:2px solid var(--border);border-radius:999px;padding:.55rem 1.1rem;min-height:44px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+  .btn:hover{border-color:var(--a1)}
+  .glance{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.8rem}
+  .card{background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:1rem 1.1rem;min-width:0}
+  .card h3{margin-bottom:.3rem}
+  .card p{font-size:.95rem;color:var(--mut);margin:0}
+  figure{margin:0;background:var(--surf);border:1px solid var(--border);border-radius:16px;padding:1rem}
+  figure svg{display:block;width:100%;height:auto;max-width:100%}
+  figcaption{font-size:.92rem;color:var(--mut);margin-top:.6rem}
+  .steps{list-style:none;padding:0;display:flex;flex-direction:column;gap:.7rem}
+  .steps li{display:grid;grid-template-columns:5.2rem 1fr;gap:.9rem;background:var(--surf);border:1px solid var(--border);border-radius:14px;padding:.9rem 1.1rem;margin:0}
+  .steps .t{font-weight:800;color:var(--a1);font-variant-numeric:tabular-nums;line-height:1.3}
+  .steps .t small{display:block;font-weight:600;color:var(--mut);font-size:.8rem}
+  .steps .b{min-width:0}
+  .steps h3{margin-bottom:.2rem}
+  .say{border-left:5px solid var(--a2);background:var(--a2-bg);border-radius:0 12px 12px 0;padding:.6rem .9rem;margin:.5rem 0;font-size:.97rem}
+  .tablewrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:.95rem;background:var(--surf);border:1px solid var(--border)}
+  th,td{text-align:left;vertical-align:top;padding:.6rem .8rem;border-bottom:1px solid var(--border)}
+  th{background:var(--surf2);font-size:.85rem}
+  .note{border-left:5px solid var(--warn);background:var(--warn-bg);border-radius:0 12px 12px 0;padding:.7rem 1rem;color:var(--txt)}
+  .ok{border-left-color:var(--a3);background:var(--a3-bg)}
+  code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:.9em;background:var(--surf2);padding:.05em .35em;border-radius:5px}
+  footer{color:var(--mut);font-size:.9rem}
+  @media (max-width:560px){ .steps li{grid-template-columns:1fr;gap:.3rem} }
+  @media print{
+    body{background:#fff;color:#000;font-size:11pt}
+    .no-print,.skip{display:none !important}
+    .wrap{padding:0;gap:1rem;max-width:none}
+    .card,.steps li,figure,table{break-inside:avoid;border-color:#999;background:#fff}
+    a{color:#000}
+    :root{--txt:#000;--mut:#333;--surf:#fff;--surf2:#eee;--border:#999;--a1:#000;--a1-bg:#fff;--a2:#000;--a2-bg:#f3f3f3;--a3:#000;--a3-bg:#f3f3f3;--warn:#000;--warn-bg:#f3f3f3;--line:#444;--link:#000}
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the lesson</a>
+<div class="wrap">
+
+<header>
+  <div class="eyebrow">For teachers · free and open source</div>
+  <h1>Try STEM Bridge AI in one class period (45 minutes)</h1>
+  <p class="lede">A ready lesson for a teacher who wants to see what students do with the tool and what the feedback looks like. One tool, one class, no setup beyond the link. It is built so the student does the thinking and the AI gives hints, not answers.</p>
+  <div class="top no-print">
+    <a class="btn" href="index.html">Open STEM Bridge AI</a>
+    <button class="btn" type="button" onclick="window.print()">🖨️ Print this page</button>
+    <a class="btn" href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/TEACHER_SETUP.md" target="_blank" rel="noopener noreferrer">Setting up your own school copy</a>
+  </div>
+</header>
+
+<main id="main" tabindex="-1" style="display:flex;flex-direction:column;gap:2.2rem;outline:none">
+
+<section aria-labelledby="glance">
+  <h2 id="glance">At a glance</h2>
+  <div class="glance">
+    <div class="card"><h3>Who it is for</h3><p>Students in grades 2 to 12 for Science Writing, grades 6 to 12 for Coding Helper. Kindergarten and grade 1 can speak their answer where the browser supports it.</p></div>
+    <div class="card"><h3>What you need</h3><p>A device with a web browser for each student or pair, the site address, and one piece of student work to improve (a lab report, a hypothesis, or a few lines of code).</p></div>
+    <div class="card"><h3>What students do</h3><p>Paste their own work, press <b>Check</b>, read one next step, revise, and check again.</p></div>
+    <div class="card"><h3>What it will not do</h3><p>It will not rewrite the work or give the answer. It points to what to fix and suggests one thing to try.</p></div>
+  </div>
+</section>
+
+<figure aria-labelledby="fig1cap">
+  <svg viewBox="0 0 760 170" role="img" aria-labelledby="fig1title fig1desc" font-family="system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+    <title id="fig1title">The 45-minute lesson as a bar</title>
+    <desc id="fig1desc">Six parts in order: welcome, 5 minutes; model together, 5 minutes; students try it, 15 minutes; revise, 10 minutes; check yourself, 7 minutes; exit, 3 minutes.</desc>
+    <g font-size="12.5" text-anchor="middle" fill="var(--txt)">
+      <rect x="30" y="58" width="78" height="46" rx="6" fill="var(--a1-bg)" stroke="var(--a1)" stroke-width="2"/><text x="69" y="86" font-weight="700">5 min</text><text x="69" y="44">Welcome</text>
+      <rect x="108" y="58" width="78" height="46" rx="6" fill="var(--a2-bg)" stroke="var(--a2)" stroke-width="2"/><text x="147" y="86" font-weight="700">5 min</text><text x="147" y="44">Model it</text>
+      <rect x="186" y="58" width="233" height="46" rx="6" fill="var(--a1-bg)" stroke="var(--a1)" stroke-width="2"/><text x="302" y="86" font-weight="700">15 min</text><text x="302" y="44">Students try it</text>
+      <rect x="419" y="58" width="156" height="46" rx="6" fill="var(--a2-bg)" stroke="var(--a2)" stroke-width="2"/><text x="497" y="86" font-weight="700">10 min</text><text x="497" y="44">Revise and check again</text>
+      <rect x="575" y="58" width="109" height="46" rx="6" fill="var(--a3-bg)" stroke="var(--a3)" stroke-width="2"/><text x="629" y="86" font-weight="700">7 min</text><text x="629" y="44">Check yourself</text>
+      <rect x="684" y="58" width="46" height="46" rx="6" fill="var(--a1-bg)" stroke="var(--a1)" stroke-width="2"/><text x="707" y="86" font-weight="700">3</text><text x="707" y="44">Exit</text>
+    </g>
+    <g stroke="var(--line)" stroke-width="1.5"><line x1="30" y1="116" x2="730" y2="116"/>
+      <line x1="30" y1="112" x2="30" y2="120"/><line x1="108" y1="112" x2="108" y2="120"/><line x1="186" y1="112" x2="186" y2="120"/><line x1="419" y1="112" x2="419" y2="120"/><line x1="575" y1="112" x2="575" y2="120"/><line x1="684" y1="112" x2="684" y2="120"/><line x1="730" y1="112" x2="730" y2="120"/></g>
+    <g font-size="12" text-anchor="middle" fill="var(--mut)"><text x="30" y="138">0</text><text x="108" y="138">5</text><text x="186" y="138">10</text><text x="419" y="138">25</text><text x="575" y="138">35</text><text x="684" y="138">42</text><text x="730" y="138">45</text></g>
+  </svg>
+  <figcaption id="fig1cap"><b>Figure 1.</b> The whole lesson on one line. Minutes are a guide; the longest part is the students' own work.</figcaption>
+</figure>
+
+<section aria-labelledby="before">
+  <h2 id="before">Before class (about 10 minutes)</h2>
+  <ol>
+    <li><b>Open the site yourself</b> and press <b>Try an example</b>, then the blue <b>Check</b> button. You will see what a student sees. Press <b>See a sample result</b> if you want an example without waiting for the AI.</li>
+    <li><b>Choose one tool.</b> For a first try, one is enough (see the table below).</li>
+    <li><b>Prepare a short piece of student-style work</b> for the model part, such as a few sentences from your last lab, written by you.</li>
+    <li><b>Read "Privacy at a glance"</b> (the <b>Privacy</b> link at the bottom of the site). Students type only a first name, and their writing is sent to an AI service to get the feedback; it is not saved by this app.</li>
+    <li><b>Do not use real student photos yet</b> unless your school has approved the AI key. Photo Check needs that care; the text tools carry less risk.</li>
+  </ol>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th scope="col">Tool</th><th scope="col">Good first lesson</th><th scope="col">Grades</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Science Writing</th><td>A lab report, hypothesis, or short explanation. Students revise using one next step.</td><td>2 to 12 (K to 1 can speak)</td></tr>
+        <tr><th scope="row">Coding Helper</th><td>"Fix an error" on a short program that does not work. Hints only; the fix is not given.</td><td>6 to 12</td></tr>
+        <tr><th scope="row">Engineering notebook (robotics)</th><td>An entry from a team's notebook, checked for goal, ideas, choice, testing and next change. These are the project's own criteria, not an official competition rubric.</td><td>2 to 12 (in Science Writing)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<figure aria-labelledby="fig2cap">
+  <svg viewBox="0 0 760 296" role="img" aria-labelledby="fig2title fig2desc" font-family="system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif">
+    <title id="fig2title">How one check works and how students improve their work</title>
+    <desc id="fig2desc">Step 1: write or paste your own work. Step 2: press the Check button. Step 3: read the one next step. Step 4: revise it yourself. An arrow returns from step 4 to step 2, because after revising the student checks again and a progress panel compares with the last version. Above step 3 is a note: check this yourself in your textbook, notes, or with your teacher, because the AI can be wrong.</desc>
+    <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--line)"/></marker></defs>
+    <g font-size="14" text-anchor="middle" fill="var(--txt)">
+      <g><rect x="24" y="118" width="160" height="92" rx="12" fill="var(--a1-bg)" stroke="var(--a1)" stroke-width="2"/><text x="104" y="108" font-size="13" font-weight="700" fill="var(--a1)">STEP 1</text><text x="104" y="154" font-weight="700">Write or paste</text><text x="104" y="174">your own work</text></g>
+      <g><rect x="208" y="118" width="160" height="92" rx="12" fill="var(--a1-bg)" stroke="var(--a1)" stroke-width="2"/><text x="288" y="108" font-size="13" font-weight="700" fill="var(--a1)">STEP 2</text><text x="288" y="154" font-weight="700">Press the</text><text x="288" y="174">“Check” button</text></g>
+      <g><rect x="392" y="118" width="160" height="92" rx="12" fill="var(--a2-bg)" stroke="var(--a2)" stroke-width="2"/><text x="472" y="108" font-size="13" font-weight="700" fill="var(--a2)">STEP 3</text><text x="472" y="154" font-weight="700">Read the one</text><text x="472" y="174">“next step”</text></g>
+      <g><rect x="576" y="118" width="160" height="92" rx="12" fill="var(--a2-bg)" stroke="var(--a2)" stroke-width="2"/><text x="656" y="108" font-size="13" font-weight="700" fill="var(--a2)">STEP 4</text><text x="656" y="154" font-weight="700">Revise it</text><text x="656" y="174">yourself</text></g>
+      <g><rect x="372" y="14" width="200" height="62" rx="12" fill="var(--a3-bg)" stroke="var(--a3)" stroke-width="2"/><text x="472" y="40" font-weight="700">Check this yourself</text><text x="472" y="60" font-size="12.5">textbook, notes, or teacher</text></g>
+    </g>
+    <g fill="none" stroke="var(--line)" stroke-width="2">
+      <path d="M184 164H206" marker-end="url(#arr)"/><path d="M368 164H390" marker-end="url(#arr)"/><path d="M552 164H574" marker-end="url(#arr)"/>
+      <path d="M656 210V246H288V212" marker-end="url(#arr)"/><path d="M530 116V78" marker-end="url(#arr)"/></g>
+    <g font-size="12.5" fill="var(--mut)" text-anchor="middle"><text x="472" y="270">check again: the progress panel compares with the last version</text></g>
+  </svg>
+  <figcaption id="fig2cap"><b>Figure 2.</b> The loop the lesson is built around. The AI only does steps 2 and 3. Steps 1, 4 and “check this yourself” belong to the student.</figcaption>
+</figure>
+
+<section aria-labelledby="plan">
+  <h2 id="plan">The lesson, minute by minute</h2>
+  <ol class="steps">
+    <li><div class="t">0–5<small>minutes</small></div><div class="b"><h3>Welcome</h3>
+      <p>Open the site on the board. Show the three ideas on the first screen: <b>try it yourself first, check the AI, make it yours.</b></p>
+      <div class="say">“Today the AI is a helper, not a crutch. It will not write for you. It will tell you one thing to try, and you decide what to change.”</div></div></li>
+    <li><div class="t">5–10<small>minutes</small></div><div class="b"><h3>Model it together</h3>
+      <p>Paste your short sample (or press <b>Try an example</b>) and check it on the board. Read the <b>next step</b> aloud. Ask: “Is this advice true for this text? How could we check?” Then show the <b>Check this yourself</b> box.</p></div></li>
+    <li><div class="t">10–25<small>minutes</small></div><div class="b"><h3>Students try it</h3>
+      <p>Each student (or pair) types a first name, opens the chosen tool, pastes their own work, and presses <b>Check</b>. They read the feedback and underline the one next step in their notes. Walk around and ask, “What is it asking you to do?”</p>
+      <p>If students use a class code, they join from <b>Have a class code?</b>; this is optional.</p></div></li>
+    <li><div class="t">25–35<small>minutes</small></div><div class="b"><h3>Revise and check again</h3>
+      <p>Students change their work using the next step and press <b>Check</b> again. For a revision of the same work, a panel shows what changed since the last check. Small score changes are shown as “about the same”, because the AI’s scores move a little even on the same text.</p>
+      <div class="say">“A score is not the goal. Did the advice make your work clearer? Show your partner one change.”</div></div></li>
+    <li><div class="t">35–42<small>minutes</small></div><div class="b"><h3>Check yourself</h3>
+      <p>Pick two students to share one thing the AI said that they verified in a textbook or notes, and one thing they decided not to use and why. This is the most important part: it keeps the human in charge.</p></div></li>
+    <li><div class="t">42–45<small>minutes</small></div><div class="b"><h3>Exit</h3>
+      <p>Students write one sentence: “Today the AI helped me ___, and I still had to ___.” If you want, press <b>Save as Word</b> to keep a copy of the feedback.</p></div></li>
+  </ol>
+</section>
+
+<section aria-labelledby="problems">
+  <h2 id="problems">If something goes wrong</h2>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th scope="col">What students see</th><th scope="col">What to do</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">“The AI service is very busy right now”</th><td>The AI provider is overloaded. Press <b>Try again</b> after a minute. The text is still in the box. <b>See a sample result</b> shows an example while you wait.</td></tr>
+        <tr><th scope="row">The spinner says “Still working”</th><td>Some answers take 20 seconds or more. The page waits up to 75 seconds.</td></tr>
+        <tr><th scope="row">“You've used all 10 analyses for today”</th><td>The free connection has daily limits per student, computer, class and school. Try again tomorrow, or ask your school's administrator.</td></tr>
+        <tr><th scope="row">“Could not reach…”</th><td>Check the network. Some school networks block <code>script.google.com</code>. Try another network or a private window.</td></tr>
+        <tr><th scope="row">A student typed the wrong name</th><td>Press <b>Not you?</b> under the greeting and type it again.</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section aria-labelledby="honest">
+  <h2 id="honest">What to know before you use it</h2>
+  <div class="note"><b>This tool is new.</b> It has been built and tested by its developer and has not yet had a classroom pilot, so there is no data yet on learning outcomes. The AI can make mistakes, and the feedback rubric has not been validated against teacher scoring. Use your own judgment, and do not use the scores for grades.</div>
+</section>
+
+<section aria-labelledby="after">
+  <h2 id="after">After class: tell us how it went</h2>
+  <p>The most useful thing you can do is tell the project what worked and what did not. In the site, choose <b>Rate this tool</b> in the top bar. The form takes about two minutes.</p>
+  <p class="no-print"><a class="btn" href="index.html">Open STEM Bridge AI</a></p>
+</section>
+
+</main>
+
+<footer>
+  <p>STEM Bridge AI is free and open source (MIT License). <a href="https://github.com/dastanramazan/STEM-Bridge-AI/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer">Privacy policy</a> · <a href="https://github.com/dastanramazan/STEM-Bridge-AI" target="_blank" rel="noopener noreferrer">Source code</a> · Questions: dastanramazan@gmail.com</p>
+</footer>
+
+</div>
+</body>
+</html>
