@@ -10,6 +10,12 @@ All notable changes are documented here. This file serves as the official develo
 
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
+## [0.20.1] — 2026-11 — A 45-Minute Lesson for Teachers
+
+- **A ready lesson page for a teacher trying the tool with one class** (`lesson.html`, next to the site): a minute-by-minute plan for one 45-minute period, what to prepare, what to say, what to do when something goes wrong, and where to send feedback. It has two pictures instead of a video: the lesson as a 45-minute bar, and the loop a student follows (write, check, read the one next step, revise, check again, check this yourself). Both have text descriptions for screen readers, it prints cleanly, and it loads nothing from other sites.
+- It says plainly that the tool is new, has not had a classroom pilot, and that scores should not be used for grades. It does not claim any results.
+- Linked from About and from the school section of Settings.
+
 ## [0.20.0] — 2026-11 — Optional School Registration
 
 - **Teachers can tell the project which school uses the tools (optional).** After a successful **Check and connect** in Settings, a small card asks for the school name (filled in from the connected school), city, state, number of teachers, grade bands, tools planned, role, an optional contact email, and an explicit Yes/No choice about whether the school's name and state may be named in public reports. It never blocks setup, never affects the tools, and never includes student data, keys, PINs, or the school's Web app address.
