@@ -137,7 +137,7 @@ If the deployer has set up a default AI connection (see [TEACHER_SETUP.md](TEACH
 # 3. Live at: https://dastanramazan.github.io/STEM-Bridge-AI
 ```
 
-**Why single-file / zero-dependency?** Rural and Title I schools frequently operate restricted IT environments where npm, build tools, or CDN access may be blocked. This application opens directly as an HTML file in any browser with no installation required.
+**Why a single file, with no build step?** Rural and Title I schools frequently operate restricted IT environments where npm, build tools, or CDN access may be blocked. This application opens directly as an HTML file in any browser with no installation required.
 
 ### Option D: Give Students a Default AI Connection & Track Usage (Optional)
 
@@ -183,7 +183,7 @@ No evaluation has been run yet. The plan is to work with a university computing-
 
 ```
 STEM-Bridge-AI/
-├── index.html              # Unified application (single-file, zero-dependency)
+├── index.html              # Unified application (single file, no build step)
 ├── README.md               # This file
 ├── TEACHER_SETUP.md        # Optional: default AI connection + usage-tracking dashboard setup
 ├── PRIVACY.md              # What student data the app handles, where it goes, and what is never stored

@@ -949,7 +949,7 @@ function setupDialogHtml_() {
     + '.ok{color:#15803d}.bad{color:#b91c1c}.box{background:#eef4ff;border-radius:10px;padding:10px 12px;margin:12px 0}ol{margin:6px 0 0 18px;padding:0}code{background:#fff;padding:1px 5px;border-radius:5px;word-break:break-all}'
     + '</style></head><body>'
     + '<div id="status" class="box">Checking…</div>'
-    + '<label for="school">School name (shown to students when they connect)</label><input id="school" maxlength="80" placeholder="e.g. Harmony Science Academy">'
+    + '<label for="school">School name (shown to students when they connect)</label><input id="school" maxlength="80" placeholder="e.g. Lincoln Middle School">'
     + '<label for="pin">Teacher PIN</label><input id="pin" type="password" autocomplete="off" placeholder="Leave empty to keep the current PIN"><small>4 or more characters, no spaces. Only you should know it.</small>'
     + '<label for="key">AI key (Google Gemini)</label><input id="key" type="password" autocomplete="off" placeholder="Leave empty to keep the current key"><small>Free: get one at <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a> (sign in, click Create API key).</small>'
     + '<label for="domains">School email domains (optional)</label><input id="domains" placeholder="myschool.org"><small>Anyone with a Google account on these domains may sign in as a teacher. Leave empty to add teachers one by one.</small>'

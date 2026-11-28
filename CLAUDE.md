@@ -133,6 +133,9 @@ how student data is handled, `PRIVACY.md`.
   CSforALL *2025 State of AI + CS Education* report that the owner has verified
   (60% of high schools offer CS; 6.1% of students take it). Do not bring back
   "667,000 jobs", "26% / 8%", or "3x less likely".
+- CHANGELOG dates are the git commit dates of the version bump; check `git log` before writing one. Never claim the tool was
+  used, observed, tested, or piloted in any school or with students (it has not been); the owner teaching at a school is fine to mention,
+  use there is not.
 - The first public release is v0.3.0 (July 2026). Never add change-log entries
   for earlier versions, and never describe the project as "ongoing research"
   or the feedback as "expert-level"; the rubric is not validated yet.

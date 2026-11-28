@@ -1,22 +1,26 @@
 # Changelog — STEM Bridge AI
 
-All notable changes are documented here. This file serves as the official development history of the project.
+All notable changes are documented here. Dates are the dates of the commits in this repository's git history.
+
+**2025: idea and planning (no code released, no classroom use).** Ideas and planning for the tool began in 2025. No code was released and nothing was used in any school that year. The first public release is 0.3.0 (2026-07-18). The tool has not been used or tested with students at any school, and there has been no classroom pilot; it has been tested only by its developer.
 
 ---
 
-## [Unreleased]
+## 2026-11-14 — Documentation corrections (no version change)
 
 - **Documentation corrected for accuracy.** Removed change-log entries for versions before the first public release (see the note under 0.3.0). README and research.md: removed three statistics that had no verified source, replaced them with figures from the Code.org and CSforALL *2025 State of AI + CS Education* report, dropped claims of ongoing research and of an "expert-level" tool, renamed the tools to the names the site uses (Science Writing, Coding Helper), and described the writing rubric as informed by NGSS practices and not yet validated.
 
+## 2026-11-13 — Statistic removed (no version change)
+
 - **Removed the "48 states" teacher-shortage statistic** from README.md and research.md (the problem statement now rests on the computing-jobs, Code.org, and NSF figures, each cited) and dropped its reference.
 
-## [0.20.1] — 2026-11 — A 45-Minute Lesson for Teachers
+## [0.20.1] — 2026-11-26 — A 45-Minute Lesson for Teachers
 
 - **A ready lesson page for a teacher trying the tool with one class** (`lesson.html`, next to the site): a minute-by-minute plan for one 45-minute period, what to prepare, what to say, what to do when something goes wrong, and where to send feedback. It has two pictures instead of a video: the lesson as a 45-minute bar, and the loop a student follows (write, check, read the one next step, revise, check again, check this yourself). Both have text descriptions for screen readers, it prints cleanly, and it loads nothing from other sites.
 - It says plainly that the tool is new, has not had a classroom pilot, and that scores should not be used for grades. It does not claim any results.
 - Linked from About and from the school section of Settings.
 
-## [0.20.0] — 2026-11 — Optional School Registration
+## [0.20.0] — 2026-11-26 — Optional School Registration
 
 - **Teachers can tell the project which school uses the tools (optional).** After a successful **Check and connect** in Settings, a small card asks for the school name (filled in from the connected school), city, state, number of teachers, grade bands, tools planned, role, an optional contact email, and an explicit Yes/No choice about whether the school's name and state may be named in public reports. It never blocks setup, never affects the tools, and never includes student data, keys, PINs, or the school's Web app address.
 - **Where it appears.** Only on a device where a teacher just connected a school, so students never see it. **No thanks** or a submission hides it for good on that device; a **Register my school** link in Settings stays for later (and, once registered, reopens the form filled in to update it).
@@ -24,13 +28,13 @@ All notable changes are documented here. This file serves as the official develo
 - The page shows the card only when the project's script lists `register_school` in its public info, so an older script never receives a registration it would store as a junk usage row. If sending fails, a short message says so and everything else carries on.
 - **Project script 0.20.0.** The project owner must paste the new `Code.gs` into the default script and deploy a New version (see TEACHER_SETUP.md).
 
-## [0.19.1] — 2026-11 — Plainer Feedback
+## [0.19.1] — 2026-11-26 — Plainer Feedback
 
 - **One plain-language rule for every student-facing prompt.** Science Writing, Photo Check and Coding Helper now tell the AI to write for the student's grade with short sentences (about 15 words or fewer) and everyday words, to explain the first use of any science or computing term right away in about five words, in parentheses, to avoid terms the student did not use, and to avoid idioms. Grades 2 to 8 get the full rule; grades 9 to 12 a lighter one (explain a new term in a few words); Kindergarten to grade 1 keep their own simpler guidance. Before, Science Writing and Photo Check had no instruction about language level apart from K to 1.
 - **Spanish** adds: common school words used across Latin America, and, for a technical term, the Spanish word first and once the English word in parentheses ("hipótesis (hypothesis)").
 - Not checked: how closely the live AI follows the rule. The prompts are tested; the wording of real answers needs a look on the live site.
 
-## [0.19.0] — 2026-11 — Daily Limits That Fit a School
+## [0.19.0] — 2026-11-26 — Daily Limits That Fit a School
 
 - **Limits by student, computer, class, and school.** Before, the free shared connection allowed 10 checks per student name and 100 in total, so a second class was refused the same day, two students with the same name shared one allowance, and a student could get a new one by typing a different name. Now a check counts against the student (name plus the browser's random device code), the computer (50 a day, for shared carts), the class (100, only for a real class made in the teacher area; a made-up code gets no allowance of its own), and the school (100). The first limit reached stops the request and the message says which one.
 - **The school can change the numbers** without editing code: the Sheet menu **STEM Bridge AI → Set up / check my setup** has a *Daily limits* section (an empty box keeps the number, 0 restores the standard one, out-of-range values are refused).
@@ -39,32 +43,32 @@ All notable changes are documented here. This file serves as the official develo
 - **School script 0.19.0.** Update it (new `Code.gs`, then Deploy → New version) to get the new limits.
 - Note: the limits do not replace the spending limit on the AI key at Google. If you raise them, raise that too.
 
-## [0.18.3] — 2026-11 — Privacy at a Glance
+## [0.18.3] — 2026-11-26 — Privacy at a Glance
 
 - **A one-page privacy summary on the site.** The **Privacy** link in the footer (and in About) now opens a "Privacy at a glance" window written for teachers and administrators: what students enter, where it goes, what the school's Sheet records and never records, what stays on the device, the AI provider's terms, and a short checklist before using the tool with students. It has a Print / Save as PDF button and a link to the full policy. The same summary now opens `PRIVACY.md`.
 - It states plainly that it is not legal advice and not a FERPA or COPPA certification, and that the free Gemini tier may use submitted content.
 
-## [0.18.2] — 2026-11 — Which Model Gave That Score
+## [0.18.2] — 2026-11-24 — Which Model Gave That Score
 
 - **The usage log now says which AI model answered.** The school script adds the name of the model that actually answered (Gemini's own `modelVersion`, or the model it asked for, including a fallback when the main one was busy) to the reply, the page sends it with the usage record, and the Log tab gets a new **Model** column next to the scores. Before, `gemini-flash-latest` could change under the school without any sign in the Sheet.
 - The model name is not personal information and no text of the student's work is logged. Records from an older script simply have no model. An older Log tab gets the header name for the new column automatically.
 - Not changed: the main model is still the `gemini-flash-latest` alias, so it can still change on Google's side; the log now shows when it does.
 - **School script 0.18.2.** Update it (new `Code.gs`, then Deploy → New version) to get the Model column.
 
-## [0.18.1] — 2026-11 — A Progress Panel You Can Trust
+## [0.18.1] — 2026-11-24 — A Progress Panel You Can Trust
 
 - **"Progress Since Last Attempt" only compares a revision of the same work.** Before, it compared any two checks of the same kind, so a different essay, or the same text checked twice, could show "2 of 5 areas went down". Now the page keeps a fingerprint of the last text in the browser: the smallest 300 hash numbers of its three-word groups, from which the text cannot be read back. It is never sent anywhere or logged. Same text: a note that there is nothing new to compare. A revision: the comparison. A different piece of work: no comparison, and it becomes the new starting point.
 - **Small changes are "about the same".** The AI's scores move a little even on identical text, so a change of up to 10 points is shown as "about the same", and only larger changes are called an improvement or a drop.
 - A progress record saved by an older version is not used for a comparison. Photo Check has no progress panel, as before.
 
-## [0.18.0] — 2026-11 — Hints by Default, Help Levels That Work
+## [0.18.0] — 2026-11-23 — Hints by Default, Help Levels That Work
 
 - **Coding Helper no longer asks the AI for the answer by default.** Before, the AI always wrote a complete fix and the page only hid it behind a button (the code was still in the page). Now, in free practice and in "Explain an idea", no corrected code is requested, and if a reply contains code anyway it is dropped before it reaches the page.
 - **The teacher's help level for an assignment now changes what the AI does.** "Hints only": no code. "Hints and an example of a similar problem": a short example of a *different* problem, clearly labelled, never the student's fix. "Show the fix after 2 tries": no code for two checks, then the fix behind the reveal button; the student sees how many tries are counted, and the count is kept in that browser.
 - The sample result for Coding Helper shows no code, like a real answer.
 - Not yet checked: how closely the live model follows the "no code" instruction. The page does not depend on it, because it drops code the level does not allow.
 
-## [0.17.1] — 2026-11 — Easier to Read and Use with a Keyboard
+## [0.17.1] — 2026-11-23 — Easier to Read and Use with a Keyboard
 
 - **Colour contrast.** The main buttons (blue, purple and orange) now have white text that meets the WCAG AA contrast ratio; the green "Check this yourself" label and the empty rating stars are darker so they can be read.
 - **Keyboard and screen readers.** A "Skip to the tools" link is the first Tab stop; the page now has a main area; the two panel titles are headings. When a window (Settings, About, Rate this tool, Join a class, Teacher, Dashboard) opens, keyboard focus moves into it and stays inside until it closes, then returns to the button that opened it.
@@ -72,20 +76,20 @@ All notable changes are documented here. This file serves as the official develo
 - **Feedback form.** "Not at all" and "Very" now sit under the two ends of the star row, and the fuller form shows "n of 6 required answers done".
 - Not changed: the filled amber stars in the results are decorative (the level is also written in words next to them), so their colour stays as it is.
 
-## [0.17.0] — 2026-11 — Feedback That Can Be Checked
+## [0.17.0] — 2026-11-16 — Feedback That Can Be Checked
 
 - **The "Rate this tool" form now says who is answering.** Name, role, school or organization, state, and email are required, and so is what the person tried (Science Writing, Coding Helper, Photo Check, or only looked at the site). Ratings and the comment are as before. Two optional permissions were added: quote the comment with the person's name and organization, and email them to ask whether they would write a short letter about the tool. The form tells people that their email is never shown publicly.
 - A page only shows the fuller form when the project's script lists `feedback_v2` in its public info; an older script gets the short form, so no answer is ever sent to a script that would drop the new fields.
 - **Project script 0.17.0** adds six columns to the Feedback tab (Name, Organization, State, Tried, QuoteWithName, MayAskForLetter), refuses incomplete answers from the fuller form with a message naming what is missing, and names the new columns in an older Feedback tab without touching old rows.
 - No responses are counted or shown anywhere in the repository. Real answers are the only kind that are used.
 
-## [0.16.0] — 2026-11 — Class Results for Teachers
+## [0.16.0] — 2026-11-14 — Class Results for Teachers
 
 - **Results by assignment.** In the Teacher area, each class has a "Results" button. It shows, for every assignment, one row per student: number of tries, latest and best average score, and the last time, with the class average. Work done in the class without starting an assignment, and work for archived assignments, is listed separately.
 - It is built from the usage log only (names, times, tools, scores). Students' writing, code and photos are never stored, so they are never shown.
 - **School script 0.16.0** adds the signed-in teacher request `t_results`, which returns the log rows of the teacher's own class and nothing else. With an older script the page says the script needs updating.
 
-## [0.15.0] — 2026-11 — Classes for Students, Robotics, and Feedback in Spanish
+## [0.15.0] — 2026-11-14 — Classes for Students, Robotics, and Feedback in Spanish
 
 ### Students join a class with a code
 - **Join a class.** A student opens the teacher's class link or types the 4-character class code ("Have a class code?"). The page shows the class name and asks the student to confirm before joining. There is still no student account or password; the class is remembered in that browser.
@@ -101,19 +105,19 @@ All notable changes are documented here. This file serves as the official develo
 ### Feedback in Spanish
 - **"Feedback in: English / Español."** A small menu in the feedback box lets a student or teacher ask for the feedback in Spanish. It applies to Science Writing, Coding Helper, and Photo Check feedback. The page itself, the skill names, the student's own words, and any code stay as they are; only the AI's feedback text changes. A student may write in English or Spanish, and the AI is told not to lower a score because of the language. Read Aloud uses a Spanish voice when Spanish is chosen. The choice is remembered on the device. English requests are unchanged. Paper-test grading against an answer key is not affected. The Spanish wording comes from the AI and has not yet been reviewed by a Spanish-speaking teacher.
 
-## [0.14.0] — 2026-11 — See a Sample, and an Easier Way to Rate the Tool
+## [0.14.0] — 2026-11-14 — See a Sample, and an Easier Way to Rate the Tool
 
 - **"See a sample result."** A button in the empty feedback box (Science Writing and Coding Helper) shows what feedback looks like for the built-in example, without calling the AI. It is clearly marked as a sample written in advance; nothing is sent, logged, or saved, and there is no Word button for it. It works before a name is typed, and it is also offered when the AI service is busy, so a first-time visitor can always see what the tool does.
 - **"Rate this tool" is easier to find.** A button in the top bar and a short strip under the greeting invite teachers, parents, and school leaders to give feedback. The strip can be hidden and stays hidden; it also disappears after feedback is sent.
 - The greeting above a result no longer shows a stray comma when no name has been typed.
 
-## [0.13.2] — 2026-11 — Sturdier When Google's AI Is Busy
+## [0.13.2] — 2026-11-13 — Sturdier When Google's AI Is Busy
 
 - **Three models, longer retries.** When Gemini is overloaded, the school script now tries the main model, then the lighter fallback, then a third model (two attempts each), and keeps retrying for up to 30 seconds instead of 20. A model name Google no longer serves is skipped instead of ending the request.
 - **Clearer errors with a "Try again" button.** Busy, timed-out and unreadable replies now say so in plain words (not Google's wording) and show a button that re-runs the request with the text still on the screen. "Could not reach the AI service" now also mentions that a school or work network or VPN can block `script.google.com`.
 - Update the school script (new `Code.gs`, then Deploy → New version) to get the extra models; the page changes work with any script.
 
-## [0.13.1] — 2026-11 — Wording Fixes and Slow-Answer Handling
+## [0.13.1] — 2026-11-13 — Wording Fixes and Slow-Answer Handling
 
 ### Changed
 - **Claims trimmed after review.** The About window no longer shows the "48 states" statistic or says "Kindergarten through college", and its "Why we built it" text is now phrased as what the tool is *designed to* do. The grade menus no longer offer "Undergraduate" (writing, coding, and photo), and the coding tutor's instructions no longer mention undergraduates. The README tagline now says "designed for" instead of "delivering expert-level", and its grade list matches the menus (K–12).
@@ -122,7 +126,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.13.0] — 2026-11 — Feedback Form for Teachers
+## [0.13.0] — 2026-11-12 — Feedback Form for Teachers
 
 ### Added
 - **"Rate this tool"** (footer, About, the Teacher area and the Teacher Dashboard): a short form for teachers and other adults with five quick questions (role; how useful for students; how easy to use; how good the AI feedback was; would you use it with your students), an optional comment, a tick box "You may quote my comment (without my name)", and an optional email for a reply. It takes about a minute and works with the keyboard and on phones.
@@ -135,14 +139,14 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.12.1] — 2026-11 — "Use free access instead" button
+## [0.12.1] — 2026-11-12 — "Use free access instead" button
 
 ### Fixed
 - If "use our own AI key" was switched on (it is remembered in the browser) and no usable key was set, students saw only "Add your Anthropic API key in Settings…" with no easy way out. The message now also offers a **"Use free access instead"** button that turns the option off and tries the same request again through the free shared connection. It works for writing, coding help, and photo checks (including the "Anthropic can't read photos" case). Other errors, such as the daily limit, are unchanged.
 
 ---
 
-## [0.12.0] — 2026-11 — Easy Setup for a School
+## [0.12.0] — 2026-11-11 — Easy Setup for a School
 
 ### Added
 - **No more editing code.** A new **STEM Bridge AI** menu in the school's Google Sheet opens a setup form for the teacher PIN, the free Gemini AI key, the school's name, and (optionally) allowed school email domains. The PIN and key are saved in the script's private storage, not in its code. The form checks the AI key with Google and never shows secrets back. Older setups that keep the PIN and key in the code still work, and values saved in the form take priority.
@@ -157,7 +161,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.11.0] — 2026-11 — Teacher Accounts, Step 1: Sign-in, Classes, Assignments
+## [0.11.0] — 2026-11-11 — Teacher Accounts, Step 1: Sign-in, Classes, Assignments
 
 ### Added
 - **Teacher area (optional).** In 📊 Teacher, a new "Teacher area" opens a window where a teacher signs in with Google, creates **classes** (each gets a short class code and a link to give students) and **assignments** (title, instructions, tool, due date, and how much help the AI may give: hints only, hints and an example, or show the fix after 2 tries). Classes and assignments can be archived. A "Teachers" tab lets the administrator add or remove teachers by email.
@@ -171,7 +175,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.10.1] — 2026-11 — Telling People Apart
+## [0.10.1] — 2026-11-04 — Telling People Apart
 
 ### Added
 - **Device code.** Because anyone can type any name, every logged result now also carries a short random code that the browser makes for itself (for example `K7M2`). The Sheet has a new **Device** column and the Teacher Dashboard shows the code next to each name. Students can see their own code in Settings. No IP address or device details are collected.
@@ -183,7 +187,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.10.0] — 2026-10 — Save as Word, and Using AI Responsibly
+## [0.10.0] — 2026-10-30 — Save as Word, and Using AI Responsibly
 
 ### Added
 - **Save as Word.** A "Save as Word" button under every student's feedback (writing, coding help, and a student's own photographed work) downloads a .docx the student can bring to a tutorial or email to a teacher. It holds the headline, the next step, stars-and-words for each skill, what's working, what to try, a "Check this yourself" list with tick boxes, blank lines for "Where I got stuck", "My question for my teacher" and "What I checked myself", and a reminder that AI can be wrong. A tick box lets the student include or leave out their own writing or code. The file is built entirely in the browser and never sent anywhere.
@@ -198,7 +202,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.9.0] — 2026-10 — Live Camera for Paper Work
+## [0.9.0] — 2026-10-13 — Live Camera for Paper Work
 
 ### Added
 - **Live camera in Photo Check.** A "Live camera" button opens a live view from a USB document camera, a webcam, or a phone camera. A student can work a problem on paper, press **Capture** (or the space bar), and add the page to the check, up to 4 pages, without taking and choosing photos. If several cameras are connected, there is a menu to pick one, and the choice is remembered on that device.
@@ -210,7 +214,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.8.0] — 2026-10 — A Friendlier, Student-First Design
+## [0.8.0] — 2026-10-09 — A Friendlier, Student-First Design
 
 ### Changed
 - **New look:** bright and friendly, with a light theme by default and an optional dark theme (Settings). Body text is larger and clearer, buttons are bigger, and nothing visible is smaller than about 14px.
@@ -225,7 +229,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [Unreleased] — Documentation
+## 2026-10-09 — Documentation (no version change)
 
 ### Changed
 - README and research notes now state the project's status plainly (built and deployed, no classroom pilot or outcome data yet), and the roadmap is rewritten as clearly labeled goals.
@@ -237,7 +241,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.7.0] — 2026-10 — Test Grading with Answer Keys
+## [0.7.0] — 2026-10-03 — Test Grading with Answer Keys
 
 ### Added
 - **Grade paper tests against an answer key.** In Photo Check's Teacher mode, choose "Test with answer key", pick a saved key, photograph a student's paper (up to 4 pages), and the AI marks each question against the key. It works for tests written on the printed paper and for separate answer sheets.
@@ -254,7 +258,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.6.0] — 2026-10 — Photo Check
+## [0.6.0] — 2026-10-02 — Photo Check
 
 ### Added
 - **Photo Check**, a third tool for handwritten work. Take a photo of a page (or choose one from the gallery), up to 4 pages per check, and the AI first writes out what it read, then scores it with the same STEM writing rubric as SciWrite AI. The "What the AI read" transcription is shown so a teacher can compare it with the paper.
@@ -272,7 +276,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.5.0] — 2026-09 — Zero-Setup Default AI Access
+## [0.5.0] — 2026-10-01 — Zero-Setup Default AI Access
 
 ### Added
 - **Default AI connection with no API key needed.** Students just enter their name; requests go to the teacher's own Google Apps Script, which holds a Gemini key privately and calls Gemini on their behalf. The key never reaches a visitor's browser, unlike a key placed directly in the page's code, which anyone could copy via View Source.
@@ -294,7 +298,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.4.0] — 2026-09 — Multi-Provider AI, Teacher Dashboard, and Accessibility
+## [0.4.0] — 2026-09-21 — Multi-Provider AI, Teacher Dashboard, and Accessibility
 
 ### Added
 - **Choice of AI provider**: Anthropic (Claude) or Google Gemini, selectable via pills next to the API key field. Gemini's free tier requires no credit card, lowering the cost barrier to actually using the platform.
@@ -325,7 +329,7 @@ All notable changes are documented here. This file serves as the official develo
 
 ---
 
-## [0.3.0] — 2026-07 — Public Deployment & Repository Cleanup
+## [0.3.0] — 2026-07-18 — Public Deployment & Repository Cleanup
 
 ### Added
 - Live demo deployed via GitHub Pages: https://dastanramazan.github.io/STEM-Bridge-AI/
@@ -337,6 +341,6 @@ All notable changes are documented here. This file serves as the official develo
 - Development scaffolding script (`setup_git_history.sh`) removed from repository
 
 ### Note on earlier history
-Version 0.3.0 (July 2026) is the first public release. The idea for the project dates to early 2025, but there were no earlier released versions. This file previously listed versions 0.0.1 to 0.2.0 with dates from February 2025 to June 2026; those entries did not correspond to released software and were removed in November 2026.
+Version 0.3.0 (July 2026) is the first public release. Ideas and planning began in 2025, but no code was released then and there were no earlier released versions. This file previously listed versions 0.0.1 to 0.2.0 with dates from February 2025 to June 2026, and a research note about classroom observation at a school; those entries did not match the git history and the tool has never been used or observed in a school, so they were removed in November 2026.
 
 ---
