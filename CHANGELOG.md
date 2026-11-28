@@ -6,6 +6,10 @@ All notable changes are documented here. Dates are the dates of the commits in t
 
 ---
 
+## 2026-11-28 — Page version in submissions corrected (no version change)
+
+- The page version sent with feedback and school registrations (`APP_VERSION` in `index.html`) said 0.13.0 while the page was 0.20.1; it now says 0.20.1. Only the version text stored in the Feedback and Schools tabs changes. Earlier rows keep the old value.
+
 ## 2026-11-14 — Documentation corrections (no version change)
 
 - **Documentation corrected for accuracy.** Removed change-log entries for versions before the first public release (see the note under 0.3.0). README and research.md: removed three statistics that had no verified source, replaced them with figures from the Code.org and CSforALL *2025 State of AI + CS Education* report, dropped claims of ongoing research and of an "expert-level" tool, renamed the tools to the names the site uses (Science Writing, Coding Helper), and described the writing rubric as informed by NGSS practices and not yet validated.
